@@ -1,0 +1,16 @@
+[package]
+name = "ingest"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+tokio.workspace = true
+log.workspace = true
+indicatif = "0.18"
+alpaca-client = { path = "../alpaca-client" }
+llm-client = { path = "../llm-client" }

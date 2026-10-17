@@ -1,0 +1,11 @@
+Choose the first applicable category:
+PREFERRED: preferred stock or depositary shares representing preferred stock.
+BDC: common shares of a business development company.
+CEF: closed-end investment funds, excluding BDCs and ETFs.
+ETF: exchange-traded funds, including physically backed commodity trusts; excludes exchange-traded notes.
+EQUITY_REIT: common shares of a REIT primarily owning and operating real property.
+MORTGAGE_REIT: common shares of a REIT primarily investing in mortgages, mortgage-backed securities or mortgage lending.
+ASSET_MANAGER: common shares of a business principally managing investments for clients or funds, separately from the funds it manages.
+STOCK: other common stocks, including depositary receipts representing common stocks.
+
+Dividend or distribution status does not affect classification. Return EXCLUDED if no category applies; return null if uncertain.
