@@ -1,0 +1,16 @@
+[package]
+name = "reit-metrics"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+sec-client = { path = "../sec-client" }
+scraper = "0.27"
+regex = "1"
+log.workspace = true

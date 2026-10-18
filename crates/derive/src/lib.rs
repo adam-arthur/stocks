@@ -1,1 +1,238 @@
+mod financials;
+mod market;
+mod output;
+mod quarters;
 
+use std::{collections::BTreeMap, fs, io::Write, path::Path};
+
+use anyhow::{Context, Result, ensure};
+use chrono::{NaiveDate, Utc};
+use serde::de::DeserializeOwned;
+use serde_json::{Value, json};
+
+pub fn run(input: &Path, output: &Path) -> Result<usize> {
+    ensure!(input.is_dir(), "input directory does not exist");
+    fs::create_dir_all(output)?;
+    ensure!(
+        fs::canonicalize(input)? != fs::canonicalize(output)?,
+        "output must differ from ingest directory"
+    );
+    let lock = fs::File::options()
+        .create(true)
+        .truncate(false)
+        .write(true)
+        .open(output.join(".lock"))?;
+    lock.try_lock()
+        .context("another derive process is using this output directory")?;
+    let input_lock = fs::File::options().read(true).open(input.join(".lock"))?;
+    input_lock
+        .try_lock_shared()
+        .context("ingest is running; derive requires a consistent input snapshot")?;
+    fs::create_dir_all(output.join("stocks"))?;
+    let as_of = Utc::now().date_naive();
+    let synced = read::<BTreeMap<String, NaiveDate>>(&input.join("corporate_actions_sync.json"))?
+        .unwrap_or_default();
+    let mut metadata = Vec::new();
+    for entry in fs::read_dir(input.join("stocks"))? {
+        let entry = entry?;
+        if entry.file_type()?.is_dir()
+            && let Some(meta) = read::<Value>(&entry.path().join("meta.json"))?
+        {
+            ensure!(
+                meta["symbol"].as_str() == entry.file_name().to_str(),
+                "metadata symbol does not match directory"
+            );
+            metadata.push(meta);
+        }
+    }
+    metadata.sort_by(|a, b| a["symbol"].as_str().cmp(&b["symbol"].as_str()));
+    let mut companies = BTreeMap::<u64, usize>::new();
+    for meta in metadata.iter().filter(|m| common(m)) {
+        if let Some(cik) = meta["cik"].as_u64() {
+            *companies.entry(cik).or_default() += 1;
+        }
+    }
+    let mut saved = 0;
+    let mut failures = BTreeMap::new();
+    for meta in metadata.iter().filter(|m| m["category"] != "EXCLUDED") {
+        let symbol = meta["symbol"].as_str().context("metadata missing symbol")?;
+        match security(input, meta, &companies, synced.get(symbol).copied(), as_of) {
+            Ok(mut data) => {
+                let directory = output.join("stocks").join(symbol);
+                fs::create_dir_all(&directory)?;
+                for history in ["prices", "dividends", "financials"] {
+                    write(
+                        &directory.join(format!("{history}.json")),
+                        &data.as_object_mut().unwrap().remove(history).unwrap(),
+                    )?;
+                }
+                write(&directory.join("meta.json"), &data)?;
+                saved += 1;
+            }
+            Err(error) => {
+                eprintln!("{symbol}: {error:#}");
+                failures.insert(symbol, format!("{error:#}"));
+            }
+        }
+        if (saved + failures.len()) % 500 == 0 {
+            eprintln!("Derived {} securities; {} failed", saved, failures.len());
+        }
+    }
+    write(
+        &output.join("failures.json"),
+        &serde_json::to_value(&failures)?,
+    )?;
+    ensure!(
+        failures.is_empty(),
+        "{} securities failed; see failures.json",
+        failures.len()
+    );
+    Ok(saved)
+}
+
+fn common(meta: &Value) -> bool {
+    matches!(
+        meta["category"].as_str(),
+        Some("STOCK" | "EQUITY_REIT" | "MORTGAGE_REIT" | "BDC" | "ASSET_MANAGER")
+    )
+}
+
+fn security(
+    input: &Path,
+    meta: &Value,
+    companies: &BTreeMap<u64, usize>,
+    synced: Option<NaiveDate>,
+    as_of: NaiveDate,
+) -> Result<Value> {
+    let symbol = meta["symbol"].as_str().unwrap();
+    let market = market::derive(
+        read(&input.join("stocks").join(symbol).join("prices.json"))?.unwrap_or_default(),
+        &read::<Vec<Value>>(
+            &input
+                .join("stocks")
+                .join(symbol)
+                .join("corporate_actions.json"),
+        )?
+        .unwrap_or_default(),
+        synced,
+        as_of,
+    )?;
+    let facts = if common(meta) {
+        meta["cik"]
+            .as_u64()
+            .map(|cik| read::<Value>(&input.join(format!("sec/company_facts/CIK{cik:010}.json"))))
+            .transpose()?
+            .flatten()
+    } else {
+        None
+    };
+    let financials = financials::extract(facts.as_ref().unwrap_or(&Value::Null), as_of);
+    let mut summary = json!({"price_date": null, "closing_price": null, "market_cap": null,
+        "shares_outstanding": null, "dividend_yield": null, "dividend_yield_excluding_specials": null,
+        "revenue_last_12_months": null, "earnings_last_12_months": null, "common_shareholder_earnings_last_12_months": null,
+        "diluted_earnings_per_share": null, "price_to_earnings": null, "price_to_sales": null,
+        "cash_and_equivalents": null, "total_debt": null, "preferred_stock_value": null, "total_debt_including_preferred_stock": null,
+        "common_shareholder_equity": null});
+    if let Some((date, price)) = market.prices.last_key_value() {
+        summary["price_date"] = json!(date);
+        summary["closing_price"] = json!(price.close);
+        summary["dividend_yield"] = json!(price.dividend_yield);
+        summary["dividend_yield_excluding_specials"] =
+            json!(price.dividend_yield_excluding_specials);
+        let ambiguous = meta["cik"]
+            .as_u64()
+            .is_some_and(|cik| companies.get(&cik).is_some_and(|count| *count > 1))
+            || meta["name"].as_str().is_some_and(|name| {
+                ["class ", "depositary", "depository"]
+                    .iter()
+                    .any(|term| name.to_ascii_lowercase().contains(term))
+            });
+        if !ambiguous
+            && common(meta)
+            && let Some(shares) = financials::latest(&financials, "shares_outstanding", *date)
+                .filter(|o| o.value > 0.0)
+        {
+            summary["shares_outstanding"] = serde_json::to_value(shares)?;
+            summary["market_cap"] = json!(
+                price.close * shares.value * market::factor(&market.splits, shares.end, as_of)
+            );
+        }
+        for metric in ["revenue", "earnings", "common_shareholder_earnings"] {
+            summary[format!("{metric}_last_12_months")] =
+                serde_json::to_value(financials::trailing(&financials, metric, *date))?;
+        }
+        for metric in [
+            "diluted_earnings_per_share",
+            "cash_and_equivalents",
+            "total_debt",
+            "preferred_stock_value",
+            "total_debt_including_preferred_stock",
+            "common_shareholder_equity",
+        ] {
+            summary[metric] =
+                serde_json::to_value(financials::latest(&financials, metric, *date).filter(|o| {
+                    metric == "diluted_earnings_per_share"
+                        || Some(o.end)
+                            == financials
+                                .values()
+                                .flatten()
+                                .filter(|o| {
+                                    o.start.is_none()
+                                        && o.unit == "USD"
+                                        && o.end <= *date
+                                        && o.filed <= *date
+                                })
+                                .map(|o| o.end)
+                                .max()
+                }))?;
+        }
+        for (ratio, metric) in [
+            (
+                "price_to_earnings",
+                "common_shareholder_earnings_last_12_months",
+            ),
+            ("price_to_sales", "revenue_last_12_months"),
+        ] {
+            summary[ratio] = json!(
+                summary["market_cap"]
+                    .as_f64()
+                    .zip(summary[metric]["value"].as_f64())
+                    .filter(|(_, denominator)| *denominator > 0.0)
+                    .map(|(cap, denominator)| cap / denominator)
+            );
+        }
+    }
+    Ok(json!({
+        "metadata": meta,
+        "as_of": as_of,
+        "prices": market.prices,
+        "dividends": market.dividends,
+        "financials": quarters::group(&financials),
+        "summary": summary,
+    }))
+}
+
+fn read<T: DeserializeOwned>(path: &Path) -> Result<Option<T>> {
+    match fs::read(path) {
+        Ok(bytes) => {
+            Ok(Some(serde_json::from_slice(&bytes).with_context(|| {
+                format!("invalid JSON in {}", path.display())
+            })?))
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error.into()),
+    }
+}
+
+fn write(path: &Path, value: &Value) -> Result<()> {
+    let mut file = tempfile::NamedTempFile::new_in(path.parent().unwrap())?;
+    {
+        let mut writer = std::io::BufWriter::new(&mut file);
+        serde_json::to_writer_pretty(&mut writer, &output::Document(value))?;
+        writer.flush()?;
+    }
+    file.write_all(b"\n")?;
+    file.as_file().sync_all()?;
+    file.persist(path)?;
+    Ok(())
+}

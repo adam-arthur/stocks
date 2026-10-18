@@ -11,6 +11,6 @@ async fn main() -> Result<()> {
         Err(error) => return Err(error.into()),
     }
     let progress = logging::init();
-    let store = ingest::Store::open("data")?;
+    let store = ingest::Store::open("data/raw")?;
     ingest::update(&store, &progress).await
 }

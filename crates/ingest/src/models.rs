@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
@@ -17,12 +17,23 @@ pub enum Category {
     AssetManager,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Management {
+    Internal,
+    External,
+    Unknown,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
     pub symbol: String,
     pub name: String,
     pub exchange: String,
+    pub cik: Option<u64>,
     pub category: Category,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub management: Option<Management>,
     pub updated_at: DateTime<Utc>,
 }
 
@@ -31,6 +42,13 @@ pub struct Failure {
     pub symbol: String,
     pub error: String,
     pub attempted_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FinancialsSync {
+    pub updated_on: NaiveDate,
+    pub companies: BTreeSet<u64>,
+    pub unavailable: BTreeSet<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,4 +86,15 @@ fn serialize_action_fields<S: serde::Serializer>(
     let mut fields = fields.clone();
     fields.retain(|_, value| retain_value(value));
     fields.serialize(serializer)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReitQuarter {
+    pub start: NaiveDate,
+    pub end: NaiveDate,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ffo_per_share: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ffo_total: Option<i64>,
 }

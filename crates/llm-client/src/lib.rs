@@ -1,4 +1,4 @@
-use std::{process::Stdio, time::Duration};
+use std::{path::Path, process::Stdio, time::Duration};
 
 use anyhow::{Context, Result, ensure};
 use serde::de::DeserializeOwned;
@@ -86,6 +86,25 @@ impl CodexClient {
     }
 
     pub async fn execute<T: DeserializeOwned>(&self, prompt: &str, schema: &Value) -> Result<T> {
+        self.execute_with_directory(prompt, schema, None).await
+    }
+
+    pub async fn execute_in_directory<T: DeserializeOwned>(
+        &self,
+        prompt: &str,
+        schema: &Value,
+        directory: &Path,
+    ) -> Result<T> {
+        self.execute_with_directory(prompt, schema, Some(directory))
+            .await
+    }
+
+    async fn execute_with_directory<T: DeserializeOwned>(
+        &self,
+        prompt: &str,
+        schema: &Value,
+        working_directory: Option<&Path>,
+    ) -> Result<T> {
         self.validate()?;
         let directory = tempfile::tempdir()?;
         std::fs::write(
@@ -103,24 +122,28 @@ impl CodexClient {
                 "--config",
                 "project_doc_max_bytes=0",
                 "--sandbox",
-                "read-only",
+                if working_directory.is_some() {
+                    "danger-full-access"
+                } else {
+                    "read-only"
+                },
                 "--skip-git-repo-check",
                 "--ephemeral",
                 "--color",
                 "never",
-                "--output-schema",
-                "response-schema.json",
-                "--output-last-message",
-                "response.json",
             ])
-            .current_dir(directory.path())
+            .arg("--output-schema")
+            .arg(directory.path().join("response-schema.json"))
+            .arg("--output-last-message")
+            .arg(directory.path().join("response.json"))
+            .current_dir(working_directory.unwrap_or(directory.path()))
             .env_remove("ALPACA_KEY")
             .env_remove("ALPACA_SECRET")
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
             .kill_on_drop(true);
-        if !self.web_search {
+        if !self.web_search && working_directory.is_none() {
             let catalog = timeout(
                 self.timeout,
                 Command::new(&self.executable)
@@ -171,6 +194,19 @@ impl CodexClient {
                 "sleep_tool",
                 "goals",
                 "hooks",
+            ] {
+                command.args(["--disable", feature]);
+            }
+        }
+        if !self.web_search && working_directory.is_some() {
+            for feature in [
+                "apps",
+                "plugins",
+                "multi_agent",
+                "multi_agent_v2",
+                "browser_use",
+                "computer_use",
+                "image_generation",
             ] {
                 command.args(["--disable", feature]);
             }

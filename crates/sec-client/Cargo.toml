@@ -1,0 +1,17 @@
+[package]
+name = "sec-client"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json = { workspace = true, features = ["arbitrary_precision"] }
+tempfile.workspace = true
+tokio = { workspace = true, features = ["fs", "sync"] }
+log.workspace = true
+zip = { version = "9", default-features = false, features = ["deflate"] }
+html2text = "0.17.3"
+scraper = "0.27"

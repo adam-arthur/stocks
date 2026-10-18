@@ -1,0 +1,4827 @@
+[
+  {
+    "symbol": "O",
+    "source": "https://www.sec.gov/Archives/edgar/data/726728/000110465916114228/a16-8920_1ex99d1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.68,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "O",
+    "source": "https://www.sec.gov/Archives/edgar/data/726728/000110465917047083/a17-18192_1ex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-04-01",
+        "end": "2017-06-30",
+        "value": 0.75,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "O",
+    "source": "https://www.sec.gov/Archives/edgar/data/726728/000072672826000044/o-991q22026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.07,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "PINE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1786117/000155837020008307/tmb-20200722xex99d1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-04-01",
+        "end": "2020-06-30",
+        "value": 0.29,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "PINE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1786117/000110465925101824/pine-20251023xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-07-01",
+        "end": "2025-09-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "PINE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1786117/000110465926086260/pine-20260723xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.57,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "PLD",
+    "source": "https://d1io3yog0oux5.cloudfront.net/_cd98c6da4dd66d60ba018a72cc4334a2/prologis/db/2346/23513/supplemental_financial_report_pdf/q1-2016-supplemental-final.pdf",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 398520,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "PLD",
+    "source": "https://d1io3yog0oux5.cloudfront.net/_cd98c6da4dd66d60ba018a72cc4334a2/prologis/db/2346/23535/supplemental_financial_report_pdf/21Q3-PLD-Supplemental.pdf",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-07-01",
+        "end": "2021-09-30",
+        "value": 992438,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "PLD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1045609/000119312526422375/pld-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-07-01",
+        "end": "2026-09-30",
+        "value": 1574256,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "PSA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1393311/000162828026050608/psa-072926xex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 4.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "PSA",
+    "source": "https://s1.q4cdn.com/588671402/files/doc_financials/2025/q4/4Q25-PSA-Supplement-vF.pdf",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 4.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AMT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1053507/000105350716000029/pressreleaseq12016.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 545625,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "AMT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1053507/000105350726000131/pressreleaseq22026.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1249.3,
+        "unit": "total",
+        "scale": 1000000
+      }
+    ]
+  },
+  {
+    "symbol": "EQIX",
+    "source": "https://www.sec.gov/Archives/edgar/data/1101239/000114420416116227/v445883_ex99-1.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-04-01",
+        "end": "2016-06-30",
+        "value": 201515,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "EQIX",
+    "source": "https://www.sec.gov/Archives/edgar/data/1101239/000110123926000145/a991eqix-q226xpr.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 8.61,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "DLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1297996/000110465926086270/dlr-20260723xex99d1.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 2.73,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "DLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1297996/000129799616000164/a1q16financialsupplemental.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 1.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569626000088/viciq22026earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.48,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000119312518075284/d549281dex991.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-10-06",
+        "end": "2017-12-31",
+        "value": 0.19,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569618000023/ex991viciearningsreleaseq1.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-01-01",
+        "end": "2018-03-31",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569619000093/viciq12019earningsrele.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2019-01-01",
+        "end": "2019-03-31",
+        "value": 0.37,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INVH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1687229/000168722926000041/q22026supplemental.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INVH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1687229/000168722917000013/a1q17prandsupplemental.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-01-01",
+        "end": "2017-03-31",
+        "value": 0.04,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "STAG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1479094/000147909426000025/q22026earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 127710,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "STAG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1479094/000147909416000010/stag-q116xearningsrelease.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 21347,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "STAG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1479094/000147909419000005/stag-q418xearningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-10-01",
+        "end": "2018-12-31",
+        "value": 51602,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "WELL",
+    "source": "https://www.sec.gov/Archives/edgar/data/766704/000076670426000026/a2q26earningsrelease991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.56,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WELL",
+    "source": "https://www.sec.gov/Archives/edgar/data/766704/000076670416000068/Ex-99.1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 1.1,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WELL",
+    "source": "https://www.sec.gov/Archives/edgar/data/766704/000076670417000022/Ex-99.1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-01-01",
+        "end": "2017-03-31",
+        "value": 0.84,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AAT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1500217/000150021726000043/a2q26supplemental.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AAT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1500217/000150021716000163/a1q16supplementalexibit.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.45,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ADC",
+    "source": "https://www.sec.gov/Archives/edgar/data/917251/000091725126000061/adc20260630-ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.03,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ADC",
+    "source": "https://www.sec.gov/Archives/edgar/data/917251/000114420416096449/v437886_ex99-1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.61,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ADC",
+    "source": "https://www.sec.gov/Archives/edgar/data/917251/000110465920084843/tm2025195d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-04-01",
+        "end": "2020-06-30",
+        "value": 0.69,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1632970/000163297024000053/exhibit9912024q1earningsre.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2024-01-01",
+        "end": "2024-03-31",
+        "value": 0.3,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1632970/000119312526338076/ahr-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1232582/000123258226000181/aht2026q2earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": -6041,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "AHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1232582/000110465916118318/a16-10620_1ex99d1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 41988,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "AIV",
+    "source": "https://www.sec.gov/Archives/edgar/data/922864/000092286416000085/q12016er-ssxex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.57,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AIV",
+    "source": "https://www.sec.gov/Archives/edgar/data/922864/000119312526085511/aiv-ex99_1.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "AKR",
+    "source": "https://www.sec.gov/Archives/edgar/data/899629/000089962916000071/exhibit991earningspressrel.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.27,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AKR",
+    "source": "https://www.sec.gov/Archives/edgar/data/899629/000156459020051597/akr-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.17,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AKR",
+    "source": "https://www.sec.gov/Archives/edgar/data/899629/000095017023056430/akr-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.26,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AKR",
+    "source": "https://www.sec.gov/Archives/edgar/data/899629/000119312526321040/akr-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.3,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349916000054/ALX10Q3Q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 5.66,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349920000034/alx-20200930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 3.0,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349923000030/alx-20230930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 3.63,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349926000038/alx-20260630.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 3.02,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1562401/000156240116000112/amh093020168kexhibit993.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.17,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1562401/000156240120000145/amh0930208kexhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.28,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1562401/000156240123000120/amh0930238kexhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "AMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/1562401/000156240126000043/amh0630268kexhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.47,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "APLE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1418121/000095017023060275/aple-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.45,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "APLE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1418121/000119312526335144/aple-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.52,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://alx-inc.com/press-release/news-details/2022/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-10-01",
+        "end": "2021-12-31",
+        "value": 4.23,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://alx-inc.com/press-release/news-details/2023/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-10-01",
+        "end": "2022-12-31",
+        "value": 4.03,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://alx-inc.com/press-release/news-details/2024/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-10-01",
+        "end": "2023-12-31",
+        "value": 4.99,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://alx-inc.com/press-release/news-details/2025/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2024-10-01",
+        "end": "2024-12-31",
+        "value": 4.06,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ALX",
+    "source": "https://alx-inc.com/press-release/news-details/2026/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 2.43,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ARE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544316000238/a3q16ex991supp.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ARE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544320000274/a3q20ex991supp.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1.95,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ARE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544323000304/a3q23ex991supp.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.64,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ARE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544326000067/a2q26ex991supp.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 2.44,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "APLE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1418121/000118518516005665/ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.49,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "APLE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1418121/000156459020051322/aple-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.04,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ARE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544317000138/a2q17ex991supp.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-04-01",
+        "end": "2017-06-30",
+        "value": 1.45,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 0.84,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VTR",
+    "source": "https://www.sec.gov/Archives/edgar/data/740260/000115752316007095/a51448909-ex991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.0,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VTR",
+    "source": "https://www.sec.gov/Archives/edgar/data/740260/000115752320001464/a52321594ex99_1.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.65,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VTR",
+    "source": "https://www.sec.gov/Archives/edgar/data/740260/000115752323001633/a53739648ex99_1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.73,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VTR",
+    "source": "https://www.sec.gov/Archives/edgar/data/740260/000074026026000022/q22026earningsrelease.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.99,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754116000306/ex992supplementaloperating.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.03,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754120000052/ex992supplementalopera.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.15,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754123000126/ex992supplementaloperating.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": -11.72,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754126000254/ex992supplementaloperating.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 125.27,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WPC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537816000095/wpc2016q38-kerexh991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.26,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WPC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537820000069/wpc2020q38-kerexh991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1.36,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WPC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025378/000162828023036559/wpc2023q38-kerexh991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.32,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WPC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537826000114/wpc2026q28-kerexh991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "XHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1616000/000161600016000156/xenia8k9912016q3.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 58030,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "XHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1616000/000161600020000150/xenia991q3earnings.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -7458,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "XHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1616000/000161600023000078/ex991q32023xhrearningsrele.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 24115,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "XHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1616000/000162828026050765/ex991q22026xhrearningsrele.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 49765,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "WY",
+    "source": "https://www.sec.gov/Archives/edgar/data/106535/000010653516000091/wy2016q3ex-991.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "WY",
+    "source": "https://www.sec.gov/Archives/edgar/data/106535/000156459020049068/wy-ex991_6.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "WY",
+    "source": "https://www.sec.gov/Archives/edgar/data/106535/000095017023055646/wy-ex99_1.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "WY",
+    "source": "https://www.sec.gov/Archives/edgar/data/106535/000119312526326124/wy-ex99_1.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754117000015/ex992supplementaloperating.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": -0.01,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754118000021/ex992supplementaloperating.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-10-01",
+        "end": "2017-12-31",
+        "value": -0.56,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "WHLR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1527541/000152754119000037/ex991whlrq22019earningsrel.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2019-04-01",
+        "end": "2019-06-30",
+        "value": -0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JAN",
+    "source": "https://www.sec.gov/Archives/edgar/data/2100805/000162828026030581/ex99103312026.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-01-01",
+        "end": "2026-03-31",
+        "value": 0.15,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JAN",
+    "source": "https://www.sec.gov/Archives/edgar/data/2100805/000162828026052603/ex99106302026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.24,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JBGS",
+    "source": "https://www.sec.gov/Archives/edgar/data/1689796/000155837020012412/jbgs-20201103ex9919b5d9d.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.24,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JBGS",
+    "source": "https://www.sec.gov/Archives/edgar/data/1689796/000155837023018002/jbgs-20231107xex99d1.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.4,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JBGS",
+    "source": "https://www.sec.gov/Archives/edgar/data/1689796/000110465926092962/jbgs-20260810xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "JBGS",
+    "source": "https://www.sec.gov/Archives/edgar/data/1689796/000110465926016432/jbgs-20260217xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": -0.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KIM",
+    "source": "https://www.sec.gov/Archives/edgar/data/879101/000115752316007078/a51448852ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.18,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KIM",
+    "source": "https://www.sec.gov/Archives/edgar/data/879101/000115752320001442/a52320481ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.25,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KIM",
+    "source": "https://www.sec.gov/Archives/edgar/data/879101/000115752323001554/a53692349_ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.4,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KIM",
+    "source": "https://www.sec.gov/Archives/edgar/data/879101/000119312526331498/kim-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599616000413/exhibit991.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.92,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599620000164/exhibit991.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.99,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599623000215/exhibit991.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1025996/000162828026049820/exhibit992.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.92,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604316000209/exhibit99_1xq32016.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604320000141/exhibit991q32020.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.3,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604323000121/exhibit99_1xq32023.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604326000045/exhibit99_1xq22026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.53,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "KRG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604320000141/exhibit992q32020.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2019-07-01",
+        "end": "2019-09-30",
+        "value": 0.3,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BDN",
+    "source": "https://www.sec.gov/Archives/edgar/data/790816/000156459016025928/bdn-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BDN",
+    "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081620000035/bdn8-kxearningsreleasexexh.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.35,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BDN",
+    "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081623000043/bdnearningsrelease-ex991q3.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.29,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BDN",
+    "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081626000025/bdnearningsrelease-ex991q2.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.13,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BFS",
+    "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725416000258/bfs-09302016xex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.73,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BFS",
+    "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725420000091/bfs-09302020xex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.72,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BFS",
+    "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725423000096/bfs-09302023xex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.76,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BFS",
+    "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725426000047/bfs-06302026xex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.69,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1574085/000110465916154178/a16-20919_1ex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1924.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1574085/000157408520000058/bhr2020q3earnrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -13206.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1574085/000157408523000102/bhr2023q3earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": -13607.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1574085/000157408526000123/bhr2026q2earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 3279.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1424182/000156459020051392/ck1424182-ex991_316.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.44,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1424182/000095017023057474/bnl-ex99_1.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1424182/000142418226000061/bnl-20260630xexx991.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.4,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "BHM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1903382/000141057823002300/bhm-20230930x10q.htm",
+    "count": 8,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.04,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2023-01-01",
+        "end": "2023-09-30",
+        "value": 1361.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1903382/000110465926095875/bhm-20260630x10q.htm",
+    "count": 8,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": -0.48,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": -6196.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1903382/000141057823000330/bhm-20221231x10k.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-01-01",
+        "end": "2022-12-31",
+        "value": 0.88,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2022-01-01",
+        "end": "2022-12-31",
+        "value": 9925.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BHM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1903382/000110465926021568/bhm-20251231x10k.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "value": -0.98,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "value": -12349.0,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "BDN",
+    "source": "https://www.sec.gov/Archives/edgar/data/790816/000156459016016440/bdn-ex991_7.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": -0.07,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420816000209/exhibit992-09302016.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420820000090/udr-20201029ex992b8232c.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.42,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420823000063/udr-20231026xex99d2.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.61,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420826000070/udr-20260727xex99d2.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.6,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1611547/000161154716000083/exhibit992-supplementaldis.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1611547/000161154720000063/exhibit991-earningsrel.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.14,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1611547/000161154723000052/exhibit991-earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.53,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1611547/000161154726000058/exhibit991-earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.41,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/798783/000156459016026390/uht-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.74,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/798783/000156459020048888/uht-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.86,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/798783/000095017023055221/uht-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.81,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/798783/000119312526318144/uht-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.9,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000149315216014625/ex99.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.19,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000164117220000043/ex99.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.11,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000149315223039922/ex99.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000149315226036197/ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.23,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968916000082/exhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 225529,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968920000053/vno-093020xxex991xearn.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 278507,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968923000061/vno-93023xxex991xearningsr.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 119487,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968926000048/vno-063026xxex991xearnings.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 144078,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420818000061/c208-20180730ex9920db4b2.pdf",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-04-01",
+        "end": "2018-06-30",
+        "value": 0.49,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420822000064/udr-20221026xex99d2.pdf",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 0.57,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UDR",
+    "source": "https://www.sec.gov/Archives/edgar/data/74208/000007420826000070/udr-20260727xex99d2.pdf",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.6,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000149315218006477/ex99.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-01-01",
+        "end": "2018-03-31",
+        "value": -0.54,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "UMH",
+    "source": "https://www.sec.gov/Archives/edgar/data/752642/000149315222021181/ex99.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-04-01",
+        "end": "2022-06-30",
+        "value": -0.01,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968926000011/vno-123125xex992xfinancial.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2024-01-01",
+        "end": "2024-12-31",
+        "value": 470021,
+        "unit": "total",
+        "scale": 1000
+      },
+      {
+        "metric": "ffo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 112927,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/899689/000089968916000049/exhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2015-10-01",
+        "end": "2015-12-31",
+        "value": 259528,
+        "unit": "total",
+        "scale": 1000
+      },
+      {
+        "metric": "ffo",
+        "start": "2015-01-01",
+        "end": "2015-12-31",
+        "value": 1039035,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "ILPT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1717307/000171730718000027/ilpt_exhibit991x93018xwork.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-07-01",
+        "end": "2018-09-30",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ILPT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1717307/000171730720000039/ilpt2020q3supplemental.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ILPT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1717307/000171730723000048/ilpt2023q32023supplement.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ILPT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1717307/000171730726000039/ilptearningspresentation.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.24,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INN",
+    "source": "https://www.sec.gov/Archives/edgar/data/1497645/000114420416131156/v452014_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.34,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INN",
+    "source": "https://www.sec.gov/Archives/edgar/data/1497645/000110465920120974/tm2034856d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -0.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INN",
+    "source": "https://www.sec.gov/Archives/edgar/data/1497645/000110465923086829/tm2322642d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-04-01",
+        "end": "2023-06-30",
+        "value": 0.23,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "INN",
+    "source": "https://www.sec.gov/Archives/edgar/data/1497645/000149764526000066/exhibit99106302026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.27,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000110465916153488/a16-20836_1ex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.26,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000102056920000211/q32020earningspressrel.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.16,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000102056923000212/q32023earningspressrelea.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.61,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000102056926000068/final-q22026earningspres.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.76,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000102056918000115/q32018irmsupplementaldra.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-07-01",
+        "end": "2018-09-30",
+        "value": 0.49,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1466085/000156459016026430/irt-ex992_7.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.2,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1466085/000156459020048322/irt-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.19,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1466085/000146608523000119/irt-20231030xsupex991.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.31,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1466085/000143774926025436/ex_955949.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.28,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IVT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774816000112/exhibit991-201610x26form8xk.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 24968,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "IVT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774820000112/ivtp-20200930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.04,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IVT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774823000113/q32023earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.41,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IVT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774826000191/q22026earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.5,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000110465916114861/a16-9703_1ex99d1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.51,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IRM",
+    "source": "https://www.sec.gov/Archives/edgar/data/1020569/000102056917000014/q12017irmsupplementalfin.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-01-01",
+        "end": "2017-03-31",
+        "value": 121463,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SQFT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1080657/000156459016028699/netr-10q_20160930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 622807,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SQFT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1080657/000143774920022777/ex_208260.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -116447,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SQFT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1080657/000149315223041342/ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": -414365,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SQFT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1080657/000149315226024043/ex99-1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-01-01",
+        "end": "2026-03-31",
+        "value": -2080231,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "STRW",
+    "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315223040808/ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 11995,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "STRW",
+    "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315226007477/ex99-1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "value": 1.43,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "STRW",
+    "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315226036401/ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.36,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SUI",
+    "source": "https://www.sec.gov/Archives/edgar/data/912593/000091259316000214/exhibit991pressreleaseands.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.06,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SUI",
+    "source": "https://www.sec.gov/Archives/edgar/data/912593/000091259320000163/exhibit991pressrelease.htm",
+    "count": 6,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1.63,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SUI",
+    "source": "https://www.sec.gov/Archives/edgar/data/912593/000091259323000224/exhibit991pressreleaseands.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 2.55,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SUI",
+    "source": "https://www.sec.gov/Archives/edgar/data/912593/000091259326000231/exhibit991pressreleaseands.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.77,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000094539416000009/ex991hptq316earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.87,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000094539420000032/ex991svcq32020er.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.14,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000094539423000069/ex992svcq32023supp.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.56,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000094539426000048/svc_063026xexhibitx992.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.34,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2026-01-01",
+        "end": "2026-03-31",
+        "value": -1.42,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "TRNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1476150/000119312516757009/d265259d10q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.2,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "TRNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1476150/000147615020000019/trno-20200930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "TRNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1476150/000147615023000014/trno-20230930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.57,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "TRNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1476150/000147615026000035/trno-20260630.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.7,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SQFT",
+    "source": "https://www.sec.gov/Archives/edgar/data/1080657/000143774926027591/sqft20260630_10q.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "STRW",
+    "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315222031625/form10-q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 11242,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SUI",
+    "source": "https://www.sec.gov/Archives/edgar/data/912593/000091259324000066/exhibit991pressreleaseands.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-04-01",
+        "end": "2023-06-30",
+        "value": 1.96,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000110465916138112/a16-16356_1ex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-04-01",
+        "end": "2016-06-30",
+        "value": 0.92,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SVC",
+    "source": "https://www.sec.gov/Archives/edgar/data/945394/000094539417000030/ex991hptq1_17earningsrelea.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-01-01",
+        "end": "2017-03-31",
+        "value": 0.73,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "TRNO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1476150/000147615026000011/trno-20251231.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 0.83,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SITC",
+    "source": "https://www.sec.gov/Archives/edgar/data/894315/000119312516748177/d270880dex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SITC",
+    "source": "https://www.sec.gov/Archives/edgar/data/894315/000156459020047771/sitc-ex991_25.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.22,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SITC",
+    "source": "https://www.sec.gov/Archives/edgar/data/894315/000095017023056390/sitc-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.32,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SITC",
+    "source": "https://www.sec.gov/Archives/edgar/data/894315/000119312526330569/sitc-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": -0.09,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SKT",
+    "source": "https://www.sec.gov/Archives/edgar/data/899715/000089971516000376/skt8kex991september302016.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.62,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SKT",
+    "source": "https://www.sec.gov/Archives/edgar/data/899715/000089971520000147/sktex991september302020.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.44,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SKT",
+    "source": "https://www.sec.gov/Archives/edgar/data/899715/000089971523000147/skt8kex991september302023.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.5,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SKT",
+    "source": "https://www.sec.gov/Archives/edgar/data/899715/000162828026052544/skt8kex991june302026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.64,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097116000032/a16q3earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.63,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097120000024/a20q3earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1.75,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097123000034/a23q3earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.27,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000162828026049346/a26q2earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.43,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SMA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1585389/000119312516767620/d261109d10q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 998569,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SMA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1585389/000156459020053816/ck1585389-10q_20200930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1019831,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SMA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1585389/000095017023063581/ck0001585389-20230930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 13023694,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SMA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1585389/000158538926000010/ck0001585389-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 31596,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SPG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1063761/000104746916016291/a2230021zex-99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 2.7,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SPG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1063761/000110465920123110/tm2033401d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 2.05,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SPG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1063761/000110465923112561/tm2328198d2_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 3.2,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SPG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1063761/000110465926093361/tm2620726d2_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 3.12,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SKT",
+    "source": "https://www.sec.gov/Archives/edgar/data/899715/000089971516000196/skt8kex991december312015.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2015-10-01",
+        "end": "2015-12-31",
+        "value": 0.59,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HPP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251216000216/q3-2016ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.46,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HPP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251220000110/q3-2020ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.41,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HPP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251222000148/q32022ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 0.45,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HPP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251226000064/q22026ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.24,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060416000152/ex99120151025.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060420000095/q32020earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.31,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060422000130/exhibit991thirdquarter2022.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 0.14,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060426000063/exhibit991secondquarter202.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.36,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HST",
+    "source": "https://www.sec.gov/Archives/edgar/data/1070750/000156459016026852/hst-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.37,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HST",
+    "source": "https://www.sec.gov/Archives/edgar/data/1070750/000156459020034831/hst-ex991_7.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-04-01",
+        "end": "2020-06-30",
+        "value": -0.26,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HST",
+    "source": "https://www.sec.gov/Archives/edgar/data/1070750/000095017022021286/hst-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HST",
+    "source": "https://www.sec.gov/Archives/edgar/data/1070750/000107075026000122/hst-ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.62,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315216015936/form10-q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-08-01",
+        "end": "2016-10-31",
+        "value": 913961,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315220015642/form10-k.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2019-02-01",
+        "end": "2020-01-31",
+        "value": -1077000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315222035465/form10-q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-08-01",
+        "end": "2022-10-31",
+        "value": 638000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315226042806/form10-q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-05-01",
+        "end": "2026-07-31",
+        "value": -111000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315226029438/form10-q.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-02-01",
+        "end": "2026-04-30",
+        "value": 270000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465920121563/tm2029631d2_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 1.22,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465922114200/tm2229596d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2022-07-01",
+        "end": "2022-09-30",
+        "value": 1.89,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465926055008/tm2613523d1_ex99-1.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-01-01",
+        "end": "2026-03-31",
+        "value": 1.7,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000167757626000003/iipr-20260803xexx991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.64,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097121000030/a21q3earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-07-01",
+        "end": "2021-09-30",
+        "value": 1.78,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097121000021/a21q2earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-04-01",
+        "end": "2021-06-30",
+        "value": 1.6,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097121000012/a21q1earningsrelease.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-01-01",
+        "end": "2021-03-31",
+        "value": 1.73,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SLG",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040971/000104097121000002/a20q4earningsrelease.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-10-01",
+        "end": "2020-12-31",
+        "value": 1.59,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315221032565/form10q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2021-02-01",
+        "end": "2021-10-31",
+        "value": 969000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315218017540/form10-q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-08-01",
+        "end": "2018-10-31",
+        "value": -941000,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IHT",
+    "source": "https://www.sec.gov/Archives/edgar/data/82473/000149315217004575/form10-k.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-02-01",
+        "end": "2017-01-31",
+        "value": 337211,
+        "unit": "total",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000114420417016144/v462440_ex99-1.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": -2.78,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "IIPR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1677576/000114420417026241/v466651_ex99-1.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-01-01",
+        "end": "2017-03-31",
+        "value": -430,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SBAC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1034054/000119312516755348/d277134dex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 143493,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SBAC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1034054/000119312520283965/d11393dex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 210447,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SBAC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1034054/000119312523269367/d450780dex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 2.72,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SBAC",
+    "source": "https://www.sec.gov/Archives/edgar/data/1034054/000119312526330639/d154311dex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 2.81,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SBRA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1492298/000149229816000087/sbraex9912016q3.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.59,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SBRA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1492298/000149229820000038/sbraex9912020q3.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.41,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SBRA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1492298/000149229823000024/sbraex9912023q3.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SBRA",
+    "source": "https://www.sec.gov/Archives/edgar/data/1492298/000149229826000027/sbraex9912026q2.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": -0.02,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SELF",
+    "source": "https://www.sec.gov/Archives/edgar/data/1031235/000156459016029245/self-10q_20160930.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SELF",
+    "source": "https://www.sec.gov/Archives/edgar/data/1031235/000156459020054169/self-10q_20200930.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.06,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SELF",
+    "source": "https://www.sec.gov/Archives/edgar/data/1031235/000095017023062925/self-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.1,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SELF",
+    "source": "https://www.sec.gov/Archives/edgar/data/1031235/000119312526340252/self-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.09,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SHO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1295810/000155837016008980/sho_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.34,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SHO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1295810/000155837020012902/sho-20201105xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -0.29,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SHO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1295810/000155837023017863/sho-20231107xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.22,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SHO",
+    "source": "https://www.sec.gov/Archives/edgar/data/1295810/000110465926091645/sho-20260806xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "SAFE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1688852/000168885217000018/safe-0930201710q.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2017-07-01",
+        "end": "2017-09-30",
+        "value": 1545,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SAFE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1688852/000168885218000054/safe-0930201810q.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-07-01",
+        "end": "2018-09-30",
+        "value": 4299,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "SAFE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1688852/000168885219000052/safe-0930201910q.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "SAFE",
+    "source": "https://www.sec.gov/Archives/edgar/data/1095651/000109565126000025/safe-20260630x10q.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "SELF",
+    "source": "https://www.sec.gov/Archives/edgar/data/1031235/000156459017005791/self-10k_20161231.htm",
+    "count": 1,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 0.04,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000091060616000075/ex-992093016.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.29,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000156459020051507/reg-ex992_7.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.6,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000095017023058418/reg-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.02,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000119312526323784/reg-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REXR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128316000056/rexrex992q316.htm",
+    "count": 5,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 0.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REXR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128320000043/rexrex991q3-2020.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2020-01-01",
+        "end": "2020-09-30",
+        "value": 0.98,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REXR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128323000039/rexrex991q3-2023.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.56,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REXR",
+    "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128326000037/rexrex991q2-2026.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.64,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "RHP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040829/000119312516754600/d285038dex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 1.18,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "RHP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040829/000110465920120767/tm2034809d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -1.31,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "RHP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040829/000110465923114934/tm2329957d1_ex99-1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 1.52,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "RHP",
+    "source": "https://www.sec.gov/Archives/edgar/data/1040829/000110465926092380/tmb-20260806xex99d1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 2.54,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "RLJ",
+    "source": "https://www.sec.gov/Archives/edgar/data/1511337/000151133716000417/rljexhibit991q32016origina.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-07-01",
+        "end": "2016-09-30",
+        "value": 82276,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "RLJ",
+    "source": "https://www.sec.gov/Archives/edgar/data/1511337/000162828020015520/rljq32020exhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": -125302,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "RLJ",
+    "source": "https://www.sec.gov/Archives/edgar/data/1511337/000151133723000025/rljq32023exhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 55104,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "RLJ",
+    "source": "https://www.sec.gov/Archives/edgar/data/1511337/000151133726000019/rljq22026exhibit991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 72672,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "RYN",
+    "source": "https://www.sec.gov/Archives/edgar/data/52827/000005282716000082/exhibit9913q2016.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "RYN",
+    "source": "https://www.sec.gov/Archives/edgar/data/52827/000005282720000231/exhibit9913q2020.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "RYN",
+    "source": "https://www.sec.gov/Archives/edgar/data/52827/000005282723000203/exhibit9913q2023.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "RYN",
+    "source": "https://www.sec.gov/Archives/edgar/data/52827/000005282726000094/exhibit9912q2026.htm",
+    "count": 0,
+    "expected": []
+  },
+  {
+    "symbol": "GLPI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1575965/000157596516000112/glpi-2016331ex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.47,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GLPI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1575965/000157596517000004/glpi-20161231ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 118.6,
+        "unit": "total",
+        "scale": 1000000
+      }
+    ]
+  },
+  {
+    "symbol": "GLPI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1575965/000157596523000037/glpi-2023930ex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.94,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GLPI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1575965/000157596526000062/glpi-2026630ex991final.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.03,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1526113/000114420416099359/v439127_ex99-1.htm",
+    "count": 3,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 29992,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "GNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1526113/000114420417011078/v460484_ex99-1.htm",
+    "count": 7,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 0.17,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1526113/000152611320000024/ex991gnlearningsreleas.htm",
+    "count": 3,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1526113/000152611323000024/ex991gnlearningsrelease930.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": -0.21,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GNL",
+    "source": "https://www.sec.gov/Archives/edgar/data/1526113/000162828026053386/ex991gnlearningsrelease630.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.07,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GOOD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1234006/000117184316009434/exh_991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GOOD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1234006/000117184317000902/exh_991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GOOD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400620000017/q32020pressrelease0930.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.39,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GOOD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400623000016/q32023pressrelease9302023.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.33,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GOOD",
+    "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400626000019/q22026pressrelease6302026.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GTY",
+    "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312516577615/d187200dex991.htm",
+    "count": 2,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.42,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GTY",
+    "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312517065663/d292744dex991.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-10-01",
+        "end": "2016-12-31",
+        "value": 0.52,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GTY",
+    "source": "https://www.sec.gov/Archives/edgar/data/1052752/000156459020047101/gty-ex991_6.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.48,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GTY",
+    "source": "https://www.sec.gov/Archives/edgar/data/1052752/000095017023055254/gty-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.53,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "GTY",
+    "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312526312471/gty-ex99_1.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.59,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108216000074/hiw0331201610q.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.82,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108217000007/hiw1231201610k.htm",
+    "count": 6,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2016-01-01",
+        "end": "2016-12-31",
+        "value": 332312,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108220000051/hiw-20200930.htm",
+    "count": 6,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2020-07-01",
+        "end": "2020-09-30",
+        "value": 0.86,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108223000053/hiw-20230930.htm",
+    "count": 8,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2023-07-01",
+        "end": "2023-09-30",
+        "value": 0.93,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108226000045/hiw-20260630.htm",
+    "count": 8,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.9,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108225000044/hiw-20250930.htm",
+    "count": 8,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-01-01",
+        "end": "2025-09-30",
+        "value": 284170,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "HIW",
+    "source": "https://www.sec.gov/Archives/edgar/data/921082/000092108226000005/hiw-20251231.htm",
+    "count": 6,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2025-01-01",
+        "end": "2025-12-31",
+        "value": 384978,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000091060618000028/a20182qsupplemental.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-04-01",
+        "end": "2018-06-30",
+        "value": 0.93,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2018-01-01",
+        "end": "2018-06-30",
+        "value": 1.89,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "REG",
+    "source": "https://www.sec.gov/Archives/edgar/data/910606/000091060618000032/q318supplemental.htm",
+    "count": 4,
+    "expected": [
+      {
+        "metric": "ffo",
+        "start": "2018-07-01",
+        "end": "2018-09-30",
+        "value": 0.96,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "ffo",
+        "start": "2018-01-01",
+        "end": "2018-09-30",
+        "value": 2.85,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  }
+]

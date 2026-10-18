@@ -9,7 +9,7 @@ use anyhow::{Context, Result, ensure};
 use chrono::NaiveDate;
 use serde::{Serialize, de::DeserializeOwned};
 
-use crate::models::{CorporateAction, Failure, Metadata};
+use crate::models::{CorporateAction, Failure, FinancialsSync, Metadata, ReitQuarter};
 
 pub struct Store {
     root: PathBuf,
@@ -19,7 +19,7 @@ pub struct Store {
 impl Store {
     pub fn open(root: impl Into<PathBuf>) -> Result<Self> {
         let root = root.into();
-        fs::create_dir_all(&root)?;
+        fs::create_dir_all(root.join("stocks"))?;
         let lock = File::options()
             .create(true)
             .truncate(false)
@@ -57,6 +57,14 @@ impl Store {
         )
     }
 
+    pub fn reit(&self, symbol: &str) -> Result<Vec<ReitQuarter>> {
+        Ok(read_optional(&self.symbol_path(symbol)?.join("reit.json"))?.unwrap_or_default())
+    }
+
+    pub fn save_reit(&self, symbol: &str, quarters: &[ReitQuarter]) -> Result<()> {
+        write_atomic(&self.symbol_path(symbol)?.join("reit.json"), quarters)
+    }
+
     pub fn prices(&self, symbol: &str) -> Result<BTreeMap<NaiveDate, f64>> {
         Ok(read_optional(&self.symbol_path(symbol)?.join("prices.json"))?.unwrap_or_default())
     }
@@ -89,6 +97,41 @@ impl Store {
         write_atomic(&self.root.join("corporate_actions_sync.json"), dates)
     }
 
+    pub fn sec_directory(&self) -> Result<PathBuf> {
+        let path = self.root.join("sec");
+        fs::create_dir_all(&path)?;
+        Ok(path)
+    }
+
+    pub fn financials_sync(&self) -> Result<Option<FinancialsSync>> {
+        read_optional(&self.root.join("sec/sync.json"))
+    }
+
+    pub fn save_financials_sync(&self, sync: &FinancialsSync) -> Result<()> {
+        write_atomic(&self.root.join("sec/sync.json"), sync)
+    }
+
+    pub fn has_company_facts(&self, cik: u64) -> bool {
+        self.company_facts_path(cik).is_file()
+    }
+
+    pub fn company_facts(&self, cik: u64) -> Result<Option<serde_json::Value>> {
+        read_optional(&self.company_facts_path(cik))
+    }
+
+    pub fn save_company_facts(&self, cik: u64, facts: &serde_json::Value) -> Result<()> {
+        ensure!(
+            facts.get("cik").is_none() || sec_client::company_cik(facts) == Some(cik),
+            "company CIK mismatch"
+        );
+        write_json_atomic(&self.company_facts_path(cik), facts, false)
+    }
+
+    fn company_facts_path(&self, cik: u64) -> PathBuf {
+        self.root
+            .join(format!("sec/company_facts/CIK{cik:010}.json"))
+    }
+
     fn symbol_path(&self, symbol: &str) -> Result<PathBuf> {
         ensure!(
             !symbol.is_empty()
@@ -99,7 +142,7 @@ impl Store {
                     .all(|c| c.is_ascii_alphanumeric() || b".-_^".contains(&c)),
             "unsafe symbol: {symbol}"
         );
-        Ok(self.root.join(symbol))
+        Ok(self.root.join("stocks").join(symbol))
     }
 }
 
@@ -116,10 +159,21 @@ fn read_optional<T: DeserializeOwned>(path: &Path) -> Result<Option<T>> {
 }
 
 fn write_atomic<T: Serialize + ?Sized>(path: &Path, value: &T) -> Result<()> {
-    let bytes = serde_json::to_vec_pretty(value)?;
+    write_json_atomic(path, value, true)
+}
+
+fn write_json_atomic<T: Serialize + ?Sized>(path: &Path, value: &T, pretty: bool) -> Result<()> {
     fs::create_dir_all(path.parent().context("missing parent directory")?)?;
     let mut file = tempfile::NamedTempFile::new_in(path.parent().unwrap())?;
-    file.write_all(&bytes)?;
+    {
+        let mut writer = std::io::BufWriter::new(&mut file);
+        if pretty {
+            serde_json::to_writer_pretty(&mut writer, value)?;
+        } else {
+            serde_json::to_writer(&mut writer, value)?;
+        }
+        writer.flush()?;
+    }
     file.write_all(b"\n")?;
     file.as_file().sync_all()?;
     file.persist(path)?;

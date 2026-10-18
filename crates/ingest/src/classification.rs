@@ -2,6 +2,7 @@ use alpaca_client::Asset;
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, Duration, Utc};
 use llm_client::CodexClient;
+use sec_client::{CompanyTicker, SecClient, cik_for_symbol};
 use serde::Deserialize;
 use serde_json::json;
 
@@ -26,12 +27,31 @@ pub(crate) fn is_fresh(timestamp: DateTime<Utc>, now: DateTime<Utc>) -> bool {
     now.signed_duration_since(timestamp) < Duration::days(365)
 }
 
-pub(crate) fn save_category(store: &Store, asset: &Asset, category: Category) -> Result<()> {
+pub(crate) async fn save_category(
+    store: &Store,
+    asset: &Asset,
+    category: Category,
+    tickers: &mut Option<Vec<CompanyTicker>>,
+) -> Result<()> {
+    if tickers.is_none() {
+        *tickers = Some(SecClient::from_env()?.company_tickers().await?);
+    }
     store.save_metadata(&Metadata {
         symbol: asset.symbol.clone(),
         name: asset.name.clone(),
         exchange: asset.exchange.clone(),
+        cik: cik_for_symbol(tickers.as_ref().unwrap(), &asset.symbol),
         category,
+        management: if matches!(
+            category,
+            Category::EquityReit | Category::MortgageReit | Category::Bdc
+        ) {
+            store
+                .metadata(&asset.symbol)?
+                .and_then(|meta| meta.management)
+        } else {
+            None
+        },
         updated_at: Utc::now(),
     })?;
     log::debug!("{}: {category:?}", asset.symbol);

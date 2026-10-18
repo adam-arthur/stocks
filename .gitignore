@@ -8,3 +8,6 @@
 /.codex/
 *.log
 .DS_Store
+.agents
+.aws
+.codex

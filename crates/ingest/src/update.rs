@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::classification::{categorize, classify_batch, is_fresh, save_category};
-use crate::{corporate_actions, prices, progress::Progress};
+use crate::{corporate_actions, financials, prices, progress::Progress};
 
 use crate::{Category, Failure, Store};
 use alpaca_client::AlpacaClient;
@@ -42,6 +42,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     assets.sort_by(|a, b| a.symbol.cmp(&b.symbol));
     let mut failures = store.failures()?;
     let mut categorized = 0;
+    let mut sec_tickers = None;
     let mut excluded = 0;
     let mut cached = 0;
     let mut skipped_failures = 0;
@@ -128,7 +129,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
                 .and_then(|result| result.categories[index])
             {
                 Some(category) => {
-                    save_category(store, &asset, category)?;
+                    save_category(store, &asset, category, &mut sec_tickers).await?;
                     failures.retain(|entry| entry.symbol != asset.symbol);
                     if matches!(category, Category::Excluded) {
                         excluded += 1;
@@ -201,7 +202,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
             failures.retain(|failure| failure.symbol != asset.symbol);
             match result {
                 Ok(category) => {
-                    save_category(store, &asset, category)?;
+                    save_category(store, &asset, category, &mut sec_tickers).await?;
                     if matches!(category, Category::Excluded) {
                         excluded += 1;
                     } else {
@@ -237,10 +238,26 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
             research.len()
         );
     }
+    failed += crate::management::update(
+        store,
+        &assets,
+        &CodexClient {
+            model: "gpt-6.1-sol".into(),
+            reasoning_effort: "low".into(),
+            web_search: true,
+            ..codex.clone()
+        },
+        concurrency,
+        minimum,
+        progress_bar,
+    )
+    .await?;
     let (prices, price_failures) = prices::update(&client, store, &assets, progress_bar).await?;
     let (actions, action_failures) =
         corporate_actions::update(&client, store, &assets, progress_bar).await?;
     failed += price_failures + action_failures;
+    financials::update(store, &assets, progress_bar).await?;
+    crate::reit::update(store, &assets, progress_bar).await?;
     log::info!(
         "Done · {categorized} classified · {excluded} excluded · {unresolved} research unresolved · {} {queue_label} · {prices} prices updated · {price_failures} price failures · {actions} corporate action histories updated · {action_failures} corporate action failures · elapsed {}m {}s",
         research.len(),
