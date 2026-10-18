@@ -1,3 +1,3 @@
 # Alpaca Client
 
-Provides programmatic access to Alpaca market data for discovering tradable stocks and retrieving their latest trade prices.
+Provides access to Alpaca's security listings and market data. It supplies the information the project needs to discover investments and follow their trading history and corporate actions.

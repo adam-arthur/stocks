@@ -1,3 +1,3 @@
 # LLM Client
 
-Connects the project to local Codex for AI research using web search. Provides a reusable interface for requesting structured results, independent of stock-specific tasks.
+Provides access to AI capabilities for classification and research. It enables the project to use language models to interpret information about securities and support investment research.

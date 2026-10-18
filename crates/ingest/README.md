@@ -1,3 +1,5 @@
-# Stock Data
+# Data Ingestion
 
-Defines the stock metadata and income categories used throughout the project. Manages local records for each symbol, including metadata, prices, and categorization failures.
+Ingests and organizes security data for income portfolio research. It brings together security information, investment classifications, price history, and corporate actions into a dataset that supports screening and analysis.
+
+It keeps that dataset current as new market data becomes available and securities need further research.

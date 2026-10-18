@@ -1,11 +1,3 @@
 # Stock Pipeline
 
-Scans all tradable stocks, researches their income categories, and refreshes prices for categorized securities. Successful and failed categorization attempts are skipped for 365 days; prices refresh each run. Failed categorization refreshes preserve existing metadata.
-
-Run from the project root, with Alpaca credentials configured in `.env` and Codex installed and signed in:
-
-```bash
-cargo run
-```
-
-The scan takes no arguments and saves data under `data/` relative to the working directory. Repeated runs update the same records and resume categorization where previous runs left off.
+Runs the data collection and research process for the project. It brings together security discovery, classification, and market data updates to build and refresh the dataset used for income portfolio research.
