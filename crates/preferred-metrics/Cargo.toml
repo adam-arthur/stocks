@@ -1,0 +1,15 @@
+[package]
+name = "preferred-metrics"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+tokio.workspace = true
+scraper = "0.27"
+
+[dev-dependencies]
+serde_json.workspace = true

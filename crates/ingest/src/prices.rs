@@ -15,6 +15,12 @@ pub async fn update(
     assets: &[Asset],
     bar: &ProgressBar,
 ) -> Result<(usize, usize)> {
+    if let Some(updated_at) = store.prices_sync()?
+        && Utc::now() - updated_at < Duration::hours(6)
+    {
+        log::info!("Daily closes · skipped · last run {updated_at} was within 6 hours");
+        return Ok((0, 0));
+    }
     let origin = "2016-01-01T00:00:00Z".parse::<DateTime<Utc>>()?;
     let end = (Utc::now()
         .date_naive()
@@ -104,6 +110,7 @@ pub async fn update(
         progress.advance(symbols.len(), &format!("{updated} saved · {points} bars fetched · {empty} without new bars · {failed} failed"));
     }
     progress.finish();
+    store.save_prices_sync(Utc::now())?;
     Ok((updated, failed))
 }
 

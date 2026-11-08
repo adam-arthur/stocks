@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/alpaca-client", "crates/sec-client", "crates/reit-metrics", "crates/llm-client", "crates/ingest", "crates/derive", "crates/pipeline"]
+members = ["crates/alpaca-client", "crates/sec-client", "crates/reit-metrics", "crates/preferred-metrics", "crates/financials", "crates/llm-client", "crates/ingest", "crates/derive", "crates/pipeline"]
 default-members = ["crates/pipeline"]
 resolver = "3"
 

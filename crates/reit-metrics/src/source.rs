@@ -28,6 +28,7 @@ pub fn validate_url(company: &Company, source: &str) -> Result<Url> {
 }
 
 pub struct Sources {
+    pub(crate) sec: sec_client::SecClient,
     http: Client,
     cache: PathBuf,
 }
@@ -35,6 +36,7 @@ pub struct Sources {
 impl Sources {
     pub fn new(cache: &Path) -> Result<Self> {
         Ok(Self {
+            sec: sec_client::SecClient::from_env()?,
             http: Client::builder()
                 .user_agent(format!(
                     "stocks-reit-metrics {}",
@@ -80,10 +82,21 @@ impl Sources {
         if path.exists() && !refresh {
             return Ok(path);
         }
-        tokio::time::sleep(Duration::from_millis(150)).await;
-        let response = self.http.get(url).send().await?.error_for_status()?;
+        let response = if matches!(
+            url.host_str(),
+            Some("www.sec.gov" | "data.sec.gov" | "sec.gov")
+        ) {
+            self.sec.get(url.as_str()).await?
+        } else {
+            tokio::time::sleep(Duration::from_millis(150)).await;
+            self.http
+                .get(url.clone())
+                .send()
+                .await?
+                .error_for_status()?
+        };
         ensure!(
-            response.status().is_success(),
+            response.status().is_success() && response.url() == &url,
             "source redirected; use its canonical official URL"
         );
         let content = response.bytes().await?;
@@ -105,14 +118,12 @@ impl Sources {
         since: chrono::NaiveDate,
     ) -> Result<Vec<sec_client::EarningsFiling>> {
         let submissions: serde_json::Value = self
-            .http
-            .get(format!(
+            .sec
+            .get(&format!(
                 "https://data.sec.gov/submissions/CIK{:010}.json",
                 company.cik
             ))
-            .send()
             .await?
-            .error_for_status()?
             .json()
             .await?;
         let mut groups = vec![submissions["filings"]["recent"].clone()];
@@ -134,13 +145,10 @@ impl Sources {
                         && !name.contains('/'),
                     "invalid SEC submission filename"
                 );
-                tokio::time::sleep(Duration::from_millis(150)).await;
                 groups.push(
-                    self.http
-                        .get(format!("https://data.sec.gov/submissions/{name}"))
-                        .send()
+                    self.sec
+                        .get(&format!("https://data.sec.gov/submissions/{name}"))
                         .await?
-                        .error_for_status()?
                         .json()
                         .await?,
                 );

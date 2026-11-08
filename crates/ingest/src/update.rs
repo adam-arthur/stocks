@@ -256,6 +256,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     let (actions, action_failures) =
         corporate_actions::update(&client, store, &assets, progress_bar).await?;
     failed += price_failures + action_failures;
+    failed += crate::preferred::update(store, &assets, progress_bar).await?;
     financials::update(store, &assets, progress_bar).await?;
     crate::reit::update(store, &assets, progress_bar).await?;
     log::info!(

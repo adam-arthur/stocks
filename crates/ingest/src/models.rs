@@ -97,4 +97,39 @@ pub struct ReitQuarter {
     pub ffo_per_share: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ffo_total: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ownership: Option<ReitOwnership>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReitOwnership {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shares_outstanding: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_op_units: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub outside_op_unit_share_equivalents: Option<f64>,
+}
+
+impl ReitOwnership {
+    pub fn update(&mut self, incoming: reit_metrics::ownership::Ownership) {
+        if let Some(shares) = incoming.shares_outstanding
+            && shares.value.is_finite()
+            && shares.value >= 0.0
+            && shares.value < u64::MAX as f64
+            && shares.value.fract() == 0.0
+        {
+            self.shares_outstanding = Some(shares.value as u64);
+        }
+        if let Some(units) = incoming.outside_op_units {
+            if self.outside_op_units != Some(units.value) {
+                self.outside_op_unit_share_equivalents = None;
+            }
+            self.outside_op_units = Some(units.value);
+        }
+        if let Some(equivalents) = incoming.outside_op_unit_share_equivalents {
+            self.outside_op_unit_share_equivalents = Some(equivalents.value);
+        }
+    }
 }

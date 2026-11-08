@@ -7,20 +7,7 @@ pub fn company() -> Result<Company> {
         "FSP",
         1031316,
         &[],
-        vec![
-            (
-                Metric::Ffo,
-                Unit::PerShare,
-                r"^(?:ffo|funds from operations) per (?:diluted )?share$",
-                1,
-            ),
-            (
-                Metric::Ffo,
-                Unit::Total,
-                r"^(?:ffo|funds from operations)$",
-                1000,
-            ),
-        ],
+        vec![(Metric::Ffo, Unit::Total, r"^nareit ffo$", 1000)],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;

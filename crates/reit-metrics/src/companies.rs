@@ -28,7 +28,6 @@ pub struct Company {
     pub rules: Vec<Rule>,
     pub(crate) tables: fn(&str) -> Vec<crate::table::Table>,
     pub(crate) extra_observations: Option<fn(&str, &str) -> Result<Vec<Observation>>>,
-    pub(crate) preserve_units: bool,
     pub(crate) derive: Option<fn(&[Extraction]) -> Vec<Extraction>>,
     pub(crate) official_url: fn(&reqwest::Url) -> bool,
     pub(crate) additional_items: Option<fn(&str) -> bool>,
@@ -39,6 +38,17 @@ pub struct Company {
 }
 
 pub const SYMBOLS: &[&str] = &[
+    "NXDT", "NXRT", "OHI",
+    "NHP", "NLCP", "NLOP", "NNN", "NTST",
+    "MAC", "MKZR", "MPT", "MRP", "NHI",
+    "ESS", "EXR", "FCPT", "FPI", "MAA",
+    "ELME", "ELS", "EPR", "EPRT", "ESRT",
+    "DEI", "DHC", "DOC", "DRH", "EGP",
+    "CTRE", "CUBE", "CURB", "CUZ", "DEA",
+    "OLP", "ONL", "OPI", "OUT", "PDM",
+    "FR", "FRT", "LINE", "LTC", "LXP",
+    "CMCT", "COLD", "CPT", "CSR", "CTO",
+    "PEB", "PECO", "PK", "PSTL", "PW",
     "FSP", "FVR", "GIPR", "LAMR", "LAND",
     "REG", "REXR", "RHP", "RLJ", "RYN",
     "CCI", "CDP", "CHCT", "CLDT", "CLPR",
@@ -56,6 +66,69 @@ pub const SYMBOLS: &[&str] = &[
 
 pub fn company(symbol: &str) -> Result<Company> {
     match symbol {
+        "NXDT" => crate::reits::nxdt::company(),
+        "NXRT" => crate::reits::nxrt::company(),
+        "OHI" => crate::reits::ohi::company(),
+        "NHP" => crate::reits::nhp::company(),
+        "NLCP" => crate::reits::nlcp::company(),
+        "NLOP" => crate::reits::nlop::company(),
+        "NNN" => crate::reits::nnn::company(),
+        "NTST" => crate::reits::ntst::company(),
+
+        "MAC" => crate::reits::mac::company(),
+        "MKZR" => crate::reits::mkzr::company(),
+        "MPT" => crate::reits::mpt::company(),
+        "MRP" => crate::reits::mrp::company(),
+        "NHI" => crate::reits::nhi::company(),
+
+        "ESS" => crate::reits::ess::company(),
+        "EXR" => crate::reits::exr::company(),
+        "FCPT" => crate::reits::fcpt::company(),
+        "FPI" => crate::reits::fpi::company(),
+        "MAA" => crate::reits::maa::company(),
+
+        "ELME" => crate::reits::elme::company(),
+        "ELS" => crate::reits::els::company(),
+        "EPR" => crate::reits::epr::company(),
+        "EPRT" => crate::reits::eprt::company(),
+        "ESRT" => crate::reits::esrt::company(),
+
+        "DEI" => crate::reits::dei::company(),
+        "DHC" => crate::reits::dhc::company(),
+        "DOC" => crate::reits::doc::company(),
+        "DRH" => crate::reits::drh::company(),
+        "EGP" => crate::reits::egp::company(),
+
+        "CTRE" => crate::reits::ctre::company(),
+        "CUBE" => crate::reits::cube::company(),
+        "CURB" => crate::reits::curb::company(),
+        "CUZ" => crate::reits::cuz::company(),
+        "DEA" => crate::reits::dea::company(),
+
+        "OLP" => crate::reits::olp::company(),
+        "ONL" => crate::reits::onl::company(),
+        "OPI" => crate::reits::opi::company(),
+        "OUT" => crate::reits::out::company(),
+        "PDM" => crate::reits::pdm::company(),
+
+        "FR" => crate::reits::fr::company(),
+        "FRT" => crate::reits::frt::company(),
+        "LINE" => crate::reits::line::company(),
+        "LTC" => crate::reits::ltc::company(),
+        "LXP" => crate::reits::lxp::company(),
+
+        "CMCT" => crate::reits::cmct::company(),
+        "COLD" => crate::reits::cold::company(),
+        "CPT" => crate::reits::cpt::company(),
+        "CSR" => crate::reits::csr::company(),
+        "CTO" => crate::reits::cto::company(),
+
+        "PEB" => crate::reits::peb::company(),
+        "PECO" => crate::reits::peco::company(),
+        "PK" => crate::reits::pk::company(),
+        "PSTL" => crate::reits::pstl::company(),
+        "PW" => crate::reits::pw::company(),
+
         "FSP" => crate::reits::fsp::company(),
         "FVR" => crate::reits::fvr::company(),
         "GIPR" => crate::reits::gipr::company(),
@@ -183,7 +256,6 @@ pub(crate) fn build((symbol, cik, hosts, patterns, continuation): Definition) ->
         continuation,
         tables: crate::table::tables,
         extra_observations: None,
-        preserve_units: false,
         derive: None,
         official_url: |_| false,
         additional_items: None,

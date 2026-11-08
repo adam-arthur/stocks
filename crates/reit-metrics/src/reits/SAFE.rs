@@ -40,7 +40,8 @@ async fn supplements(
     let mut predecessor = company()?;
     predecessor.cik = 1688852;
     let mut result = Vec::new();
-    for filing in sec_client::SecClient::from_env()?
+    for filing in sources
+        .sec
         .earnings_filings(predecessor.cik, since)
         .await?
         .into_iter()

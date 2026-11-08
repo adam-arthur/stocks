@@ -8,11 +8,16 @@ pub fn company() -> Result<Company> {
         1393311,
         &["investors.publicstorage.com"][..],
         vec![
-            (Metric::Ffo, Unit::PerShare, r"^ffo per share$", 1),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo per share(?: and unit)?$",
+                1,
+            ),
             (
                 Metric::Ffo,
                 Unit::Total,
-                r"^ffo allocable to common shares$",
+                r"^ffo allocable to common shares(?: and units)?$",
                 1000,
             ),
         ],
@@ -35,7 +40,9 @@ pub fn pdf_page(text: &str) -> bool {
 
 pub fn pdf_metric(label: &str, _: &str) -> Option<(Metric, Unit)> {
     match label.trim_end_matches('*') {
-        "ffopershare(a)" | "ffopershare" => Some((Metric::Ffo, Unit::PerShare)),
+        "ffopershare(a)" | "ffopershare" | "ffopershareandunit(a)" | "ffopershareandunit" => {
+            Some((Metric::Ffo, Unit::PerShare))
+        }
         _ => None,
     }
 }

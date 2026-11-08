@@ -104,6 +104,28 @@ pub fn group(data: &Financials) -> Vec<Value> {
             result.push(record);
         }
     }
+    for end in data
+        .values()
+        .flatten()
+        .filter(|o| o.start.is_none() && o.unit == "USD")
+        .map(|o| o.end)
+        .collect::<BTreeSet<_>>()
+    {
+        if result.iter().any(|record| record["end"] == end.to_string()) {
+            continue;
+        }
+        let mut record = json!({"end": end});
+        for (metric, observations) in data {
+            if let Some(o) = observations
+                .iter()
+                .filter(|o| o.start.is_none() && o.end == end)
+                .max_by_key(|o| o.filed)
+            {
+                record[metric] = json!(o.value);
+            }
+        }
+        result.push(record);
+    }
     result.sort_by_key(|record| record["end"].as_str().unwrap().to_owned());
     result
 }

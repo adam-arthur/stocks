@@ -77,7 +77,7 @@
   {
     "symbol": "PINE",
     "source": "https://www.sec.gov/Archives/edgar/data/1786117/000110465926086260/pine-20260723xex99d1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -137,7 +137,7 @@
   {
     "symbol": "PSA",
     "source": "https://www.sec.gov/Archives/edgar/data/1393311/000162828026050608/psa-072926xex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -212,7 +212,7 @@
   {
     "symbol": "EQIX",
     "source": "https://www.sec.gov/Archives/edgar/data/1101239/000110123926000145/a991eqix-q226xpr.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -227,7 +227,7 @@
   {
     "symbol": "DLR",
     "source": "https://www.sec.gov/Archives/edgar/data/1297996/000110465926086270/dlr-20260723xex99d1.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -242,7 +242,7 @@
   {
     "symbol": "DLR",
     "source": "https://www.sec.gov/Archives/edgar/data/1297996/000129799616000164/a1q16financialsupplemental.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -257,7 +257,7 @@
   {
     "symbol": "VICI",
     "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569626000088/viciq22026earningsrelease.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -392,7 +392,7 @@
   {
     "symbol": "WELL",
     "source": "https://www.sec.gov/Archives/edgar/data/766704/000076670426000026/a2q26earningsrelease991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -422,7 +422,7 @@
   {
     "symbol": "WELL",
     "source": "https://www.sec.gov/Archives/edgar/data/766704/000076670417000022/Ex-99.1.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -437,7 +437,7 @@
   {
     "symbol": "AAT",
     "source": "https://www.sec.gov/Archives/edgar/data/1500217/000150021726000043/a2q26supplemental.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -452,7 +452,7 @@
   {
     "symbol": "AAT",
     "source": "https://www.sec.gov/Archives/edgar/data/1500217/000150021716000163/a1q16supplementalexibit.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -467,7 +467,7 @@
   {
     "symbol": "ADC",
     "source": "https://www.sec.gov/Archives/edgar/data/917251/000091725126000061/adc20260630-ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -512,7 +512,7 @@
   {
     "symbol": "AHR",
     "source": "https://www.sec.gov/Archives/edgar/data/1632970/000163297024000053/exhibit9912024q1earningsre.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -527,7 +527,7 @@
   {
     "symbol": "AHR",
     "source": "https://www.sec.gov/Archives/edgar/data/1632970/000119312526338076/ahr-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -572,7 +572,7 @@
   {
     "symbol": "AIV",
     "source": "https://www.sec.gov/Archives/edgar/data/922864/000092286416000085/q12016er-ssxex991.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -593,7 +593,7 @@
   {
     "symbol": "AKR",
     "source": "https://www.sec.gov/Archives/edgar/data/899629/000089962916000071/exhibit991earningspressrel.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -608,7 +608,7 @@
   {
     "symbol": "AKR",
     "source": "https://www.sec.gov/Archives/edgar/data/899629/000156459020051597/akr-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -623,7 +623,7 @@
   {
     "symbol": "AKR",
     "source": "https://www.sec.gov/Archives/edgar/data/899629/000095017023056430/akr-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -638,7 +638,7 @@
   {
     "symbol": "AKR",
     "source": "https://www.sec.gov/Archives/edgar/data/899629/000119312526321040/akr-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -653,7 +653,7 @@
   {
     "symbol": "ALX",
     "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349916000054/ALX10Q3Q.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -668,7 +668,7 @@
   {
     "symbol": "ALX",
     "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349920000034/alx-20200930.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -683,7 +683,7 @@
   {
     "symbol": "ALX",
     "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349923000030/alx-20230930.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -698,7 +698,7 @@
   {
     "symbol": "ALX",
     "source": "https://www.sec.gov/Archives/edgar/data/3499/000000349926000038/alx-20260630.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -773,7 +773,7 @@
   {
     "symbol": "APLE",
     "source": "https://www.sec.gov/Archives/edgar/data/1418121/000095017023060275/aple-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -788,7 +788,7 @@
   {
     "symbol": "APLE",
     "source": "https://www.sec.gov/Archives/edgar/data/1418121/000119312526335144/aple-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -803,7 +803,7 @@
   {
     "symbol": "ALX",
     "source": "https://alx-inc.com/press-release/news-details/2022/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -818,7 +818,7 @@
   {
     "symbol": "ALX",
     "source": "https://alx-inc.com/press-release/news-details/2023/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -833,7 +833,7 @@
   {
     "symbol": "ALX",
     "source": "https://alx-inc.com/press-release/news-details/2024/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -848,7 +848,7 @@
   {
     "symbol": "ALX",
     "source": "https://alx-inc.com/press-release/news-details/2025/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -863,7 +863,7 @@
   {
     "symbol": "ALX",
     "source": "https://alx-inc.com/press-release/news-details/2026/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -878,7 +878,7 @@
   {
     "symbol": "ARE",
     "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544316000238/a3q16ex991supp.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -893,7 +893,7 @@
   {
     "symbol": "ARE",
     "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544320000274/a3q20ex991supp.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -908,7 +908,7 @@
   {
     "symbol": "ARE",
     "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544323000304/a3q23ex991supp.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -923,7 +923,7 @@
   {
     "symbol": "ARE",
     "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544326000067/a2q26ex991supp.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -938,7 +938,7 @@
   {
     "symbol": "APLE",
     "source": "https://www.sec.gov/Archives/edgar/data/1418121/000118518516005665/ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -953,7 +953,7 @@
   {
     "symbol": "APLE",
     "source": "https://www.sec.gov/Archives/edgar/data/1418121/000156459020051322/aple-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -968,7 +968,7 @@
   {
     "symbol": "ARE",
     "source": "https://www.sec.gov/Archives/edgar/data/1035443/000103544317000138/a2q17ex991supp.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -1111,7 +1111,7 @@
   {
     "symbol": "WPC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537816000095/wpc2016q38-kerexh991.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1126,7 +1126,7 @@
   {
     "symbol": "WPC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537820000069/wpc2020q38-kerexh991.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1141,7 +1141,7 @@
   {
     "symbol": "WPC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025378/000162828023036559/wpc2023q38-kerexh991.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1156,7 +1156,7 @@
   {
     "symbol": "WPC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025378/000102537826000114/wpc2026q28-kerexh991.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1315,7 +1315,7 @@
   {
     "symbol": "JAN",
     "source": "https://www.sec.gov/Archives/edgar/data/2100805/000162828026052603/ex99106302026.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1330,7 +1330,7 @@
   {
     "symbol": "JBGS",
     "source": "https://www.sec.gov/Archives/edgar/data/1689796/000155837020012412/jbgs-20201103ex9919b5d9d.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -1345,7 +1345,7 @@
   {
     "symbol": "JBGS",
     "source": "https://www.sec.gov/Archives/edgar/data/1689796/000155837023018002/jbgs-20231107xex99d1.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -1360,7 +1360,7 @@
   {
     "symbol": "JBGS",
     "source": "https://www.sec.gov/Archives/edgar/data/1689796/000110465926092962/jbgs-20260810xex99d1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1375,7 +1375,7 @@
   {
     "symbol": "JBGS",
     "source": "https://www.sec.gov/Archives/edgar/data/1689796/000110465926016432/jbgs-20260217xex99d1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1390,7 +1390,7 @@
   {
     "symbol": "KIM",
     "source": "https://www.sec.gov/Archives/edgar/data/879101/000115752316007078/a51448852ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1420,7 +1420,7 @@
   {
     "symbol": "KIM",
     "source": "https://www.sec.gov/Archives/edgar/data/879101/000115752323001554/a53692349_ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1435,7 +1435,7 @@
   {
     "symbol": "KIM",
     "source": "https://www.sec.gov/Archives/edgar/data/879101/000119312526331498/kim-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1450,7 +1450,7 @@
   {
     "symbol": "KRC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599616000413/exhibit991.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -1465,7 +1465,7 @@
   {
     "symbol": "KRC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599620000164/exhibit991.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -1480,7 +1480,7 @@
   {
     "symbol": "KRC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025996/000102599623000215/exhibit991.htm",
-    "count": 7,
+    "count": 11,
     "expected": [
       {
         "metric": "ffo",
@@ -1495,7 +1495,7 @@
   {
     "symbol": "KRC",
     "source": "https://www.sec.gov/Archives/edgar/data/1025996/000162828026049820/exhibit992.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1510,7 +1510,7 @@
   {
     "symbol": "KRG",
     "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604316000209/exhibit99_1xq32016.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1525,7 +1525,7 @@
   {
     "symbol": "KRG",
     "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604320000141/exhibit991q32020.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1540,7 +1540,7 @@
   {
     "symbol": "KRG",
     "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604323000121/exhibit99_1xq32023.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1555,7 +1555,7 @@
   {
     "symbol": "KRG",
     "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604326000045/exhibit99_1xq22026.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1570,7 +1570,7 @@
   {
     "symbol": "KRG",
     "source": "https://www.sec.gov/Archives/edgar/data/1286043/000128604320000141/exhibit992q32020.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1585,7 +1585,7 @@
   {
     "symbol": "BDN",
     "source": "https://www.sec.gov/Archives/edgar/data/790816/000156459016025928/bdn-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1600,7 +1600,7 @@
   {
     "symbol": "BDN",
     "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081620000035/bdn8-kxearningsreleasexexh.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1615,7 +1615,7 @@
   {
     "symbol": "BDN",
     "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081623000043/bdnearningsrelease-ex991q3.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1630,7 +1630,7 @@
   {
     "symbol": "BDN",
     "source": "https://www.sec.gov/Archives/edgar/data/790816/000079081626000025/bdnearningsrelease-ex991q2.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1645,7 +1645,7 @@
   {
     "symbol": "BFS",
     "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725416000258/bfs-09302016xex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1660,7 +1660,7 @@
   {
     "symbol": "BFS",
     "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725420000091/bfs-09302020xex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1675,7 +1675,7 @@
   {
     "symbol": "BFS",
     "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725423000096/bfs-09302023xex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1690,7 +1690,7 @@
   {
     "symbol": "BFS",
     "source": "https://www.sec.gov/Archives/edgar/data/907254/000090725426000047/bfs-06302026xex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1765,7 +1765,7 @@
   {
     "symbol": "BNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1424182/000156459020051392/ck1424182-ex991_316.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -1780,7 +1780,7 @@
   {
     "symbol": "BNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1424182/000095017023057474/bnl-ex99_1.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1795,7 +1795,7 @@
   {
     "symbol": "BNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1424182/000142418226000061/bnl-20260630xexx991.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -1902,7 +1902,7 @@
   {
     "symbol": "BDN",
     "source": "https://www.sec.gov/Archives/edgar/data/790816/000156459016016440/bdn-ex991_7.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -2413,7 +2413,7 @@
   {
     "symbol": "INN",
     "source": "https://www.sec.gov/Archives/edgar/data/1497645/000110465920120974/tm2034856d1_ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2428,7 +2428,7 @@
   {
     "symbol": "INN",
     "source": "https://www.sec.gov/Archives/edgar/data/1497645/000110465923086829/tm2322642d1_ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2443,7 +2443,7 @@
   {
     "symbol": "INN",
     "source": "https://www.sec.gov/Archives/edgar/data/1497645/000149764526000066/exhibit99106302026.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2533,7 +2533,7 @@
   {
     "symbol": "IRT",
     "source": "https://www.sec.gov/Archives/edgar/data/1466085/000156459016026430/irt-ex992_7.htm",
-    "count": 7,
+    "count": 14,
     "expected": [
       {
         "metric": "ffo",
@@ -2548,7 +2548,7 @@
   {
     "symbol": "IRT",
     "source": "https://www.sec.gov/Archives/edgar/data/1466085/000156459020048322/irt-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2563,7 +2563,7 @@
   {
     "symbol": "IRT",
     "source": "https://www.sec.gov/Archives/edgar/data/1466085/000146608523000119/irt-20231030xsupex991.htm",
-    "count": 7,
+    "count": 11,
     "expected": [
       {
         "metric": "ffo",
@@ -2578,7 +2578,7 @@
   {
     "symbol": "IRT",
     "source": "https://www.sec.gov/Archives/edgar/data/1466085/000143774926025436/ex_955949.htm",
-    "count": 7,
+    "count": 11,
     "expected": [
       {
         "metric": "ffo",
@@ -2608,7 +2608,7 @@
   {
     "symbol": "IVT",
     "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774820000112/ivtp-20200930.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2623,7 +2623,7 @@
   {
     "symbol": "IVT",
     "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774823000113/q32023earningsrelease.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2638,7 +2638,7 @@
   {
     "symbol": "IVT",
     "source": "https://www.sec.gov/Archives/edgar/data/1307748/000130774826000191/q22026earningsrelease.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -2758,7 +2758,7 @@
   {
     "symbol": "STRW",
     "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315226007477/ex99-1.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -2773,7 +2773,7 @@
   {
     "symbol": "STRW",
     "source": "https://www.sec.gov/Archives/edgar/data/1782430/000149315226036401/ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3372,7 +3372,7 @@
   {
     "symbol": "HPP",
     "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251216000216/q3-2016ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3387,7 +3387,7 @@
   {
     "symbol": "HPP",
     "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251220000110/q3-2020ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3402,7 +3402,7 @@
   {
     "symbol": "HPP",
     "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251222000148/q32022ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3417,7 +3417,7 @@
   {
     "symbol": "HPP",
     "source": "https://www.sec.gov/Archives/edgar/data/1482512/000148251226000064/q22026ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3432,7 +3432,7 @@
   {
     "symbol": "HR",
     "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060416000152/ex99120151025.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3447,7 +3447,7 @@
   {
     "symbol": "HR",
     "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060420000095/q32020earningsrelease.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3462,7 +3462,7 @@
   {
     "symbol": "HR",
     "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060422000130/exhibit991thirdquarter2022.htm",
-    "count": 1,
+    "count": 2,
     "expected": [
       {
         "metric": "ffo",
@@ -3477,7 +3477,7 @@
   {
     "symbol": "HR",
     "source": "https://www.sec.gov/Archives/edgar/data/1360604/000136060426000063/exhibit991secondquarter202.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -3492,7 +3492,7 @@
   {
     "symbol": "HST",
     "source": "https://www.sec.gov/Archives/edgar/data/1070750/000156459016026852/hst-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3507,7 +3507,7 @@
   {
     "symbol": "HST",
     "source": "https://www.sec.gov/Archives/edgar/data/1070750/000156459020034831/hst-ex991_7.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3522,7 +3522,7 @@
   {
     "symbol": "HST",
     "source": "https://www.sec.gov/Archives/edgar/data/1070750/000095017022021286/hst-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3537,7 +3537,7 @@
   {
     "symbol": "HST",
     "source": "https://www.sec.gov/Archives/edgar/data/1070750/000107075026000122/hst-ex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3627,7 +3627,7 @@
   {
     "symbol": "IIPR",
     "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465920121563/tm2029631d2_ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3642,7 +3642,7 @@
   {
     "symbol": "IIPR",
     "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465922114200/tm2229596d1_ex99-1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3657,7 +3657,7 @@
   {
     "symbol": "IIPR",
     "source": "https://www.sec.gov/Archives/edgar/data/1677576/000110465926055008/tm2613523d1_ex99-1.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -3672,7 +3672,7 @@
   {
     "symbol": "IIPR",
     "source": "https://www.sec.gov/Archives/edgar/data/1677576/000167757626000003/iipr-20260803xexx991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -3792,7 +3792,7 @@
   {
     "symbol": "IIPR",
     "source": "https://www.sec.gov/Archives/edgar/data/1677576/000114420417016144/v462440_ex99-1.htm",
-    "count": 1,
+    "count": 2,
     "expected": [
       {
         "metric": "ffo",
@@ -4119,7 +4119,7 @@
   {
     "symbol": "REG",
     "source": "https://www.sec.gov/Archives/edgar/data/910606/000091060616000075/ex-992093016.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4134,7 +4134,7 @@
   {
     "symbol": "REG",
     "source": "https://www.sec.gov/Archives/edgar/data/910606/000156459020051507/reg-ex992_7.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4149,7 +4149,7 @@
   {
     "symbol": "REG",
     "source": "https://www.sec.gov/Archives/edgar/data/910606/000095017023058418/reg-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4164,7 +4164,7 @@
   {
     "symbol": "REG",
     "source": "https://www.sec.gov/Archives/edgar/data/910606/000119312526323784/reg-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4179,7 +4179,7 @@
   {
     "symbol": "REXR",
     "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128316000056/rexrex992q316.htm",
-    "count": 5,
+    "count": 10,
     "expected": [
       {
         "metric": "ffo",
@@ -4194,7 +4194,7 @@
   {
     "symbol": "REXR",
     "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128320000043/rexrex991q3-2020.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4217,7 +4217,7 @@
   {
     "symbol": "REXR",
     "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128323000039/rexrex991q3-2023.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4232,7 +4232,7 @@
   {
     "symbol": "REXR",
     "source": "https://www.sec.gov/Archives/edgar/data/1571283/000157128326000037/rexrex991q2-2026.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4391,7 +4391,7 @@
   {
     "symbol": "GLPI",
     "source": "https://www.sec.gov/Archives/edgar/data/1575965/000157596516000112/glpi-2016331ex991.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4466,7 +4466,7 @@
   {
     "symbol": "GNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1526113/000114420417011078/v460484_ex99-1.htm",
-    "count": 7,
+    "count": 9,
     "expected": [
       {
         "metric": "ffo",
@@ -4481,7 +4481,7 @@
   {
     "symbol": "GNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1526113/000152611320000024/ex991gnlearningsreleas.htm",
-    "count": 3,
+    "count": 6,
     "expected": [
       {
         "metric": "ffo",
@@ -4496,7 +4496,7 @@
   {
     "symbol": "GNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1526113/000152611323000024/ex991gnlearningsrelease930.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4511,7 +4511,7 @@
   {
     "symbol": "GNL",
     "source": "https://www.sec.gov/Archives/edgar/data/1526113/000162828026053386/ex991gnlearningsrelease630.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4526,7 +4526,7 @@
   {
     "symbol": "GOOD",
     "source": "https://www.sec.gov/Archives/edgar/data/1234006/000117184316009434/exh_991.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4541,7 +4541,7 @@
   {
     "symbol": "GOOD",
     "source": "https://www.sec.gov/Archives/edgar/data/1234006/000117184317000902/exh_991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4556,7 +4556,7 @@
   {
     "symbol": "GOOD",
     "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400620000017/q32020pressrelease0930.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4571,7 +4571,7 @@
   {
     "symbol": "GOOD",
     "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400623000016/q32023pressrelease9302023.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4586,7 +4586,7 @@
   {
     "symbol": "GOOD",
     "source": "https://www.sec.gov/Archives/edgar/data/1234006/000123400626000019/q22026pressrelease6302026.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4601,7 +4601,7 @@
   {
     "symbol": "GTY",
     "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312516577615/d187200dex991.htm",
-    "count": 2,
+    "count": 4,
     "expected": [
       {
         "metric": "ffo",
@@ -4616,7 +4616,7 @@
   {
     "symbol": "GTY",
     "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312517065663/d292744dex991.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4631,7 +4631,7 @@
   {
     "symbol": "GTY",
     "source": "https://www.sec.gov/Archives/edgar/data/1052752/000156459020047101/gty-ex991_6.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4646,7 +4646,7 @@
   {
     "symbol": "GTY",
     "source": "https://www.sec.gov/Archives/edgar/data/1052752/000095017023055254/gty-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",
@@ -4661,7 +4661,7 @@
   {
     "symbol": "GTY",
     "source": "https://www.sec.gov/Archives/edgar/data/1052752/000119312526312471/gty-ex99_1.htm",
-    "count": 4,
+    "count": 8,
     "expected": [
       {
         "metric": "ffo",

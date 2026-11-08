@@ -37,6 +37,7 @@ pub(crate) fn fourth_quarters(symbol: &str, documents: &[Extraction]) -> Vec<Ext
                     .flat_map(|document| &document.observations)
                     .any(|value| {
                         value.metric == *metric
+                            && value.unit == Unit::Total
                             && value.end == *end
                             && value.start == NaiveDate::from_ymd_opt(end.year(), 10, 1).unwrap()
                     })

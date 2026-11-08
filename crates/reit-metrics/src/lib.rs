@@ -1,6 +1,7 @@
 pub mod companies;
 mod derive;
 mod models;
+pub mod ownership;
 mod pdf;
 mod presentation;
 mod reits;
@@ -167,12 +168,7 @@ fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Ex
     let mut candidates = BTreeMap::<_, Vec<_>>::new();
     for (priority, value) in values {
         candidates
-            .entry((
-                value.metric,
-                value.start,
-                value.end,
-                company.preserve_units.then_some(value.unit),
-            ))
+            .entry((value.metric, value.start, value.end, value.unit))
             .or_default()
             .push((priority, value));
     }

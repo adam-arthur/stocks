@@ -11,14 +11,14 @@ pub fn company() -> Result<Company> {
             (
                 Metric::Ffo,
                 Unit::PerShare,
-                r"^ffo available to common stockholders(?: and non-controlling op unitholders)?\s*[-–—]\s*diluted$",
+                r"^(?:(?:diluted )?ffo per weighted[- ]average (?:common|total(?: common)?) share|ffo available to common stockholders(?: and (?:non-controlling op unitholders|op unit ?holders))?\s*[-–—]\s*diluted)$",
                 1,
             ),
             (
                 Metric::Ffo,
                 Unit::Total,
-                r"^ffo available to common stockholders(?: and non-controlling op unitholders)?$",
-                1000,
+                r"^ffo available to common stockholders(?: and (?:non-controlling op unitholders|op unit ?holders))?$",
+                0,
             ),
         ],
         None,

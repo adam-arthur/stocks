@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+financials = { path = "../financials" }
 anyhow.workspace = true
 chrono.workspace = true
 serde.workspace = true

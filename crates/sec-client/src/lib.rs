@@ -448,7 +448,7 @@ impl SecClient {
         unreachable!()
     }
 
-    async fn get(&self, url: &str) -> Result<Response> {
+    pub async fn get(&self, url: &str) -> Result<Response> {
         for attempt in 0..5 {
             {
                 let mut next = self.next_request.lock().await;

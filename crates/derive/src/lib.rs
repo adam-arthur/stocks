@@ -2,6 +2,7 @@ mod financials;
 mod market;
 mod output;
 mod quarters;
+mod reit;
 
 use std::{collections::BTreeMap, fs, io::Write, path::Path};
 
@@ -126,19 +127,38 @@ fn security(
     } else {
         None
     };
-    let financials = financials::extract(facts.as_ref().unwrap_or(&Value::Null), as_of);
-    let mut summary = json!({"price_date": null, "closing_price": null, "market_cap": null,
-        "shares_outstanding": null, "dividend_yield": null, "dividend_yield_excluding_specials": null,
-        "revenue_last_12_months": null, "earnings_last_12_months": null, "common_shareholder_earnings_last_12_months": null,
-        "diluted_earnings_per_share": null, "price_to_earnings": null, "price_to_sales": null,
-        "cash_and_equivalents": null, "total_debt": null, "preferred_stock_value": null, "total_debt_including_preferred_stock": null,
-        "common_shareholder_equity": null});
-    if let Some((date, price)) = market.prices.last_key_value() {
-        summary["price_date"] = json!(date);
+    let extracted = ::financials::extract(symbol, facts.as_ref().unwrap_or(&Value::Null), as_of);
+    if meta["category"] == "EQUITY_REIT" {
+        for issue in &extracted.issues {
+            eprintln!(
+                "{symbol}: {} at {}: {}",
+                issue.metric, issue.end, issue.problem
+            );
+        }
+    }
+    let mut financials = extracted.financials;
+    financials::calculate(&mut financials);
+    let mut summary = json!({"latest_quarter_end": null, "closing_price": null, "market_cap": null,
+        "shares_outstanding": null, "dividend_yield": null,
+        "revenue_ttm": null, "earnings_ttm": null, "common_shareholder_earnings_ttm": null,
+        "diluted_eps": null, "price_to_earnings": null, "price_to_sales": null, "price_to_book": null,
+        "total_assets": null, "cash_and_equivalents": null, "total_debt": null, "preferred_stock_value": null, "total_debt_including_preferred_stock": null,
+        "common_shareholder_equity": null, "net_debt_to_assets": null});
+    let date = market
+        .prices
+        .last_key_value()
+        .map_or(as_of, |(date, _)| *date);
+    summary["latest_quarter_end"] = json!(
+        financials
+            .values()
+            .flatten()
+            .filter(|o| o.start.is_some() && o.end <= date && o.filed <= date)
+            .map(|o| o.end)
+            .max()
+    );
+    if let Some((_, price)) = market.prices.last_key_value() {
         summary["closing_price"] = json!(price.close);
         summary["dividend_yield"] = json!(price.dividend_yield);
-        summary["dividend_yield_excluding_specials"] =
-            json!(price.dividend_yield_excluding_specials);
         let ambiguous = meta["cik"]
             .as_u64()
             .is_some_and(|cik| companies.get(&cik).is_some_and(|count| *count > 1))
@@ -149,66 +169,96 @@ fn security(
             });
         if !ambiguous
             && common(meta)
-            && let Some(shares) = financials::latest(&financials, "shares_outstanding", *date)
+            && let Some(shares) = financials::latest(&financials, "shares_outstanding", date)
                 .filter(|o| o.value > 0.0)
         {
-            summary["shares_outstanding"] = serde_json::to_value(shares)?;
+            summary["shares_outstanding"] = json!(shares.value);
             summary["market_cap"] = json!(
                 price.close * shares.value * market::factor(&market.splits, shares.end, as_of)
             );
         }
-        for metric in ["revenue", "earnings", "common_shareholder_earnings"] {
-            summary[format!("{metric}_last_12_months")] =
-                serde_json::to_value(financials::trailing(&financials, metric, *date))?;
-        }
-        for metric in [
-            "diluted_earnings_per_share",
-            "cash_and_equivalents",
-            "total_debt",
-            "preferred_stock_value",
-            "total_debt_including_preferred_stock",
-            "common_shareholder_equity",
-        ] {
-            summary[metric] =
-                serde_json::to_value(financials::latest(&financials, metric, *date).filter(|o| {
-                    metric == "diluted_earnings_per_share"
-                        || Some(o.end)
-                            == financials
-                                .values()
-                                .flatten()
-                                .filter(|o| {
-                                    o.start.is_none()
-                                        && o.unit == "USD"
-                                        && o.end <= *date
-                                        && o.filed <= *date
-                                })
-                                .map(|o| o.end)
-                                .max()
-                }))?;
-        }
-        for (ratio, metric) in [
-            (
-                "price_to_earnings",
-                "common_shareholder_earnings_last_12_months",
-            ),
-            ("price_to_sales", "revenue_last_12_months"),
-        ] {
-            summary[ratio] = json!(
-                summary["market_cap"]
-                    .as_f64()
-                    .zip(summary[metric]["value"].as_f64())
-                    .filter(|(_, denominator)| *denominator > 0.0)
-                    .map(|(cap, denominator)| cap / denominator)
-            );
-        }
+    }
+    for metric in ["revenue", "earnings", "common_shareholder_earnings"] {
+        summary[format!("{metric}_ttm")] =
+            json!(financials::trailing(&financials, metric, date).map(|o| o.value));
+    }
+    for metric in [
+        "total_assets",
+        "cash_and_equivalents",
+        "total_debt",
+        "preferred_stock_value",
+        "total_debt_including_preferred_stock",
+        "common_shareholder_equity",
+    ] {
+        summary[metric] = json!(
+            financials::latest(&financials, metric, date)
+                .filter(|o| Some(o.end)
+                    == financials
+                        .values()
+                        .flatten()
+                        .filter(|o| o.start.is_none()
+                            && o.unit == "USD"
+                            && o.end <= date
+                            && o.filed <= date)
+                        .map(|o| o.end)
+                        .max())
+                .map(|o| o.value)
+        );
+    }
+    summary["net_debt_to_assets"] = json!(
+        summary["total_debt"]
+            .as_f64()
+            .zip(summary["cash_and_equivalents"].as_f64())
+            .zip(summary["total_assets"].as_f64())
+            .filter(|(_, assets)| *assets > 0.0)
+            .map(|((debt, cash), assets)| (debt - cash) / assets)
+    );
+    summary["diluted_eps"] = json!(
+        financials
+            .get("diluted_earnings_per_share")
+            .into_iter()
+            .flatten()
+            .filter(|o| o.end <= date
+                && o.filed <= date
+                && o.start
+                    .is_some_and(|start| (70..=110).contains(&(o.end - start).num_days())))
+            .max_by_key(|o| (o.end, o.filed, o.start))
+            .map(|o| o.value)
+    );
+    for (ratio, metric) in [
+        ("price_to_earnings", "common_shareholder_earnings_ttm"),
+        ("price_to_sales", "revenue_ttm"),
+        ("price_to_book", "common_shareholder_equity"),
+    ] {
+        summary[ratio] = json!(
+            summary["market_cap"]
+                .as_f64()
+                .zip(summary[metric].as_f64())
+                .filter(|(_, denominator)| *denominator > 0.0)
+                .map(|(cap, denominator)| cap / denominator)
+        );
+    }
+    output::round_summary(&mut summary);
+    let mut quarters = quarters::group(&financials);
+    if meta["category"] == "EQUITY_REIT" {
+        reit::merge(
+            &mut quarters,
+            read::<Vec<Value>>(&input.join("stocks").join(symbol).join("reit.json"))?
+                .unwrap_or_default(),
+        );
     }
     Ok(json!({
         "metadata": meta,
         "as_of": as_of,
         "prices": market.prices,
         "dividends": market.dividends,
-        "financials": quarters::group(&financials),
+        "financials": quarters,
         "summary": summary,
+        "preferred": if meta["category"] == "PREFERRED" {
+            read::<Value>(&input.join("stocks").join(symbol).join("preferred.json"))?
+        } else {
+            None
+        },
     }))
 }
 

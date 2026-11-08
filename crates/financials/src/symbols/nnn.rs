@@ -1,0 +1,13 @@
+use crate::Rule;
+
+pub(super) fn rules() -> Vec<Rule> {
+    vec![Rule {
+        from: chrono::NaiveDate::from_ymd_opt(2026, 4, 1),
+        formulas: vec![vec![
+            ("NotesPayable", 1.0),
+            ("LoansPayable", 1.0),
+            ("LinesOfCreditCurrent", 1.0),
+        ]],
+        ..Rule::tags("total_debt", "USD", false, &[])
+    }]
+}

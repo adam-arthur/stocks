@@ -11,12 +11,13 @@ const ORDER: &[&str] = &[
     "as_of",
     "metadata",
     "summary",
+    "preferred",
     "symbol",
     "name",
     "category",
     "exchange",
     "cik",
-    "price_date",
+    "latest_quarter_end",
     "ex_date",
     "payable_date",
     "filed",
@@ -29,18 +30,23 @@ const ORDER: &[&str] = &[
     "amount",
     "special",
     "dividend_yield",
-    "dividend_yield_excluding_specials",
     "price_to_earnings",
     "price_to_sales",
+    "price_to_book",
     "revenue",
-    "revenue_last_12_months",
+    "revenue_ttm",
     "earnings",
-    "earnings_last_12_months",
+    "earnings_ttm",
     "common_shareholder_earnings",
-    "common_shareholder_earnings_last_12_months",
+    "common_shareholder_earnings_ttm",
+    "diluted_eps",
     "diluted_earnings_per_share",
+    "ffo_total",
+    "ffo_per_share",
+    "total_assets",
     "cash_and_equivalents",
     "total_debt",
+    "net_debt_to_assets",
     "total_debt_including_preferred_stock",
     "debt_due_within_one_year",
     "debt_due_after_one_year",
@@ -59,6 +65,23 @@ const ORDER: &[&str] = &[
     "temporary_shareholder_equity",
     "updated_at",
 ];
+
+pub fn round_summary(summary: &mut Value) {
+    for (metric, value) in summary.as_object_mut().unwrap() {
+        if let Some(number) = value.as_f64() {
+            *value = match metric.as_str() {
+                "dividend_yield" | "net_debt_to_assets" => {
+                    serde_json::json!((number * 1_000_000.0).round() / 1_000_000.0)
+                }
+                "closing_price" | "diluted_eps" | "price_to_earnings" | "price_to_sales"
+                | "price_to_book" => {
+                    serde_json::json!((number * 100.0).round() / 100.0)
+                }
+                _ => serde_json::json!(number.round() as i64),
+            };
+        }
+    }
+}
 
 fn empty(value: &Value) -> bool {
     match value {

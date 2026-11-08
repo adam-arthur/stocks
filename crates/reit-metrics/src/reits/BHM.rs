@@ -25,7 +25,6 @@ pub fn company() -> Result<Company> {
     ))?;
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
-    company.preserve_units = true;
     company.derive = Some(|documents| crate::derive::fourth_quarters("BHM", documents));
     Ok(company)
 }

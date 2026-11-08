@@ -1,10 +1,10 @@
-use std::{collections::BTreeMap, path::Path};
+use std::collections::BTreeMap;
 
 use anyhow::{Result, ensure};
 use chrono::{Datelike, NaiveDate};
 use serde::Serialize;
 
-use crate::{Extraction, Observation, companies::company, extract_file, source::Sources};
+use crate::{Extraction, Observation, Unit, companies::company, extract_file, source::Sources};
 
 #[derive(Serialize)]
 pub struct Report {
@@ -12,26 +12,33 @@ pub struct Report {
     pub report_period: Option<NaiveDate>,
     pub observations: Vec<Observation>,
     pub documents: Vec<Extraction>,
+    pub ownership: BTreeMap<NaiveDate, crate::ownership::Ownership>,
 }
 
 pub enum Fetch {
     All { since: NaiveDate },
-    Latest { since: NaiveDate },
+    Latest { since: NaiveDate, unit: Unit },
 }
 
-pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
-    let (since, latest) = match mode {
-        Fetch::All { since } => (since, false),
-        Fetch::Latest { since } => (since, true),
+pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Report> {
+    let (since, unit) = match mode {
+        Fetch::All { since } => (since, None),
+        Fetch::Latest { since, unit } => (since, Some(unit)),
     };
+    let latest = unit.is_some();
     let company = company(symbol)?;
-    let sources = Sources::new(cache)?;
     let mut documents = Vec::new();
-    let mut filings = sec_client::SecClient::from_env()?
+    let mut ownership = BTreeMap::new();
+    let mut filings = sources
+        .sec
         .earnings_filings(company.cik, since)
         .await?
         .into_iter()
-        .filter(|filing| company.filings.contains(&filing.form.as_str()))
+        .filter(|filing| {
+            company.filings.contains(&filing.form.as_str())
+                || (crate::ownership::supports(symbol)
+                    && matches!(filing.form.as_str(), "10-Q" | "10-Q/A" | "10-K" | "10-K/A"))
+        })
         .collect::<Vec<_>>();
     if company.additional_items.is_some() {
         for filing in sources.additional_filings(&company, since).await? {
@@ -61,14 +68,27 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
             .filing_urls(&company, &filing.accession, &filing.form)
             .await
         {
-            Ok(urls) if !urls.is_empty() => {
+            Ok(mut urls) if !urls.is_empty() => {
+                urls.sort_by_key(|url| url.to_ascii_lowercase().ends_with(".pdf"));
                 for url in urls {
-                    match sources
-                        .download(&company, &url)
-                        .await
-                        .and_then(|path| extract_file(symbol, &path, &url))
-                    {
-                        Ok(mut result) => {
+                    if covered_pdf(&url, &documents, unit) {
+                        continue;
+                    }
+                    match sources.download(&company, &url).await.and_then(|path| {
+                        collect_ownership(
+                            symbol,
+                            &path,
+                            &url,
+                            Some(filing.filed_on),
+                            &mut ownership,
+                        );
+                        if company.filings.contains(&filing.form.as_str()) {
+                            extract_file(symbol, &path, &url).map(Some)
+                        } else {
+                            Ok(None)
+                        }
+                    }) {
+                        Ok(Some(mut result)) => {
                             result
                                 .observations
                                 .retain(|value| value.end <= filing.filed_on);
@@ -82,6 +102,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
                             result.filed_on = Some(filing.filed_on);
                             documents.push(result);
                         }
+                        Ok(None) => {}
                         Err(error) => log::warn!("{url}: {error:#}"),
                     }
                 }
@@ -92,7 +113,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
     }
     if let Some(supplements) = company.supplements {
         let supplements = supplements(
-            &sources,
+            sources,
             &company,
             since,
             documents
@@ -119,6 +140,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
                     }
                     log::debug!("{symbol}: official supplement {end}");
                     match sources.download(&company, &url).await.and_then(|path| {
+                        collect_ownership(symbol, &path, &url, None, &mut ownership);
                         let result = extract_file(symbol, &path, &url)?;
                         ensure!(
                             !company.supplement_period_required
@@ -149,7 +171,13 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
         .iter()
         .filter_map(|document| document.report_period)
         .max();
-    let mut observations = contiguous_series(original_series(&documents, since), report_period);
+    let mut observations = contiguous_series(
+        original_series(&documents, since)
+            .into_iter()
+            .filter(|value| unit.is_none_or(|unit| value.unit == unit))
+            .collect(),
+        report_period,
+    );
     if latest {
         observations.retain(|value| Some(value.end) == report_period);
     }
@@ -158,7 +186,32 @@ pub async fn fetch(symbol: &str, mode: Fetch, cache: &Path) -> Result<Report> {
         report_period,
         observations,
         documents,
+        ownership,
     })
+}
+
+fn covered_pdf(url: &str, documents: &[Extraction], unit: Option<Unit>) -> bool {
+    let Some((stem, extension)) = url.rsplit_once('.') else {
+        return false;
+    };
+    extension.eq_ignore_ascii_case("pdf")
+        && documents.iter().any(|document| {
+            document.source.as_deref().is_some_and(|source| {
+                source
+                    .rsplit_once('.')
+                    .is_some_and(|(html_stem, extension)| {
+                        html_stem == stem
+                            && (extension.eq_ignore_ascii_case("htm")
+                                || extension.eq_ignore_ascii_case("html"))
+                    })
+            }) && document.report_period.is_some_and(|end| {
+                document.observations.iter().any(|value| {
+                    value.end == end
+                        && is_quarter(value)
+                        && unit.is_none_or(|unit| value.unit == unit)
+                })
+            })
+        })
 }
 
 fn original_series(documents: &[Extraction], since: NaiveDate) -> Vec<Observation> {
@@ -170,13 +223,13 @@ fn original_series(documents: &[Extraction], since: NaiveDate) -> Vec<Observatio
             .filter(|value| value.start >= since)
         {
             periods
-                .entry((value.metric, value.start, value.end))
+                .entry((value.metric, value.unit, value.start, value.end))
                 .or_default()
                 .push((document, value));
         }
     }
     let mut observations = Vec::new();
-    for ((_, _, end), mut candidates) in periods {
+    for ((_, _, _, end), mut candidates) in periods {
         candidates.sort_by_key(|(document, value)| {
             (
                 document.report_period != Some(end),
@@ -192,11 +245,15 @@ fn original_series(documents: &[Extraction], since: NaiveDate) -> Vec<Observatio
 pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) -> Vec<Observation> {
     let mut metrics = BTreeMap::<_, Vec<_>>::new();
     for value in values.into_iter().filter(is_quarter) {
-        metrics.entry(value.metric).or_default().push(value);
+        metrics
+            .entry((value.metric, value.unit))
+            .or_default()
+            .push(value);
     }
-    metrics
+    let mut selected = BTreeMap::<_, Vec<Observation>>::new();
+    for values in metrics
         .into_values()
-        .flat_map(|mut values| {
+        .map(|mut values| {
             values.sort_by_key(|value| (value.end, value.start));
             if values.last().is_none_or(|value| Some(value.end) != latest) {
                 return Vec::new();
@@ -208,7 +265,14 @@ pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) ->
             values.drain(..start);
             values
         })
-        .collect()
+        .filter(|values| !values.is_empty())
+    {
+        let current = selected.entry(values[0].metric).or_default();
+        if values.len() > current.len() {
+            *current = values;
+        }
+    }
+    selected.into_values().flatten().collect()
 }
 
 pub fn is_quarter(value: &Observation) -> bool {
@@ -221,4 +285,27 @@ pub fn is_quarter(value: &Observation) -> bool {
             .checked_add_months(chrono::Months::new(3))
             .and_then(|date| date.pred_opt())
             == Some(value.end)
+}
+
+fn collect_ownership(
+    symbol: &str,
+    path: &std::path::Path,
+    source: &str,
+    filed: Option<NaiveDate>,
+    result: &mut BTreeMap<NaiveDate, crate::ownership::Ownership>,
+) {
+    if !crate::ownership::supports(symbol) {
+        return;
+    }
+    let Ok(html) = std::fs::read_to_string(path) else {
+        return;
+    };
+    match crate::ownership::extract(symbol, &html, source, filed) {
+        Ok(values) => {
+            for (end, value) in values {
+                crate::ownership::merge(result.entry(end).or_default(), value);
+            }
+        }
+        Err(error) => log::warn!("{symbol}: ownership extraction failed for {source}: {error:#}"),
+    }
 }

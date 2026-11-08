@@ -4,6 +4,7 @@ pub mod financials;
 mod management;
 pub mod models;
 mod prices;
+pub mod preferred;
 mod progress;
 pub mod reit;
 pub mod storage;

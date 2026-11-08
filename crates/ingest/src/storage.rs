@@ -6,7 +6,7 @@ use std::{
 };
 
 use anyhow::{Context, Result, ensure};
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Serialize, de::DeserializeOwned};
 
 use crate::models::{CorporateAction, Failure, FinancialsSync, Metadata, ReitQuarter};
@@ -61,12 +61,40 @@ impl Store {
         Ok(read_optional(&self.symbol_path(symbol)?.join("reit.json"))?.unwrap_or_default())
     }
 
+    pub fn preferred(&self, symbol: &str) -> Result<Option<preferred_metrics::Preferred>> {
+        read_optional(&self.symbol_path(symbol)?.join("preferred.json"))
+    }
+
+    pub fn preferred_failures(&self) -> Result<Vec<Failure>> {
+        Ok(read_optional(&self.root.join("failed_preferred.json"))?.unwrap_or_default())
+    }
+
+    pub fn save_preferred_failures(&self, failures: &[Failure]) -> Result<()> {
+        write_atomic(&self.root.join("failed_preferred.json"), failures)
+    }
+
+    pub fn save_preferred(
+        &self,
+        symbol: &str,
+        preferred: &preferred_metrics::Preferred,
+    ) -> Result<()> {
+        write_atomic(&self.symbol_path(symbol)?.join("preferred.json"), preferred)
+    }
+
     pub fn save_reit(&self, symbol: &str, quarters: &[ReitQuarter]) -> Result<()> {
         write_atomic(&self.symbol_path(symbol)?.join("reit.json"), quarters)
     }
 
     pub fn prices(&self, symbol: &str) -> Result<BTreeMap<NaiveDate, f64>> {
         Ok(read_optional(&self.symbol_path(symbol)?.join("prices.json"))?.unwrap_or_default())
+    }
+
+    pub fn prices_sync(&self) -> Result<Option<DateTime<Utc>>> {
+        read_optional(&self.root.join("prices_sync.json"))
+    }
+
+    pub fn save_prices_sync(&self, updated_at: DateTime<Utc>) -> Result<()> {
+        write_atomic(&self.root.join("prices_sync.json"), &updated_at)
     }
 
     pub fn save_prices(&self, symbol: &str, prices: &BTreeMap<NaiveDate, f64>) -> Result<()> {

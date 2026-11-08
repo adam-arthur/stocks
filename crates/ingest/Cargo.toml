@@ -16,3 +16,4 @@ alpaca-client = { path = "../alpaca-client" }
 sec-client = { path = "../sec-client" }
 llm-client = { path = "../llm-client" }
 reit-metrics = { path = "../reit-metrics" }
+preferred-metrics = { path = "../preferred-metrics" }

@@ -19,7 +19,6 @@ pub struct Dividend {
 pub struct Price {
     pub close: f64,
     pub dividend_yield: Option<f64>,
-    pub dividend_yield_excluding_specials: Option<f64>,
 }
 
 pub struct Market {
@@ -89,12 +88,11 @@ pub fn derive(
     }
     dividends.sort_by(|a, b| (a.ex_date, &a.id).cmp(&(b.ex_date, &b.id)));
     let mut result = BTreeMap::new();
-    let (mut first, mut last, mut total, mut regular) = (0, 0, 0.0, 0.0);
+    let (mut first, mut last, mut regular) = (0, 0, 0.0);
     for (date, raw) in prices.into_iter().filter(|(date, _)| *date <= as_of) {
         let close = raw / factor(&splits, date, as_of);
         ensure!(close.is_finite() && close > 0.0, "invalid close on {date}");
         while last < dividends.len() && dividends[last].ex_date <= date {
-            total += dividends[last].amount;
             if !dividends[last].special {
                 regular += dividends[last].amount;
             }
@@ -103,7 +101,6 @@ pub fn derive(
         while first < last
             && dividends[first].ex_date <= date.checked_sub_months(Months::new(12)).unwrap()
         {
-            total -= dividends[first].amount;
             if !dividends[first].special {
                 regular -= dividends[first].amount;
             }
@@ -115,8 +112,7 @@ pub fn derive(
             date,
             Price {
                 close,
-                dividend_yield: covered.then_some(total.max(0.0) / close),
-                dividend_yield_excluding_specials: covered.then_some(regular.max(0.0) / close),
+                dividend_yield: covered.then_some(regular.max(0.0) / close),
             },
         );
     }
