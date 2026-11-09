@@ -16,6 +16,8 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)
 }
 
@@ -31,4 +33,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
                 .any(|cell| matches!(cell.text.to_lowercase().as_str(), "low-end" | "high-end"))
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

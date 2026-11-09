@@ -24,5 +24,27 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.debt = Some(debt);
     Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    use anyhow::Context;
+    let mut liabilities = 0;
+    for tag in [
+        "AccountsPayableAndAccruedLiabilitiesCurrentAndNoncurrent",
+        "DividendsPayableCurrentAndNoncurrent",
+        "SecurityDepositLiability",
+        "AdvanceRent",
+        "OtherLiabilities",
+    ] {
+        liabilities += crate::debt::scalar(html, &format!("us-gaap:{tag}"), as_of)?
+            .context("missing NLCP liability")?;
+    }
+    anyhow::ensure!(
+        crate::debt::scalar(html, "us-gaap:LineOfCredit", as_of)? == Some(0)
+            && crate::debt::scalar(html, "us-gaap:Liabilities", as_of)? == Some(liabilities),
+        "NLCP requires a nonzero borrowing schedule"
+    );
+    crate::debt::payments(as_of, &[])
 }

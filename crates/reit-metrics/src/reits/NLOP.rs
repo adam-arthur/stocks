@@ -25,5 +25,10 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.additional_items = Some(|items| items.split(',').any(|item| item.trim() == "7.01"));
+    company.debt = Some(debt);
     Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

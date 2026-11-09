@@ -22,6 +22,11 @@ pub fn company() -> Result<Company> {
             .split(',')
             .any(|item| matches!(item.trim(), "7.01" | "8.01"))
     });
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules {
+        prose: Some(ownership_prose),
+        ..Default::default()
+    });
     Ok(company)
 }
 
@@ -94,4 +99,36 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             })
         })
         .collect()
+}
+
+fn debt(_html: &scraper::Html, _as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    anyhow::bail!("property-level borrowing schedules require consolidation")
+}
+
+fn ownership_prose(
+    text: &str,
+    source: &str,
+    filed: Option<chrono::NaiveDate>,
+    result: &mut std::collections::BTreeMap<chrono::NaiveDate, crate::ownership::Ownership>,
+) -> anyhow::Result<()> {
+    use crate::ownership::{Count, date};
+    use regex::Regex;
+    for matched in Regex::new(r"(?i)As of (?<date>[A-Za-z]+ \d{1,2}, 20\d{2}), we own all limited partnership units of the Operating Partnership except for (?<count>[\d,.]+) Class A Limited Partnership units")?.captures_iter(text) {
+                if let Some(end) = date(&matched["date"]) {
+                    result.entry(end).or_default().outside_op_units = Some(Count {
+                        value: matched["count"].replace(',', "").parse()?, source: source.into(), evidence: matched[0].into(), filed,
+                    });
+                    let exchange = Regex::new(&format!(r"(?i)the {} Class A Limited Partnership units are convertible into the Company.s common stock on a (\d+):\s*(\d+) basis", regex::escape(&matched["count"])))?;
+                    if let Some(exchange) = exchange.captures(text) {
+                        let ratio = exchange[2].parse::<f64>()? / exchange[1].parse::<f64>()?;
+                        if ratio.is_finite() && ratio > 0.0 {
+                            let count = result[&end].outside_op_units.as_ref().unwrap();
+                            let equivalents = Count { value: count.value / exchange[1].parse::<f64>()? * exchange[2].parse::<f64>()?, evidence: format!("{}; {}", count.evidence, &exchange[0]), ..count.clone() };
+                            result.entry(end).or_default().outside_op_unit_share_equivalents = Some(equivalents);
+                        }
+                    }
+                }
+            }
+
+    Ok(())
 }

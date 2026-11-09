@@ -30,6 +30,7 @@ pub fn company() -> Result<Company> {
     };
     company.supplements = Some(|sources, _, since, _| Box::pin(supplements(sources, since)));
     company.supplement_period_required = true;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -82,4 +83,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             table
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(2, 1000)], None)
 }

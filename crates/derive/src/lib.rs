@@ -1,3 +1,4 @@
+mod debt;
 mod financials;
 mod market;
 mod output;
@@ -254,6 +255,11 @@ fn security(
         "dividends": market.dividends,
         "financials": quarters,
         "summary": summary,
+        "debt": if meta["category"] == "EQUITY_REIT" {
+            debt::load(&input.join("stocks").join(symbol).join("debt.json"))?
+        } else {
+            None
+        },
         "preferred": if meta["category"] == "PREFERRED" {
             read::<Value>(&input.join("stocks").join(symbol).join("preferred.json"))?
         } else {

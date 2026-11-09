@@ -24,6 +24,7 @@ pub fn company() -> Result<Company> {
     company.filings = &[];
     company.supplements = Some(|_, company, since, _| Box::pin(supplements(company, since)));
     company.supplement_period_required = true;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -167,4 +168,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         }
     }
     tables
+}
+
+fn debt(_html: &scraper::Html, _as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    anyhow::bail!("debt extraction requires issuer financial reports outside SEC quarterly filings")
 }

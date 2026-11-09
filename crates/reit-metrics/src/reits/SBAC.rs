@@ -14,6 +14,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -48,4 +49,28 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             table
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    if chrono::Datelike::month(&as_of) != 12 {
+        return crate::debt::tables(
+            html,
+            as_of,
+            &[crate::debt::Rule {
+                anchor: "",
+                intro: "future principal payment obligations and fair values",
+                row: Some(("Total debt obligation", 0)),
+                ..crate::debt::Rule::new(0, 1000)
+            }],
+            None,
+        );
+    }
+    crate::debt::tables(
+        html,
+        as_of,
+        &[crate::debt::Rule::new(0, 1000)],
+        crate::debt::scalar(html, "us-gaap:DebtInstrumentFaceAmount", as_of)?
+            .map(u64::try_from)
+            .transpose()?,
+    )
 }

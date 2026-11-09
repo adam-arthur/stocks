@@ -21,6 +21,7 @@ pub fn company() -> Result<Company> {
         metric: pdf_metric,
         current_only,
     });
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -60,4 +61,8 @@ fn current_only(line: &str, year_row: &str, numbers: usize, years: usize) -> boo
                     value.start() >= years[0].start() && value.end() <= years[1].start()
                 })
             })
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(2, 1000)], None)
 }

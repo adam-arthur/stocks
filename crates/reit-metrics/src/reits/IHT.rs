@@ -13,6 +13,8 @@ pub fn company() -> Result<Company> {
     company.extra_observations = Some(extract);
     company.derive = Some(quarters);
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)
 }
 
@@ -195,4 +197,16 @@ fn quarters(documents: &[crate::Extraction]) -> Vec<crate::Extraction> {
             result
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(
+        html,
+        as_of,
+        &[crate::debt::Rule {
+            sum_columns: 4,
+            ..crate::debt::Rule::new(0, 1)
+        }],
+        None,
+    )
 }

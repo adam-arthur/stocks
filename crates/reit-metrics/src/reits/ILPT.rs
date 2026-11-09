@@ -26,6 +26,7 @@ pub fn company() -> Result<Company> {
     company.rules[1].section = Some(regex::Regex::new(r"(?i)^per common share data")?);
     company.tables = crate::table::joined_parentheses;
     company.extra_observations = Some(extract);
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -82,4 +83,8 @@ pub(crate) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation
         }
     }
     Ok(observations)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

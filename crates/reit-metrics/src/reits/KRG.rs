@@ -3,7 +3,7 @@ use crate::{Metric, Unit};
 use anyhow::Result;
 
 pub fn company() -> Result<Company> {
-    build((
+    let mut company = build((
         "KRG",
         1286043,
         &["www.kiterealty.com", "investor.kiterealty.com"],
@@ -28,5 +28,20 @@ pub fn company() -> Result<Company> {
             ),
         ],
         None,
-    ))
+    ))?;
+    company.debt = Some(debt);
+    Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(
+        html,
+        as_of,
+        &[crate::debt::Rule {
+            anchor: "",
+            intro: "scheduled maturities and principal amortization of the Company",
+            ..crate::debt::Rule::new(3, 1000)
+        }],
+        None,
+    )
 }

@@ -36,6 +36,8 @@ pub fn company() -> Result<Company> {
         metric: pdf_metric,
         current_only: |_, _, _, _| false,
     });
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)
 }
 
@@ -250,4 +252,8 @@ pub fn pdf_metric(label: &str, page: &str) -> Option<(Metric, Unit)> {
         }
         _ => None,
     }
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(4, 1000)], None)
 }

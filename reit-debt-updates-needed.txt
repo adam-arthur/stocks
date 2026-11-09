@@ -1,0 +1,42 @@
+REIT debt data needing updates (37 REITs)
+
+Still using annual snapshots (32):
+AHT - snapshot as of 2025-12-31; reviewed 2026-06-30 quarterly filing: overdue debt and amortizing loans need a complete repayment schedule.
+AIV - snapshot as of 2025-12-31; reviewed 2026-06-30 quarterly filing: liquidation settlement balances lack contractual maturity years.
+BRT - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage balances and refinancing updates lack amortization by year.
+BXP - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage amortization by year and individual commercial-paper maturity dates are missing.
+DEA - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage balances and maturity dates omit scheduled amortization by year.
+ELS - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: aggregate mortgage balance and maturity range lack repayments by year.
+EPR - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: financing changes and aggregate balances lack a complete current note and mortgage maturity breakdown.
+HIW - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: secured/unsecured totals and selected loan changes lack a complete principal repayment schedule.
+HR - snapshot as of 2025-12-31
+HST - snapshot as of 2025-12-31
+INN - snapshot as of 2025-12-31
+IRM - snapshot as of 2025-12-31
+JBGS - snapshot as of 2025-12-31
+KIM - snapshot as of 2025-12-31
+LAMR - snapshot as of 2025-12-31
+LINE - snapshot as of 2025-12-31
+LTC - snapshot as of 2025-12-31
+LXP - snapshot as of 2025-12-31
+MAA - snapshot as of 2025-12-31
+MAC - snapshot as of 2025-12-31
+MRP - snapshot as of 2025-12-31
+OUT - snapshot as of 2025-12-31
+PDM - snapshot as of 2025-12-31
+PECO - snapshot as of 2025-12-31
+RHP - snapshot as of 2025-12-31
+RLJ - snapshot as of 2025-12-31
+SPG - snapshot as of 2025-12-31
+STAG - snapshot as of 2025-12-31
+SUI - snapshot as of 2025-12-31
+SVC - snapshot as of 2025-12-31
+UMH - snapshot as of 2025-12-31
+WY - snapshot as of 2025-12-31
+
+No supported debt snapshot (5):
+AMT
+BSRT
+EXR
+MKZR
+VNO

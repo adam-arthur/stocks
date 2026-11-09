@@ -17,6 +17,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -50,4 +51,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             table
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1)], None)
 }

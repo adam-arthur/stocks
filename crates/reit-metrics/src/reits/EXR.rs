@@ -13,6 +13,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -37,4 +38,10 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         }
     }
     tables
+}
+
+fn debt(_html: &scraper::Html, _as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    anyhow::bail!(
+        "complete principal schedule requires combining debt instruments outside the tagged maturity table"
+    )
 }

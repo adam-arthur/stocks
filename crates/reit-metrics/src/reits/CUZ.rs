@@ -19,6 +19,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -35,4 +36,58 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             table
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    use anyhow::Context;
+    use chrono::Datelike;
+    if as_of.month() != 12 {
+        let mut rows = crate::debt::rows(html, as_of, "Total Notes Payable")?;
+        // Terminus and unsecured borrowings repay at maturity; amortizing mortgages must mature within the current year.
+        // Keep quarter-end principal even when a subsequent-event repayment is disclosed; exclude unconsolidated JV debt.
+        for row in &mut rows {
+            if row
+                .first()
+                .is_some_and(|label| matches!(label.as_str(), "201 North Tryon" | "Colorado Tower"))
+            {
+                anyhow::ensure!(
+                    row.get(3)
+                        .and_then(|value| crate::debt::amount(value, 1000))
+                        == Some(0)
+                        || row
+                            .get(2)
+                            .is_some_and(|date| date.ends_with(&as_of.year().to_string())),
+                    "CUZ amortizing mortgage needs annual principal payments"
+                );
+            }
+            if row
+                .first()
+                .is_some_and(|label| label == "Privately Placed Senior Notes")
+            {
+                row[0] = format!(
+                    "{} {}",
+                    row[0],
+                    row.get(1).context("missing CUZ note coupon")?
+                );
+            }
+        }
+        let debt = crate::debt::payments(
+            as_of,
+            &crate::debt::instrument_payments(
+                &rows,
+                (
+                    r"^(Credit Facility$|Public Senior Notes$|Privately Placed Senior Notes |Term Loan(?: \(\d+\))?$|Terminus(?: \(\d+\))?$|201 North Tryon$|Colorado Tower$)",
+                    3,
+                    2,
+                ),
+            )?,
+        )?;
+        anyhow::ensure!(
+            Some(i64::try_from(debt.total_debt_principal)?)
+                == crate::debt::scalar(html, "us-gaap:DebtInstrumentCarryingAmount", as_of)?,
+            "CUZ maturity principal does not reconcile"
+        );
+        return Ok(debt);
+    }
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

@@ -3,7 +3,7 @@ use crate::{Metric, Unit};
 use anyhow::Result;
 
 pub fn company() -> Result<Company> {
-    build((
+    let mut company = build((
         "ADC",
         917251,
         &[
@@ -26,5 +26,18 @@ pub fn company() -> Result<Company> {
             ),
         ],
         None,
-    ))
+    ))?;
+    company.debt = Some(debt);
+    Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    use chrono::Datelike;
+    let quarterly = as_of.month() != 12;
+    crate::debt::tables(
+        html,
+        as_of,
+        &[crate::debt::Rule::new(if quarterly { 0 } else { 2 }, 1000)],
+        None,
+    )
 }

@@ -1,10 +1,11 @@
 mod classification;
 mod corporate_actions;
+pub mod debt;
 pub mod financials;
 mod management;
 pub mod models;
-mod prices;
 pub mod preferred;
+mod prices;
 mod progress;
 pub mod reit;
 pub mod storage;

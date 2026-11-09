@@ -20,6 +20,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -57,4 +58,21 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             table
         })
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    anyhow::ensure!(
+        crate::debt::scalar(
+            html,
+            "us-gaap:DebtLongtermAndShorttermCombinedAmount",
+            as_of
+        )? == Some(0)
+            || crate::table::normalize(&html.root_element().text().collect::<Vec<_>>().join(" "))
+                .contains(&format!(
+                    "The Company had no consolidated indebtedness outstanding at {}",
+                    as_of.format("%B %-d, %Y")
+                )),
+        "SITC no longer reports zero debt"
+    );
+    crate::debt::payments(as_of, &[])
 }

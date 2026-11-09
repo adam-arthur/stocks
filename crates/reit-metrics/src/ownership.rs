@@ -1,9 +1,8 @@
-mod rules;
-
 use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::Result;
 use chrono::NaiveDate;
+use regex::Regex;
 use scraper::{ElementRef, Html, Selector};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -29,44 +28,36 @@ pub struct Ownership {
     pub outside_op_unit_share_equivalents: Option<Count>,
 }
 
+pub(crate) type FactRule = (&'static str, &'static [&'static str]);
+pub(crate) type Extractor =
+    fn(&str, &str, Option<NaiveDate>, &mut BTreeMap<NaiveDate, Ownership>) -> Result<()>;
+
+#[derive(Default)]
+pub(crate) struct Rules {
+    pub units: &'static [FactRule],
+    pub classes: &'static [FactRule],
+    pub exchange_pattern: Option<&'static str>,
+    pub exchange_source: Option<&'static str>,
+    pub prose: Option<Extractor>,
+    pub tables: Option<Extractor>,
+}
+
 pub fn supports(symbol: &str) -> bool {
-    matches!(
-        symbol,
-        "AHT"
-            | "AMT"
-            | "BFS"
-            | "BHM"
-            | "BHR"
-            | "BRT"
-            | "CBL"
-            | "CLDT"
-            | "CLPR"
-            | "DRH"
-            | "EPRT"
-            | "EQIX"
-            | "FPI"
-            | "FSP"
-            | "FVR"
-            | "GIPR"
-            | "HIW"
-            | "HR"
-            | "IHT"
-            | "LAMR"
-            | "LINE"
-            | "LTC"
-            | "MKZR"
-            | "MPT"
-            | "NHI"
-            | "NXDT"
-            | "OUT"
-            | "PLD"
-            | "RLJ"
-            | "SMA"
-            | "STAG"
-            | "STRW"
-            | "VNO"
-            | "XHR"
-    )
+    crate::companies::company(symbol).is_ok_and(|company| company.ownership.is_some())
+}
+
+pub(crate) fn date(value: &str) -> Option<NaiveDate> {
+    NaiveDate::parse_from_str(&value.replace(',', ""), "%B %d %Y").ok()
+}
+
+pub(crate) fn report_date(text: &str) -> Option<NaiveDate> {
+    let matched = Regex::new(r"(?i)For the (?:q\s*uarter\s*ly period|quarter|fiscal year|year) ended:?\s+([A-Za-z]+)\s+(\d(?:\s*\d)?)\s*,\s*(20\s*\d\s*\d)").ok()?.captures(&text[..text.char_indices().nth(2000).map_or(text.len(), |(index, _)| index)])?;
+    date(&format!(
+        "{} {}, {}",
+        &matched[1],
+        matched[2].replace(' ', ""),
+        matched[3].replace(' ', "")
+    ))
 }
 
 pub fn common_shares(facts: &Value, end: NaiveDate, as_of: NaiveDate) -> Option<Count> {
@@ -226,9 +217,11 @@ pub fn extract(
     source: &str,
     filed: Option<NaiveDate>,
 ) -> Result<BTreeMap<NaiveDate, Ownership>> {
-    crate::source::validate_url(&crate::companies::company(symbol)?, source)?;
+    let company = crate::companies::company(symbol)?;
+    crate::source::validate_url(&company, source)?;
+    let rules = company.ownership.unwrap_or_default();
     let document = Html::parse_document(html);
-    let facts = inline_facts(&document, crate::companies::company(symbol)?.cik);
+    let facts = inline_facts(&document, company.cik);
     let mut result = BTreeMap::<NaiveDate, Ownership>::new();
     for end in facts.iter().map(|fact| fact.end).collect::<BTreeSet<_>>() {
         if filed.is_some_and(|filed| end > filed) {
@@ -266,29 +259,7 @@ pub fn extract(
                 break;
             }
         }
-        let classes: &[(&str, &[&str])] = match symbol {
-            "BHM" => &[
-                (
-                    "us-gaap:temporaryequitysharesoutstanding",
-                    &["us-gaap:commonclassamember", "us-gaap:commonstockmember"],
-                ),
-                (
-                    "us-gaap:temporaryequitysharesoutstanding",
-                    &["us-gaap:commonclasscmember", "us-gaap:commonstockmember"],
-                ),
-            ],
-            "LAMR" => &[
-                (
-                    "us-gaap:commonstocksharesoutstanding",
-                    &["us-gaap:commonclassamember"],
-                ),
-                (
-                    "us-gaap:commonstocksharesissued",
-                    &["us-gaap:commonclassbmember"],
-                ),
-            ],
-            _ => &[],
-        };
+        let classes = rules.classes;
         if !classes.is_empty() {
             let values = classes
                 .iter()
@@ -330,7 +301,7 @@ pub fn extract(
             }
         }
         let mut units = Vec::new();
-        for (name, members) in rules::units(symbol) {
+        for (name, members) in rules.units {
             let matches = facts
                 .iter()
                 .filter(|fact| {
@@ -355,7 +326,7 @@ pub fn extract(
                 });
             }
         }
-        if !units.is_empty() && units.len() == rules::units(symbol).len() {
+        if !units.is_empty() && units.len() == rules.units.len() {
             let count = Count {
                 value: units.iter().map(|count| count.value).sum(),
                 evidence: units
@@ -388,9 +359,27 @@ pub fn extract(
             .collect::<Vec<_>>()
             .join(" "),
     );
-    rules::prose(symbol, &visible, source, filed, &mut result)?;
-    rules::tables(symbol, html, source, filed, &mut result)?;
-    if let Some(evidence) = rules::exchange_evidence(symbol, &visible)? {
+    if let Some(prose) = rules.prose {
+        prose(&visible, source, filed, &mut result)?;
+    }
+    if let Some(tables) = rules.tables {
+        tables(html, source, filed, &mut result)?;
+    }
+    if let Some(evidence) = rules
+        .exchange_pattern
+        .map(Regex::new)
+        .transpose()?
+        .and_then(|pattern| {
+            pattern
+                .find(&visible)
+                .map(|matched| matched.as_str().to_owned())
+        })
+        .or_else(|| {
+            rules.exchange_source.map(|source| {
+                format!("Researched one-for-one common-unit exchange terms: {source}")
+            })
+        })
+    {
         for ownership in result.values_mut() {
             if let Some(count) = &ownership.outside_op_units {
                 ownership.outside_op_unit_share_equivalents = Some(Count {

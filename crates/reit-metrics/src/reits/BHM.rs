@@ -26,6 +26,27 @@ pub fn company() -> Result<Company> {
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
     company.derive = Some(|documents| crate::derive::fourth_quarters("BHM", documents));
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules {
+        classes: &[
+            (
+                "us-gaap:temporaryequitysharesoutstanding",
+                &["us-gaap:commonclassamember", "us-gaap:commonstockmember"],
+            ),
+            (
+                "us-gaap:temporaryequitysharesoutstanding",
+                &["us-gaap:commonclasscmember", "us-gaap:commonstockmember"],
+            ),
+        ],
+        units: &[(
+            "us-gaap:PartnersCapitalAccountUnits",
+            &["bhm:OpUnitHoldersMember"],
+        )],
+        exchange_pattern: Some(
+            r"(?i)OP Units(?:, which)? are exchangeable for Class A common stock on a one\s*-for-one basis",
+        ),
+        ..Default::default()
+    });
     Ok(company)
 }
 
@@ -63,4 +84,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         }
     }
     tables
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

@@ -22,6 +22,7 @@ pub fn company() -> Result<Company> {
     company.supplements =
         Some(|_, _, since, through| Box::pin(async move { Ok(supplements(since, through)) }));
     company.supplement_period_required = true;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -38,4 +39,23 @@ pub fn supplements(
         ))
         .filter(|(end, _)| *end >= since && *end <= through)
         .collect()
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    if chrono::Datelike::month(&as_of) != 12 {
+        // The annual disclosures establish bullet repayments for these loans; use quarterly balances and dates.
+        // Include accrued C-Note PIK, excluding intercompany A/B notes and future PIK.
+        return crate::debt::bullets(
+            html,
+            as_of,
+            "First mortgages secured by:",
+            (
+                r"^(731 Lexington Avenue, (office|retail) condominium(?:\s*\(\d+\))?|Rego Park (?:II )?shopping center(?:\s*\(\d+\))+|The Alexander apartment tower)$",
+                3,
+                1,
+            ),
+            ("Total", &[]),
+        );
+    }
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

@@ -24,5 +24,13 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.debt = Some(debt);
     Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    use anyhow::Context;
+    // Quarterly financing changes alone do not establish maturities for all outstanding notes and mortgage debt.
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
+        .context("EPR needs a complete current principal maturity breakdown")
 }

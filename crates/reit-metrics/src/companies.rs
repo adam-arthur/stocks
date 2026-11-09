@@ -26,6 +26,8 @@ pub struct Company {
     pub hosts: &'static [&'static str],
     pub filings: &'static [&'static str],
     pub rules: Vec<Rule>,
+    pub(crate) ownership: Option<crate::ownership::Rules>,
+    pub(crate) debt: Option<fn(&scraper::Html, chrono::NaiveDate) -> Result<crate::debt::Debt>>,
     pub(crate) tables: fn(&str) -> Vec<crate::table::Table>,
     pub(crate) extra_observations: Option<fn(&str, &str) -> Result<Vec<Observation>>>,
     pub(crate) derive: Option<fn(&[Extraction]) -> Vec<Extraction>>,
@@ -38,30 +40,18 @@ pub struct Company {
 }
 
 pub const SYMBOLS: &[&str] = &[
-    "NXDT", "NXRT", "OHI",
-    "NHP", "NLCP", "NLOP", "NNN", "NTST",
-    "MAC", "MKZR", "MPT", "MRP", "NHI",
-    "ESS", "EXR", "FCPT", "FPI", "MAA",
-    "ELME", "ELS", "EPR", "EPRT", "ESRT",
-    "DEI", "DHC", "DOC", "DRH", "EGP",
-    "CTRE", "CUBE", "CURB", "CUZ", "DEA",
-    "OLP", "ONL", "OPI", "OUT", "PDM",
-    "FR", "FRT", "LINE", "LTC", "LXP",
-    "CMCT", "COLD", "CPT", "CSR", "CTO",
-    "PEB", "PECO", "PK", "PSTL", "PW",
-    "FSP", "FVR", "GIPR", "LAMR", "LAND",
-    "REG", "REXR", "RHP", "RLJ", "RYN",
-    "CCI", "CDP", "CHCT", "CLDT", "CLPR",
-    "GLPI", "GNL", "GOOD", "GTY", "HIW",
-    "SAFE", "SBAC", "SBRA", "SELF", "SHO",
-    "BSRT",
-    "BRT", "BRX", "BXP", "CBL",
-    "SITC", "SKT", "SLG", "SMA", "SPG",
-    "HPP", "HR", "HST", "IHT", "IIPR",
-    "SQFT", "STRW", "SUI", "SVC", "TRNO", "ILPT", "INN", "IRM", "IRT", "IVT", "UDR", "UE", "UHT",
-    "UMH", "VNO", "JAN", "JBGS", "KIM", "KRC", "KRG", "BDN", "BFS", "BHM", "BHR", "BNL", "AAT",
-    "ADC", "AHR", "AHT", "AIV", "O", "PINE", "PSA", "PLD", "AMT", "EQIX", "DLR", "VICI", "STAG",
-    "INVH", "WELL", "AKR", "ALX", "AMH", "APLE", "ARE", "VTR", "WHLR", "WPC", "WY", "XHR",
+    "NXDT", "NXRT", "OHI", "NHP", "NLCP", "NLOP", "NNN", "NTST", "MAC", "MKZR", "MPT", "MRP",
+    "NHI", "ESS", "EXR", "FCPT", "FPI", "MAA", "ELME", "ELS", "EPR", "EPRT", "ESRT", "DEI", "DHC",
+    "DOC", "DRH", "EGP", "CTRE", "CUBE", "CURB", "CUZ", "DEA", "OLP", "ONL", "OPI", "OUT", "PDM",
+    "FR", "FRT", "LINE", "LTC", "LXP", "CMCT", "COLD", "CPT", "CSR", "CTO", "PEB", "PECO", "PK",
+    "PSTL", "PW", "FSP", "FVR", "GIPR", "LAMR", "LAND", "REG", "REXR", "RHP", "RLJ", "RYN", "CCI",
+    "CDP", "CHCT", "CLDT", "CLPR", "GLPI", "GNL", "GOOD", "GTY", "HIW", "SAFE", "SBAC", "SBRA",
+    "SELF", "SHO", "BSRT", "BRT", "BRX", "BXP", "CBL", "SITC", "SKT", "SLG", "SMA", "SPG", "HPP",
+    "HR", "HST", "IHT", "IIPR", "SQFT", "STRW", "SUI", "SVC", "TRNO", "ILPT", "INN", "IRM", "IRT",
+    "IVT", "UDR", "UE", "UHT", "UMH", "VNO", "JAN", "JBGS", "KIM", "KRC", "KRG", "BDN", "BFS",
+    "BHM", "BHR", "BNL", "AAT", "ADC", "AHR", "AHT", "AIV", "O", "PINE", "PSA", "PLD", "AMT",
+    "EQIX", "DLR", "VICI", "STAG", "INVH", "WELL", "AKR", "ALX", "AMH", "APLE", "ARE", "VTR",
+    "WHLR", "WPC", "WY", "XHR",
 ];
 
 pub fn company(symbol: &str) -> Result<Company> {
@@ -262,6 +252,8 @@ pub(crate) fn build((symbol, cik, hosts, patterns, continuation): Definition) ->
         supplements: None,
         supplement_period_required: false,
         pdf: None,
+        ownership: None,
+        debt: None,
         rules: patterns
             .into_iter()
             .map(|(metric, unit, label, scale)| {

@@ -23,6 +23,7 @@ pub fn company() -> Result<Company> {
     company.rules[0].section = Some(regex::Regex::new(r"(?i)^per common share amounts")?);
     company.extra_observations = Some(extract);
     company.tables = crate::table::joined_parentheses;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -95,4 +96,33 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
         }
     }
     Ok(observations)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    if chrono::Datelike::month(&as_of) != 12 {
+        let debt = crate::debt::tables(
+            html,
+            as_of,
+            &[crate::debt::Rule {
+                anchor: "",
+                intro: "our debt maturities (other than our revolving credit facility)",
+                ..crate::debt::Rule::new(0, 1000)
+            }],
+            None,
+        )?;
+        let debt = crate::debt::add_payments(
+            debt,
+            &crate::debt::instrument_payments(
+                &crate::debt::rows(html, as_of, "Debtor-in-possession term loan")?,
+                (r"^Secured revolving credit facility, due in", 1, 0),
+            )?,
+        )?;
+        anyhow::ensure!(
+            crate::debt::scalar(html, "us-gaap:DebtInstrumentCarryingAmount", as_of)?
+                == Some(i64::try_from(debt.total_debt_principal)?),
+            "OPI principal does not reconcile"
+        );
+        return Ok(debt);
+    }
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

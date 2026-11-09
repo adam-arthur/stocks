@@ -14,6 +14,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
     Ok(company)
 }
 
@@ -50,4 +51,19 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         }
     }
     tables
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    // Preserve the annual disclosure's scope: installment purchases and finance leases are included.
+    // Use final contractual tower-note maturities, not anticipated repayment dates.
+    crate::debt::tables(
+        html,
+        as_of,
+        &[crate::debt::Rule {
+            anchor: "us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearTwo",
+            row: Some(("Scheduled principal payments", 0)),
+            ..crate::debt::Rule::new(0, 1000000)
+        }],
+        None,
+    )
 }

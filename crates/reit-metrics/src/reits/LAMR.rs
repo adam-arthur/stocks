@@ -15,5 +15,23 @@ pub fn company() -> Result<Company> {
         url.host_str() == Some("www.sec.gov")
             && url.path().starts_with("/Archives/edgar/data/899045/")
     };
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules {
+        classes: &[
+            (
+                "us-gaap:commonstocksharesoutstanding",
+                &["us-gaap:commonclassamember"],
+            ),
+            (
+                "us-gaap:commonstocksharesissued",
+                &["us-gaap:commonclassbmember"],
+            ),
+        ],
+        ..Default::default()
+    });
     Ok(company)
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
 }

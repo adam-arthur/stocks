@@ -1,4 +1,5 @@
 pub mod companies;
+pub mod debt;
 mod derive;
 mod models;
 pub mod ownership;

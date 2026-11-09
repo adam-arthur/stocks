@@ -10,6 +10,26 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.debt = Some(debt);
+    company.ownership = Some(crate::ownership::Rules {
+        units: &[
+            (
+                "us-gaap:UnitsOfPartnershipInterestAmount",
+                &[
+                    "line:LineageOPLLCMember",
+                    "line:PartnershipCommonUnitsMember",
+                ],
+            ),
+            (
+                "us-gaap:UnitsOfPartnershipInterestAmount",
+                &[
+                    "line:LineageOPLLCMember",
+                    "line:LegacyOperatingPartnershipUnitClassAAndClassBMember",
+                ],
+            ),
+        ],
+        ..Default::default()
+    });
     Ok(company)
 }
 
@@ -39,4 +59,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         }
     }
     tables
+}
+
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
+    crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000000)], None)
 }

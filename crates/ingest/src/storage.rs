@@ -61,6 +61,27 @@ impl Store {
         Ok(read_optional(&self.symbol_path(symbol)?.join("reit.json"))?.unwrap_or_default())
     }
 
+    pub fn debt(&self, symbol: &str) -> Result<Option<reit_metrics::debt::Debt>> {
+        read_optional(&self.symbol_path(symbol)?.join("debt.json"))
+    }
+
+    pub fn debt_failures(&self) -> Result<Vec<Failure>> {
+        Ok(read_optional(&self.root.join("failed_reit_debt.json"))?.unwrap_or_default())
+    }
+
+    pub fn save_debt(&self, symbol: &str, debt: &reit_metrics::debt::Debt) -> Result<()> {
+        ensure!(
+            self.debt(symbol)?
+                .is_none_or(|previous| previous.as_of <= debt.as_of),
+            "refusing to replace a newer debt snapshot for {symbol}"
+        );
+        write_atomic(&self.symbol_path(symbol)?.join("debt.json"), debt)
+    }
+
+    pub fn save_debt_failures(&self, failures: &[Failure]) -> Result<()> {
+        write_atomic(&self.root.join("failed_reit_debt.json"), failures)
+    }
+
     pub fn preferred(&self, symbol: &str) -> Result<Option<preferred_metrics::Preferred>> {
         read_optional(&self.symbol_path(symbol)?.join("preferred.json"))
     }
