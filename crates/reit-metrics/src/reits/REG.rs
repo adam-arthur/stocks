@@ -98,6 +98,7 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
                     "%B %d %Y",
                 )?;
                 observations.push(crate::Observation {
+                    published_on: None,
                     metric: Metric::Ffo,
                     start: NaiveDate::from_ymd_opt(
                         end.year(),

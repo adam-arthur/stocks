@@ -91,6 +91,7 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
                     continue;
                 };
                 result.push(crate::Observation {
+                    published_on: None,
                     metric: Metric::Ffo,
                     start,
                     end,
@@ -179,6 +180,10 @@ fn quarters(documents: &[crate::Extraction]) -> Vec<crate::Extraction> {
                 .zip(quarterly.filed_on)
                 .map(|(current, quarterly)| current.max(quarterly));
             result.observations.push(crate::Observation {
+                published_on: current
+                    .published_on
+                    .zip(previous.published_on)
+                    .map(|(a, b)| a.max(b)),
                 start: end
                     .succ_opt()
                     .unwrap()

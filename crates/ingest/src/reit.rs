@@ -33,7 +33,8 @@ pub async fn update(
             let latest = previous.iter().max_by_key(|quarter| quarter.end);
             let mut backfill = latest.is_none_or(|latest| {
                 previous.iter().any(|quarter| {
-                    quarter.ffo_per_share.is_some() != latest.ffo_per_share.is_some()
+                    quarter.published_on.is_none()
+                        || quarter.ffo_per_share.is_some() != latest.ffo_per_share.is_some()
                         || quarter.ffo_total.is_some() != latest.ffo_total.is_some()
                 })
             });
@@ -108,11 +109,13 @@ pub async fn update(
                         .or_insert_with(|| ReitQuarter {
                             start: value.start,
                             end: value.end,
+                            published_on: None,
                             ffo_per_share: None,
                             ffo_total: None,
                             ownership: Default::default(),
                         });
                 quarter.ffo_per_share = (value.unit == Unit::PerShare).then_some(value.value);
+                quarter.published_on = value.published_on;
                 quarter.ffo_total = (value.unit == Unit::Total)
                     .then_some((value.value * value.scale as f64).round() as i64);
             }

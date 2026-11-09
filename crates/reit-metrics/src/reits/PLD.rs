@@ -126,6 +126,7 @@ pub fn extract(html: &str, source: &str) -> Result<Vec<Observation>> {
                     &years,
                     (month, day, second_duration),
                     Observation {
+                        published_on: None,
                         metric: *metric,
                         start: NaiveDate::MIN,
                         end: NaiveDate::MIN,

@@ -53,6 +53,7 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
     )
     .unwrap();
     Ok(vec![crate::Observation {
+        published_on: None,
         metric: Metric::Ffo,
         start,
         end: start

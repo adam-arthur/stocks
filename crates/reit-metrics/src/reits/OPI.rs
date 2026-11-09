@@ -83,6 +83,7 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
         };
         for (column, ((start, end), value)) in periods.into_iter().zip(values).enumerate() {
             observations.push(crate::Observation {
+                published_on: None,
                 metric: Metric::Ffo,
                 start,
                 end,

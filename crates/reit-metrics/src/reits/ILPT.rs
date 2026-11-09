@@ -61,6 +61,7 @@ pub(crate) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation
         let quarterly_columns = if headers.len() <= 4 { 2 } else { 5 };
         for (column, (end, value)) in headers.into_iter().zip(values).enumerate() {
             observations.push(crate::Observation {
+                published_on: None,
                 metric: Metric::Ffo,
                 start: NaiveDate::from_ymd_opt(
                     end.year(),

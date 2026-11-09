@@ -194,6 +194,45 @@ impl Sources {
         accession: &str,
         form: &str,
     ) -> Result<Vec<String>> {
+        self.document_urls(
+            company,
+            accession,
+            if form.starts_with("8-K") {
+                "EX-99"
+            } else {
+                form
+            },
+        )
+        .await
+    }
+
+    pub async fn publication_date(
+        &self,
+        company: &Company,
+        filing: &sec_client::EarningsFiling,
+    ) -> Result<chrono::NaiveDate> {
+        ensure!(
+            filing.form.starts_with("8-K"),
+            "announcement date requires an 8-K with Item 2.02"
+        );
+        let urls = self
+            .document_urls(company, &filing.accession, &filing.form)
+            .await?;
+        ensure!(
+            urls.len() == 1,
+            "expected one primary 8-K for {}",
+            filing.accession
+        );
+        crate::publication::extract(&self.get(company, &urls[0]).await?, filing.filed_on)
+            .with_context(|| format!("{}: {}", company.symbol, filing.accession))
+    }
+
+    async fn document_urls(
+        &self,
+        company: &Company,
+        accession: &str,
+        kind: &str,
+    ) -> Result<Vec<String>> {
         ensure!(
             accession.len() == 20
                 && accession
@@ -220,15 +259,7 @@ impl Sources {
         let mut result = Vec::new();
         for row in html.select(&Selector::parse("table.tableFile tr").unwrap()) {
             let cells: Vec<_> = row.select(&cells).collect();
-            if cells.len() < 4
-                || !cells[3].text().collect::<String>().trim().starts_with(
-                    if form.starts_with("8-K") {
-                        "EX-99"
-                    } else {
-                        form
-                    },
-                )
-            {
+            if cells.len() < 4 || !cells[3].text().collect::<String>().trim().starts_with(kind) {
                 continue;
             }
             if let Some(href) = cells[2]

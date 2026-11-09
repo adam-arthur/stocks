@@ -93,6 +93,7 @@ fn serialize_action_fields<S: serde::Serializer>(
 pub struct ReitQuarter {
     pub start: NaiveDate,
     pub end: NaiveDate,
+    pub published_on: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ffo_per_share: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]

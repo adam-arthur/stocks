@@ -77,6 +77,10 @@ pub(crate) fn fourth_quarters(symbol: &str, documents: &[Extraction]) -> Vec<Ext
                 .zip(quarterly.filed_on)
                 .map(|(annual, quarterly)| annual.max(quarterly));
             result.observations.push(Observation {
+                published_on: annual
+                    .published_on
+                    .zip(nine_month.published_on)
+                    .map(|(a, b)| a.max(b)),
                 start: NaiveDate::from_ymd_opt(end.year(), 10, 1).unwrap(),
                 label: format!("Calculated Q4 {}", annual.label),
                 value,

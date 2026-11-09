@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use chrono::{Datelike, NaiveDate};
 use serde::Serialize;
 
@@ -28,6 +28,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
     let latest = unit.is_some();
     let company = company(symbol)?;
     let mut documents = Vec::new();
+    let mut publication_errors = BTreeMap::new();
     let mut ownership = BTreeMap::new();
     let mut filings = sources
         .sec
@@ -64,6 +65,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
             break;
         }
         log::debug!("{symbol}: {} {}", filing.filed_on, filing.accession);
+        let document_start = documents.len();
         match sources
             .filing_urls(&company, &filing.accession, &filing.form)
             .await
@@ -109,6 +111,23 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
             }
             Ok(_) => log::debug!("{}: no earnings exhibits", filing.accession),
             Err(error) => log::warn!("{}: {error:#}", filing.accession),
+        }
+        if documents[document_start..]
+            .iter()
+            .any(|document| !document.observations.is_empty())
+            && filing.form.starts_with("8-K")
+        {
+            let published_on = sources.publication_date(&company, &filing).await;
+            for document in &mut documents[document_start..] {
+                for value in &mut document.observations {
+                    match &published_on {
+                        Ok(date) => value.published_on = Some(*date),
+                        Err(error) => {
+                            publication_errors.insert(value.source.clone(), format!("{error:#}"));
+                        }
+                    }
+                }
+            }
         }
     }
     if let Some(supplements) = company.supplements {
@@ -180,6 +199,23 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
     );
     if latest {
         observations.retain(|value| Some(value.end) == report_period);
+    }
+    for value in &observations {
+        let date = value.published_on.with_context(|| {
+            format!(
+                "{symbol}: missing Item 2.02 announcement date for quarter ending {} ({}): {}",
+                value.end,
+                value.source,
+                publication_errors
+                    .get(&value.source)
+                    .map_or("no associated Item 2.02 filing", String::as_str)
+            )
+        })?;
+        ensure!(
+            date > value.end,
+            "{symbol}: announcement date {date} must follow quarter ending {}",
+            value.end
+        );
     }
     Ok(Report {
         symbol: symbol.to_owned(),

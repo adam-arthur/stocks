@@ -17,6 +17,7 @@ pub enum Unit {
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Observation {
     pub metric: Metric,
+    pub published_on: Option<NaiveDate>,
     pub start: NaiveDate,
     pub end: NaiveDate,
     pub label: String,

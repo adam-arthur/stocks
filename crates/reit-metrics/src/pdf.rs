@@ -123,6 +123,7 @@ pub fn extract(rules: &Rules, path: &Path, source: &str) -> Result<Vec<Observati
                     continue;
                 };
                 result.push(Observation {
+                    published_on: None,
                     metric,
                     start,
                     end,

@@ -4,6 +4,7 @@ mod market;
 mod output;
 mod quarters;
 mod reit;
+mod valuation;
 
 use std::{collections::BTreeMap, fs, io::Write, path::Path};
 
@@ -67,6 +68,9 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
                         &directory.join(format!("{history}.json")),
                         &data.as_object_mut().unwrap().remove(history).unwrap(),
                     )?;
+                }
+                if let Some(valuation) = data.as_object_mut().unwrap().remove("valuation") {
+                    write(&directory.join("valuation.json"), &valuation)?;
                 }
                 write(&directory.join("meta.json"), &data)?;
                 saved += 1;
@@ -241,14 +245,17 @@ fn security(
     }
     output::round_summary(&mut summary);
     let mut quarters = quarters::group(&financials);
+    let mut valuation = None;
     if meta["category"] == "EQUITY_REIT" {
-        reit::merge(
-            &mut quarters,
-            read::<Vec<Value>>(&input.join("stocks").join(symbol).join("reit.json"))?
-                .unwrap_or_default(),
+        let reit = read::<Vec<Value>>(&input.join("stocks").join(symbol).join("reit.json"))?
+            .unwrap_or_default();
+        valuation = Some(
+            valuation::derive(&reit, &market, as_of)
+                .with_context(|| format!("{symbol}: AFFO valuation"))?,
         );
+        reit::merge(&mut quarters, reit);
     }
-    Ok(json!({
+    let mut result = json!({
         "metadata": meta,
         "as_of": as_of,
         "prices": market.prices,
@@ -265,7 +272,11 @@ fn security(
         } else {
             None
         },
-    }))
+    });
+    if let Some(valuation) = valuation {
+        result["valuation"] = valuation;
+    }
+    Ok(result)
 }
 
 fn read<T: DeserializeOwned>(path: &Path) -> Result<Option<T>> {

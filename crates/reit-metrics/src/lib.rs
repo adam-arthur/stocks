@@ -5,6 +5,7 @@ mod models;
 pub mod ownership;
 mod pdf;
 mod presentation;
+pub mod publication;
 mod reits;
 pub mod scan;
 pub mod source;
@@ -131,6 +132,7 @@ pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
                         .push((
                             priority,
                             Observation {
+                                published_on: None,
                                 metric: rule.metric,
                                 start,
                                 end,

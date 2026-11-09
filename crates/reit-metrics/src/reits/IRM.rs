@@ -120,6 +120,7 @@ pub(crate) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation
                 .pred_opt()
                 .unwrap();
             observations.push(crate::Observation {
+                published_on: None,
                 metric: Metric::Ffo,
                 start: NaiveDate::from_ymd_opt(year, if quarterly { month - 2 } else { 1 }, 1)
                     .unwrap(),
