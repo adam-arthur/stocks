@@ -21,6 +21,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Unavailable;
     Ok(company)
 }
 

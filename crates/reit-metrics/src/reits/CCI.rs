@@ -8,12 +8,15 @@ pub fn company() -> Result<Company> {
         1051470,
         &["www.crowncastle.com", "investor.crowncastle.com"],
         vec![
+            (Metric::Affo, Unit::PerShare, r#"^affo per share$"#, 1),
+            (Metric::Affo, Unit::Total, r#"^affo$"#, 0),
             (Metric::Ffo, Unit::PerShare, r"^ffo per share$", 1),
             (Metric::Ffo, Unit::Total, r"^ffo$", 0),
         ],
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }
@@ -44,7 +47,9 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             tables.get_mut(offsets.partition_point(|offset| *offset < caption.end()))
         {
             for cell in table.rows.iter_mut().filter_map(|row| row.first_mut()) {
-                if cell.text.starts_with("FFO (") && !cell.text.contains("from above") {
+                if cell.text.starts_with("AFFO") && !cell.text.contains("from above") {
+                    cell.text = format!("AFFO per share{}", &cell.text[4..]);
+                } else if cell.text.starts_with("FFO (") && !cell.text.contains("from above") {
                     cell.text = format!("FFO per share{}", &cell.text[3..]);
                 }
             }

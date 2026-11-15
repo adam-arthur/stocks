@@ -7,16 +7,25 @@ pub fn company() -> Result<Company> {
         "WHLR",
         1527541,
         &["whlr.us", "www.whlr.us", "ir.whlr.us"],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo per common share(?: and (?:common|op) units?)?$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per common share(?: and (?:common|op) units?)?$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo per common share(?: and (?:common|op) units?)?$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

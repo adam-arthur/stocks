@@ -9,6 +9,12 @@ pub fn company() -> Result<Company> {
         &["www.bxp.com", "ir.bxp.com", "ir.bostonproperties.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^funds available for distribution to common shareholders and common unitholders(?: fad)?(?:\s+\d+)?$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^(?:diluted ffo per share|ffo per share(?: -)? diluted)(?:\s+\d+)?$",
@@ -23,6 +29,9 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.tables = tables;
+    company.sections.push(affo_per_share);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }
@@ -118,4 +127,57 @@ fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate:
         "BXP principal does not reconcile to consolidated debt"
     );
     Ok(debt)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    let values = crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(r"^shares/units for diluted ffo$")?,
+            scale: Some(1000),
+            section: None,
+        },
+    )?;
+    let mut company = company()?;
+    company.rules = vec![crate::companies::Rule {
+        metric: Metric::Affo,
+        unit: Unit::Total,
+        label: regex::Regex::new(r"^effect of dilutive securities - stock-based compensation$")?,
+        scale: Some(1000),
+        section: None,
+    }];
+    let adjustments = crate::reported_sections(&company, tables, source)?.0;
+    Ok(values
+        .into_iter()
+        .filter(|value| {
+            adjustments.iter().any(|(_, adjustment)| {
+                adjustment.start == value.start && adjustment.end == value.end
+            }) && adjustments.iter().all(|(_, adjustment)| {
+                adjustment.start != value.start
+                    || adjustment.end != value.end
+                    || adjustment.value == 0.0
+            })
+        })
+        .collect())
+}
+
+fn tables(html: &str) -> Vec<crate::table::Table> {
+    let mut tables = crate::table::joined_parentheses(html);
+    for row in tables.iter_mut().flat_map(|table| &mut table.rows) {
+        if row.first().is_some_and(|cell| {
+            cell.text
+                .eq_ignore_ascii_case("Effect of dilutive securities - stock-based compensation")
+        }) {
+            for cell in row.iter_mut().skip(1) {
+                if matches!(cell.text.as_str(), "—" | "–" | "-") {
+                    cell.text = "0".into();
+                }
+            }
+        }
+    }
+    tables
 }

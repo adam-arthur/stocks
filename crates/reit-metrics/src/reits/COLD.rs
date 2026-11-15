@@ -7,15 +7,25 @@ pub fn company() -> Result<Company> {
         "COLD",
         1455863,
         &["www.americold.com", "ir.americold.com"],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^nareit ffo(?: available to common shareholders)? - diluted per share$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^adjusted ffo(?: available to common shareholders)? - diluted per share$"#,
+                1,
+            ),
+            (Metric::Affo, Unit::Total, r#"^adjusted ffo$"#, 1000),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^nareit ffo(?: available to common shareholders)? - diluted per share$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

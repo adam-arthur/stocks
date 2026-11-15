@@ -99,6 +99,10 @@ pub struct ReitQuarter {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ffo_total: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub affo_per_share: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub affo_total: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ownership: Option<ReitOwnership>,
 }
 

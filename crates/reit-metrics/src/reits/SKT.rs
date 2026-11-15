@@ -11,16 +11,31 @@ pub fn company() -> Result<Company> {
             "investors.tanger.inc",
             "investors.tangeroutlet.com",
         ],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo (?:available to common shareholders per share\s*[-–—]\s*diluted|per share)$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo (?:available to common shareholders per share\s*[-–—]\s*diluted|per share)$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo available to common shareholders$",
+                1000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo (?:available to common shareholders per share\s*[-–—]\s*diluted|per share)$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

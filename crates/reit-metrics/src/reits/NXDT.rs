@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["nxdt.nexpoint.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per share\s*[-–—]\s*diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo attributable to common shareholders$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per share\s*[-–—]\s*diluted$",
@@ -28,6 +40,7 @@ pub fn company() -> Result<Company> {
     company.derive = Some(|documents| crate::derive::fourth_quarters("NXDT", documents));
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

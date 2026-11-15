@@ -1,8 +1,7 @@
-REIT debt data needing updates (37 REITs)
+REIT debt data needing updates (36 REITs)
 
-Still using annual snapshots (32):
+Still using annual snapshots (31):
 AHT - snapshot as of 2025-12-31; reviewed 2026-06-30 quarterly filing: overdue debt and amortizing loans need a complete repayment schedule.
-AIV - snapshot as of 2025-12-31; reviewed 2026-06-30 quarterly filing: liquidation settlement balances lack contractual maturity years.
 BRT - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage balances and refinancing updates lack amortization by year.
 BXP - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage amortization by year and individual commercial-paper maturity dates are missing.
 DEA - snapshot as of 2025-12-31; reviewed 2026-09-30 quarterly filing: mortgage balances and maturity dates omit scheduled amortization by year.

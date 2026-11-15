@@ -8,6 +8,8 @@ pub fn company() -> Result<Company> {
         25232,
         &[],
         vec![
+            (Metric::Affo, Unit::PerShare, r"^fad per share$", 1),
+            (Metric::Affo, Unit::Total, r"^fad$", 1000),
             (
                 Metric::Ffo,
                 Unit::PerShare,
@@ -19,8 +21,25 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
+    company.sections.push(affo_per_share);
     company.debt = Some(debt);
     Ok(company)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(r"^weighted average (?:common )?shares - diluted$")?,
+            scale: Some(1000),
+            section: None,
+        },
+    )
 }
 
 fn tables(html: &str) -> Vec<crate::table::Table> {

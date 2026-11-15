@@ -23,6 +23,7 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
     Ok(company)

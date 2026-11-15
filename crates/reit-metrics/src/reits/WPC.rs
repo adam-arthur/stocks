@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["wpcarey.com", "www.wpcarey.com", "ir.wpcarey.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo attributable to w\. p\. carey per diluted share$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo attributable to w\. p\. carey$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo (?:\(as defined by nareit\) )?attributable to w\. p\. carey (?:\(as defined by nareit\) )?per diluted share$",
@@ -24,6 +36,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

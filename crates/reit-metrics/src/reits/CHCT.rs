@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["www.chct.reit", "investors.chct.reit"],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^(?:adjusted funds from operations|affo) per common share(?:\s*[-–—]\s*diluted)?$"#,
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r#"^adjusted funds from operations$"#,
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^(?:funds from operations|ffo) per common share(?:\s*-\s*diluted)?$",
@@ -19,6 +31,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

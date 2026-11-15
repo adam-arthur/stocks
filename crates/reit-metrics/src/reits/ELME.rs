@@ -9,6 +9,12 @@ pub fn company() -> Result<Company> {
         &["ir.elmecommunities.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r#"^(?:adjusted funds from operations|affo)$"#,
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r#"^nareit ffo per diluted share$"#,
@@ -24,6 +30,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

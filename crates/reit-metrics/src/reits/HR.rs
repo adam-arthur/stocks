@@ -9,6 +9,12 @@ pub fn company() -> Result<Company> {
         &["investors.healthcarerealty.com", "www.healthcarerealty.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^(?:fad|normalized fad attributable to common stockholders)$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo attributable to common stockholders per diluted share$",
@@ -30,6 +36,8 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.sections.push(affo_per_share);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)
@@ -106,4 +114,22 @@ fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate:
         }],
         None,
     )
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    let values = crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^(?:ffo wtd avg common shares outstanding - diluted(?: \d+)?|weighted average diluted common shares outstanding)$",
+            )?,
+            scale: Some(1000),
+            section: None,
+        },
+    )?;
+    Ok(values)
 }

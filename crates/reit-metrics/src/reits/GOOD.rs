@@ -24,6 +24,7 @@ pub fn company() -> Result<Company> {
         Some("ffo available to common stockholders"),
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     Ok(company)
 }

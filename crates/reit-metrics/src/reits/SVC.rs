@@ -34,6 +34,7 @@ pub fn company() -> Result<Company> {
     company.tables = tables;
     company.extra_observations = Some(extract);
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Unavailable;
     Ok(company)
 }
 

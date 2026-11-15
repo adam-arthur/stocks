@@ -26,7 +26,7 @@ pub fn parse(value: &str) -> Result<NaiveDate> {
         .with_context(|| format!("invalid publication date: {value}"))
 }
 
-pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
+fn text(html: &str) -> String {
     let html = Html::parse_document(html);
     let text = html
         .root_element()
@@ -59,6 +59,11 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
         .filter(|line| !line.is_empty())
         .collect::<Vec<_>>()
         .join("\n");
+    text
+}
+
+pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
+    let text = text(html);
     let heading = Regex::new(r"(?im)^\s*item\s+([1-9])\s*\.\s*(\d{2})\b|^\s*signatures?\b")?;
     let headings = heading.captures_iter(&text).collect::<Vec<_>>();
     let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d(?:\s*\d)?\s*,?\s+2\s*0\s*\d\s*\d|20\d{2}-\d{2}-\d{2})";
@@ -73,6 +78,11 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
         r"(?i)^[.\s–—-]*results\s+of\s+operations\s+and\s+financial\s+condition(?:\s*\([^)]*\))?[.\s]*(?:and\s*)?$",
     )?;
     let mut dates = BTreeSet::new();
+    let distribution = Regex::new(
+        r"(?i)\bdeclar(?:ed|ation\s+of)\b[^.;!?]{0,120}\b(?:dividends?|distributions?)\b",
+    )?;
+    let results =
+        Regex::new(r"(?i)\b(?:financial\s+results|results\s+of\s+operations|earnings)\b")?;
     for (index, found) in headings.iter().enumerate().filter(|(_, found)| {
         found.get(1).is_some_and(|value| value.as_str() == "2")
             && found.get(2).is_some_and(|value| value.as_str() == "02")
@@ -98,6 +108,14 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
                 .map_or(text.len(), |next| next.get(0).unwrap().start())];
         for pattern in &patterns {
             for found in pattern.captures_iter(section) {
+                let announcement = &section[found.get(0).unwrap().start()
+                    ..found.get(0).unwrap().end()
+                        + section[found.get(0).unwrap().end()..]
+                            .find(['.', ';', '!', '?'])
+                            .unwrap_or(section.len() - found.get(0).unwrap().end())];
+                if distribution.is_match(announcement) && !results.is_match(announcement) {
+                    continue;
+                }
                 dates.insert(parse(&found["date"])?);
             }
         }
@@ -106,6 +124,43 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
     ensure!(
         dates.len() == 1,
         "conflicting announcement dates in Item 2.02: {dates:?}"
+    );
+    let date = dates.into_iter().next().unwrap();
+    ensure!(
+        date <= filed_on,
+        "announcement date {date} is after filing date {filed_on}"
+    );
+    Ok(date)
+}
+
+pub fn is_earnings_release(html: &str) -> Result<bool> {
+    Ok(Regex::new(
+        r"(?i)\b(?:reports|announces|releases)\b[^.!?\n]{0,160}\b(?:results|earnings)\b",
+    )?
+    .is_match(&text(html).chars().take(1500).collect::<String>()))
+}
+
+pub fn extract_6k(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
+    let intro = text(html).chars().take(5000).collect::<String>();
+    ensure!(
+        is_earnings_release(html)?,
+        "missing earnings release heading in 6-K exhibit"
+    );
+    let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2},?\s+20\d{2}|20\d{2}-\d{2}-\d{2})";
+    let mut dates = BTreeSet::new();
+    for pattern in [
+        format!(
+            r"(?im)^[^\n]{{0,180}}?\b{date}\s*(?:[–—-]|\((?:GLOBE NEWSWIRE|GLOBENEWSWIRE|BUSINESS WIRE|PRNewswire)\))"
+        ),
+        format!(r"(?i)\b(?:press|earnings|news)\s+release\s+(?:dated|issued|published)\s+{date}"),
+    ] {
+        for found in Regex::new(&pattern)?.captures_iter(&intro) {
+            dates.insert(parse(&found["date"])?);
+        }
+    }
+    ensure!(
+        dates.len() == 1,
+        "missing or conflicting 6-K earnings announcement dates: {dates:?}"
     );
     let date = dates.into_iter().next().unwrap();
     ensure!(

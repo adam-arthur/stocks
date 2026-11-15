@@ -9,6 +9,12 @@ pub fn company() -> Result<Company> {
         &["www.stagindustrial.com", "ir.stagindustrial.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^(?:adjusted funds from operations|cash available for distribution)$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^(?:ffo|funds from operations) per share\s*/\s*unit\s*[-–—]\s*diluted$",
@@ -24,6 +30,9 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
+    company.tables = crate::table::joined_parentheses;
+    company.sections.push(affo_per_share);
     company.ownership = Some(crate::ownership::Rules {
         units: &[(
             "us-gaap:LimitedPartnersCapitalAccountUnitsOutstanding",
@@ -93,4 +102,32 @@ fn ownership_tables(
         }
     }
     Ok(())
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    if tables
+        .iter()
+        .flat_map(|table| &table.rows)
+        .flatten()
+        .any(|cell| {
+            cell.text
+                .eq_ignore_ascii_case("Amount allocated to participating securities")
+        })
+    {
+        return Ok(Vec::new());
+    }
+    crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^weighted average common shares, participating securities, performance and other units - diluted$",
+            )?,
+            scale: Some(1000),
+            section: None,
+        },
+    )
 }

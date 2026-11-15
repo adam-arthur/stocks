@@ -13,6 +13,13 @@ pub fn company() -> Result<Company> {
         ],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^affo per (?:diluted )?share(?:, (?:basic and )?diluted)?(?:\s+\d+)?$"#,
+                1,
+            ),
+            (Metric::Affo, Unit::Total, r#"^affo$"#, 1000),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per (?:diluted )?share(?:, (?:basic and )?diluted)?(?:\s+\d+)?$",
@@ -22,6 +29,7 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

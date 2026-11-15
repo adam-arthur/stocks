@@ -11,10 +11,20 @@ pub fn company() -> Result<Company> {
             "rljlodgingtrust.com",
             "investor.rljlodgingtrust.com",
         ],
-        vec![(Metric::Ffo, Unit::Total, r"^ffo$", 1000)],
+        vec![
+            (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
+            (Metric::Affo, Unit::Total, r"^adjusted ffo$", 1000),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo per common share and unit-diluted$",
+                1,
+            ),
+        ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
+    company.tables = tables;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules {
         units: &[(
@@ -89,4 +99,18 @@ fn ownership_prose(
             }
 
     Ok(())
+}
+
+fn tables(html: &str) -> Vec<crate::table::Table> {
+    crate::table::joined_parentheses(html)
+        .into_iter()
+        .filter(|table| {
+            !table
+                .rows
+                .iter()
+                .take(6)
+                .flatten()
+                .any(|cell| matches!(cell.text.to_lowercase().as_str(), "low end" | "high end"))
+        })
+        .collect()
 }

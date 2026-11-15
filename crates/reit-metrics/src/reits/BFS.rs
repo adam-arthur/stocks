@@ -27,6 +27,7 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules {
         exchange_pattern: Some(

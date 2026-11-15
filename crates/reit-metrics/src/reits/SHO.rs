@@ -7,16 +7,25 @@ pub fn company() -> Result<Company> {
         "SHO",
         1295810,
         &["www.sunstonehotels.com", "sunstonehotels.com"],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo attributable to common stockholders per diluted share$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo attributable to common stockholders per diluted share$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo attributable to common stockholders per diluted share$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

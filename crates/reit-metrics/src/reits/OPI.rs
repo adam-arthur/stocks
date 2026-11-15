@@ -21,6 +21,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.rules[0].section = Some(regex::Regex::new(r"(?i)^per common share amounts")?);
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.extra_observations = Some(extract);
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
@@ -72,28 +73,58 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
                         end,
                     ))
                 })
-                .take(if periods.is_empty() { 5 } else { 4 }),
+                .take(if !periods.is_empty() {
+                    4
+                } else if [
+                    "for the six months ended",
+                    "for the nine months ended",
+                    "for the year ended",
+                ]
+                .iter()
+                .any(|duration| header.to_lowercase().contains(duration))
+                {
+                    7
+                } else {
+                    5
+                }),
         );
-        let Some(values) = crate::presentation::values(&text[section.end()..], "FFO")?
-            .into_iter()
-            .next()
-            .filter(|values| values.len() == periods.len())
-        else {
-            continue;
-        };
-        for (column, ((start, end), value)) in periods.into_iter().zip(values).enumerate() {
-            observations.push(crate::Observation {
-                published_on: None,
-                metric: Metric::Ffo,
-                start,
-                end,
-                label: "FFO per common share (basic and diluted)".into(),
-                value,
-                unit: Unit::PerShare,
-                scale: 1,
-                source: source.to_owned(),
-                location: format!("presentation page {}, column {}", page + 1, column + 1),
-            });
+        if periods.len() == 7 {
+            for (start, end) in &mut periods[5..] {
+                *start = NaiveDate::from_ymd_opt(end.year(), 1, 1).unwrap();
+            }
+        }
+        for (metric, unit, label, text, scale) in [(
+            Metric::Ffo,
+            Unit::PerShare,
+            "FFO",
+            &text[section.end()..],
+            1,
+        )] {
+            let Some(values) = crate::presentation::values(text, label)?
+                .into_iter()
+                .next()
+                .filter(|values| values.len() == periods.len())
+            else {
+                continue;
+            };
+            for (column, ((start, end), value)) in periods.iter().copied().zip(values).enumerate() {
+                observations.push(crate::Observation {
+                    published_on: None,
+                    metric,
+                    start,
+                    end,
+                    label: if unit == Unit::PerShare {
+                        format!("{label} per common share (basic and diluted)")
+                    } else {
+                        label.into()
+                    },
+                    value,
+                    unit,
+                    scale,
+                    source: source.to_owned(),
+                    location: format!("presentation page {}, column {}", page + 1, column + 1),
+                });
+            }
         }
     }
     Ok(observations)

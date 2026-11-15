@@ -13,6 +13,12 @@ pub fn company() -> Result<Company> {
         ],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo(?: allocable to (?:safety, income & growth|safehold) inc\. common shareholders)?$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::Total,
                 r"^ffo allocable to (?:safety, income & growth|safehold) inc\. common shareholders$",
@@ -22,6 +28,8 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Reported;
+    company.sections.push(affo_per_share);
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
     company.official_url = |url| {
@@ -37,7 +45,7 @@ pub fn company() -> Result<Company> {
 async fn supplements(
     sources: &crate::source::Sources,
     since: chrono::NaiveDate,
-) -> Result<Vec<(chrono::NaiveDate, String)>> {
+) -> Result<Vec<(chrono::NaiveDate, String, Option<chrono::NaiveDate>)>> {
     let mut predecessor = company()?;
     predecessor.cik = 1688852;
     let mut result = Vec::new();
@@ -58,7 +66,7 @@ async fn supplements(
                 && end >= since
                 && end <= filing.filed_on
             {
-                result.push((end, url));
+                result.push((end, url, None));
             }
         }
     }
@@ -87,4 +95,21 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
 
 fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
     crate::debt::tables(html, as_of, &[crate::debt::Rule::new(2, 1000)], None)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^weighted average common shares outstanding for (?:basic and )?diluted earnings per common share$",
+            )?,
+            scale: Some(1000),
+            section: None,
+        },
+    )
 }

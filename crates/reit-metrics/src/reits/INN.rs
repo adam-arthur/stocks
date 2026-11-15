@@ -31,6 +31,12 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.additional_items = Some(|items| items.trim() == "9.01");
+    company.rules.extend([
+        crate::companies::Rule { metric: Metric::Affo, unit: Unit::PerShare, label: regex::Regex::new(r"(?i)^adjusted ffo per diluted share and unit$")?, scale: Some(1), section: None },
+        crate::companies::Rule { metric: Metric::Affo, unit: Unit::PerShare, label: regex::Regex::new(r"(?i)^affo per (?:common share\s*/\s*common unit|(?:share of )?common stock and common units|common share and (?:common )?unit)$")?, scale: Some(1), section: None },
+        crate::companies::Rule { metric: Metric::Affo, unit: Unit::Total, label: regex::Regex::new(r"(?i)^(?:adjusted (?:ffo|funds from operations)|affo applicable to (?:common shares and common units|common stock and common units))$")?, scale: Some(1000), section: None },
+    ]);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

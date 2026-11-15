@@ -4,10 +4,13 @@ use anyhow::{Context, Result, ensure};
 use chrono::{Datelike, NaiveDate};
 use serde::Serialize;
 
-use crate::{Extraction, Observation, Unit, companies::company, extract_file, source::Sources};
+use crate::{
+    Extraction, Metric, Observation, Unit, companies::company, extract_file, source::Sources,
+};
 
 #[derive(Serialize)]
 pub struct Report {
+    pub affo_support: crate::AffoSupport,
     pub symbol: String,
     pub report_period: Option<NaiveDate>,
     pub observations: Vec<Observation>,
@@ -41,7 +44,14 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                     && matches!(filing.form.as_str(), "10-Q" | "10-Q/A" | "10-K" | "10-K/A"))
         })
         .collect::<Vec<_>>();
-    if company.additional_items.is_some() {
+    if company.additional_items.is_some()
+        || company.filings.iter().any(|form| {
+            !matches!(
+                *form,
+                "8-K" | "8-K/A" | "10-Q" | "10-Q/A" | "10-K" | "10-K/A"
+            )
+        })
+    {
         for filing in sources.additional_filings(&company, since).await? {
             if !filings
                 .iter()
@@ -73,9 +83,6 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
             Ok(mut urls) if !urls.is_empty() => {
                 urls.sort_by_key(|url| url.to_ascii_lowercase().ends_with(".pdf"));
                 for url in urls {
-                    if covered_pdf(&url, &documents, unit) {
-                        continue;
-                    }
                     match sources.download(&company, &url).await.and_then(|path| {
                         collect_ownership(
                             symbol,
@@ -101,10 +108,26 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                                 result.report_period =
                                     result.observations.iter().map(|value| value.end).max();
                             }
+                            if !matches!(
+                                filing.form.as_str(),
+                                "8-K"
+                                    | "8-K/A"
+                                    | "6-K"
+                                    | "6-K/A"
+                                    | "10-Q"
+                                    | "10-Q/A"
+                                    | "10-K"
+                                    | "10-K/A"
+                            ) {
+                                for value in &mut result.observations {
+                                    value.published_on = Some(filing.filed_on);
+                                }
+                            }
                             result.filed_on = Some(filing.filed_on);
                             documents.push(result);
                         }
                         Ok(None) => {}
+                        Err(error) if error.is::<crate::Conflict>() => return Err(error),
                         Err(error) => log::warn!("{url}: {error:#}"),
                     }
                 }
@@ -115,7 +138,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
         if documents[document_start..]
             .iter()
             .any(|document| !document.observations.is_empty())
-            && filing.form.starts_with("8-K")
+            && (filing.form.starts_with("8-K") || filing.form.starts_with("6-K"))
         {
             let published_on = sources.publication_date(&company, &filing).await;
             for document in &mut documents[document_start..] {
@@ -145,15 +168,13 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
         match supplements {
             Ok(mut supplements) => {
                 if latest {
-                    supplements.sort_by_key(|(end, _)| std::cmp::Reverse(*end));
+                    supplements.sort_by_key(|(end, _, _)| std::cmp::Reverse(*end));
                     supplements.truncate(1);
                 }
-                for (end, url) in supplements {
+                for (end, url, published_on) in supplements {
                     if documents
                         .iter()
-                        .filter(|document| document.report_period == Some(end))
-                        .flat_map(|document| &document.observations)
-                        .any(|value| value.end == end && is_quarter(value))
+                        .any(|document| document.source.as_deref() == Some(url.as_str()))
                     {
                         continue;
                     }
@@ -170,8 +191,18 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                     }) {
                         Ok(mut result) => {
                             result.report_period = Some(end);
+                            if let Some(date) = published_on {
+                                ensure!(
+                                    date >= end,
+                                    "supplement publication date precedes report period"
+                                );
+                                for value in &mut result.observations {
+                                    value.published_on = Some(date);
+                                }
+                            }
                             documents.push(result);
                         }
+                        Err(error) if error.is::<crate::Conflict>() => return Err(error),
                         Err(error) => log::warn!("{url}: {error:#}"),
                     }
                 }
@@ -191,9 +222,11 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
         .filter_map(|document| document.report_period)
         .max();
     let mut observations = contiguous_series(
-        original_series(&documents, since)
+        original_series(&documents, since, company.affo_comparatives)?
             .into_iter()
-            .filter(|value| unit.is_none_or(|unit| value.unit == unit))
+            .filter(|value| {
+                value.metric == Metric::Affo || unit.is_none_or(|unit| value.unit == unit)
+            })
             .collect(),
         report_period,
     );
@@ -218,6 +251,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
         );
     }
     Ok(Report {
+        affo_support: company.affo_support,
         symbol: symbol.to_owned(),
         report_period,
         observations,
@@ -226,38 +260,19 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
     })
 }
 
-fn covered_pdf(url: &str, documents: &[Extraction], unit: Option<Unit>) -> bool {
-    let Some((stem, extension)) = url.rsplit_once('.') else {
-        return false;
-    };
-    extension.eq_ignore_ascii_case("pdf")
-        && documents.iter().any(|document| {
-            document.source.as_deref().is_some_and(|source| {
-                source
-                    .rsplit_once('.')
-                    .is_some_and(|(html_stem, extension)| {
-                        html_stem == stem
-                            && (extension.eq_ignore_ascii_case("htm")
-                                || extension.eq_ignore_ascii_case("html"))
-                    })
-            }) && document.report_period.is_some_and(|end| {
-                document.observations.iter().any(|value| {
-                    value.end == end
-                        && is_quarter(value)
-                        && unit.is_none_or(|unit| value.unit == unit)
-                })
-            })
-        })
-}
-
-fn original_series(documents: &[Extraction], since: NaiveDate) -> Vec<Observation> {
+fn original_series(
+    documents: &[Extraction],
+    since: NaiveDate,
+    affo_comparatives: bool,
+) -> Result<Vec<Observation>> {
     let mut periods = BTreeMap::<_, Vec<_>>::new();
     for document in documents {
-        for value in document
-            .observations
-            .iter()
-            .filter(|value| value.start >= since)
-        {
+        for value in document.observations.iter().filter(|value| {
+            value.start >= since
+                && (value.metric != Metric::Affo
+                    || affo_comparatives
+                    || document.report_period == Some(value.end))
+        }) {
             periods
                 .entry((value.metric, value.unit, value.start, value.end))
                 .or_default()
@@ -269,13 +284,35 @@ fn original_series(documents: &[Extraction], since: NaiveDate) -> Vec<Observatio
         candidates.sort_by_key(|(document, value)| {
             (
                 document.report_period != Some(end),
-                value.unit,
+                value.label.starts_with("Calculated "),
                 document.filed_on.unwrap_or(NaiveDate::MAX),
             )
         });
-        observations.push(candidates[0].1.clone());
+        let (document, selected) = candidates[0];
+        for (other_document, other) in &candidates[1..] {
+            if other_document.report_period == document.report_period
+                && other_document.filed_on == document.filed_on
+                && other.published_on == selected.published_on
+                && other.label.starts_with("Calculated ")
+                    == selected.label.starts_with("Calculated ")
+                && other.value * other.scale as f64 != selected.value * selected.scale as f64
+            {
+                return Err(crate::Conflict(format!(
+                    "{}: conflicting {:?} {:?} for {} through {} in {} and {}",
+                    document.symbol,
+                    selected.metric,
+                    selected.unit,
+                    selected.start,
+                    selected.end,
+                    selected.source,
+                    other.source
+                ))
+                .into());
+            }
+        }
+        observations.push(selected.clone());
     }
-    observations
+    Ok(observations)
 }
 
 pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) -> Vec<Observation> {
@@ -303,7 +340,12 @@ pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) ->
         })
         .filter(|values| !values.is_empty())
     {
-        let current = selected.entry(values[0].metric).or_default();
+        let current = selected
+            .entry((
+                values[0].metric,
+                (values[0].metric == Metric::Affo).then_some(values[0].unit),
+            ))
+            .or_default();
         if values.len() > current.len() {
             *current = values;
         }

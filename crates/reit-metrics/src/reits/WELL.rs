@@ -25,6 +25,23 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.rules[0].section = Some(regex::Regex::new(r"(?i)^per (?:diluted )?share data")?);
+    company.rules.push(crate::companies::Rule {
+        metric: Metric::Affo,
+        unit: Unit::PerShare,
+        label: regex::Regex::new(r"^funds available for distribution$")?,
+        scale: Some(1),
+        section: Some(regex::Regex::new(r"(?i)^per (?:diluted )?share data")?),
+    });
+    company.rules.push(crate::companies::Rule {
+        metric: Metric::Affo,
+        unit: Unit::Total,
+        label: regex::Regex::new(r"^funds available for distribution$")?,
+        scale: Some(1000),
+        section: Some(regex::Regex::new(
+            r"(?i)^(?:fad reconciliation|\(in thousands|$)",
+        )?),
+    });
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

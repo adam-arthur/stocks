@@ -2,7 +2,7 @@
   {
     "symbol": "O",
     "source": "https://www.sec.gov/Archives/edgar/data/726728/000110465916114228/a16-8920_1ex99d1.htm",
-    "count": 2,
+    "count": 6,
     "expected": [
       {
         "metric": "ffo",
@@ -11,13 +11,29 @@
         "value": 0.68,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.7,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 175918,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "O",
     "source": "https://www.sec.gov/Archives/edgar/data/726728/000110465917047083/a17-18192_1ex99d1.htm",
-    "count": 4,
+    "count": 12,
     "expected": [
       {
         "metric": "ffo",
@@ -26,13 +42,29 @@
         "value": 0.75,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2017-04-01",
+        "end": "2017-06-30",
+        "value": 0.76,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2017-04-01",
+        "end": "2017-06-30",
+        "value": 208388,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "O",
     "source": "https://www.sec.gov/Archives/edgar/data/726728/000072672826000044/o-991q22026.htm",
-    "count": 4,
+    "count": 12,
     "expected": [
       {
         "metric": "ffo",
@@ -41,6 +73,22 @@
         "value": 1.07,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.09,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1022120,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
@@ -92,7 +140,7 @@
   {
     "symbol": "PLD",
     "source": "https://d1io3yog0oux5.cloudfront.net/_cd98c6da4dd66d60ba018a72cc4334a2/prologis/db/2346/23513/supplemental_financial_report_pdf/q1-2016-supplemental-final.pdf",
-    "count": 2,
+    "count": 6,
     "expected": [
       {
         "metric": "ffo",
@@ -107,7 +155,7 @@
   {
     "symbol": "PLD",
     "source": "https://d1io3yog0oux5.cloudfront.net/_cd98c6da4dd66d60ba018a72cc4334a2/prologis/db/2346/23535/supplemental_financial_report_pdf/21Q3-PLD-Supplemental.pdf",
-    "count": 4,
+    "count": 12,
     "expected": [
       {
         "metric": "ffo",
@@ -122,7 +170,7 @@
   {
     "symbol": "PLD",
     "source": "https://www.sec.gov/Archives/edgar/data/1045609/000119312526422375/pld-ex99_1.htm",
-    "count": 4,
+    "count": 12,
     "expected": [
       {
         "metric": "ffo",
@@ -257,7 +305,7 @@
   {
     "symbol": "VICI",
     "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569626000088/viciq22026earningsrelease.htm",
-    "count": 8,
+    "count": 16,
     "expected": [
       {
         "metric": "ffo",
@@ -266,13 +314,29 @@
         "value": 0.48,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 0.62,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 679636,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "VICI",
     "source": "https://www.sec.gov/Archives/edgar/data/1705696/000119312518075284/d549281dex991.htm",
-    "count": 1,
+    "count": 3,
     "expected": [
       {
         "metric": "ffo",
@@ -281,13 +345,29 @@
         "value": 0.19,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2017-10-06",
+        "end": "2017-12-31",
+        "value": 0.37,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2017-10-06",
+        "end": "2017-12-31",
+        "value": 84119,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "VICI",
     "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569618000023/ex991viciearningsreleaseq1.htm",
-    "count": 1,
+    "count": 3,
     "expected": [
       {
         "metric": "ffo",
@@ -296,13 +376,29 @@
         "value": 0.33,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2018-01-01",
+        "end": "2018-03-31",
+        "value": 0.36,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2018-01-01",
+        "end": "2018-03-31",
+        "value": 125039,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "VICI",
     "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569619000093/viciq12019earningsrele.htm",
-    "count": 2,
+    "count": 6,
     "expected": [
       {
         "metric": "ffo",
@@ -311,6 +407,22 @@
         "value": 0.37,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2019-01-01",
+        "end": "2019-03-31",
+        "value": 0.37,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2019-01-01",
+        "end": "2019-03-31",
+        "value": 151544,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
@@ -467,7 +579,7 @@
   {
     "symbol": "ADC",
     "source": "https://www.sec.gov/Archives/edgar/data/917251/000091725126000061/adc20260630-ex991.htm",
-    "count": 8,
+    "count": 16,
     "expected": [
       {
         "metric": "ffo",
@@ -476,13 +588,29 @@
         "value": 1.03,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 1.14,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2026-04-01",
+        "end": "2026-06-30",
+        "value": 137983,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "ADC",
     "source": "https://www.sec.gov/Archives/edgar/data/917251/000114420416096449/v437886_ex99-1.htm",
-    "count": 2,
+    "count": 6,
     "expected": [
       {
         "metric": "ffo",
@@ -491,13 +619,29 @@
         "value": 0.61,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 0.61,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2016-01-01",
+        "end": "2016-03-31",
+        "value": 12732,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
   {
     "symbol": "ADC",
     "source": "https://www.sec.gov/Archives/edgar/data/917251/000110465920084843/tm2025195d1_ex99-1.htm",
-    "count": 4,
+    "count": 12,
     "expected": [
       {
         "metric": "ffo",
@@ -506,6 +650,22 @@
         "value": 0.69,
         "unit": "per_share",
         "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2020-04-01",
+        "end": "2020-06-30",
+        "value": 0.76,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2020-04-01",
+        "end": "2020-06-30",
+        "value": 40697,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   },
@@ -4821,6 +4981,129 @@
         "value": 2.85,
         "unit": "per_share",
         "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "ADC",
+    "source": "https://www.sec.gov/Archives/edgar/data/917251/000110465924110557/tm2426623d1_ex99-1.htm",
+    "count": 12,
+    "expected": [
+      {
+        "metric": "affo",
+        "start": "2024-07-01",
+        "end": "2024-09-30",
+        "value": 1.03,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2024-07-01",
+        "end": "2024-09-30",
+        "value": 104768,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569620000105/viciq12020earningsrele.htm",
+    "count": 6,
+    "expected": [
+      {
+        "metric": "affo",
+        "start": "2020-01-01",
+        "end": "2020-03-31",
+        "value": 0.38,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2020-01-01",
+        "end": "2020-03-31",
+        "value": 179976,
+        "unit": "total",
+        "scale": 1000
+      },
+      {
+        "metric": "ffo",
+        "start": "2020-01-01",
+        "end": "2020-03-31",
+        "value": -0.05,
+        "unit": "per_share",
+        "scale": 1
+      }
+    ]
+  },
+  {
+    "symbol": "O",
+    "source": "https://www.sec.gov/Archives/edgar/data/726728/000072672826000009/o-991q42025.htm",
+    "count": 12,
+    "expected": [
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 1.08,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 996703,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "ADC",
+    "source": "https://www.sec.gov/Archives/edgar/data/917251/000091725126000012/adc20251231-exhibit991.htm",
+    "count": 16,
+    "expected": [
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 1.11,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 128048,
+        "unit": "total",
+        "scale": 1000
+      }
+    ]
+  },
+  {
+    "symbol": "VICI",
+    "source": "https://www.sec.gov/Archives/edgar/data/1705696/000170569626000033/viciq42025earningsrelease.htm",
+    "count": 16,
+    "expected": [
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 0.6,
+        "unit": "per_share",
+        "scale": 1
+      },
+      {
+        "metric": "affo",
+        "start": "2025-10-01",
+        "end": "2025-12-31",
+        "value": 642527,
+        "unit": "total",
+        "scale": 1000
       }
     ]
   }

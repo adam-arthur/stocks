@@ -7,11 +7,16 @@ pub fn company() -> Result<Company> {
         "CLPR",
         1649096,
         &["www.clipperrealty.com", "investors.clipperrealty.com"],
-        vec![(Metric::Ffo, Unit::Total, r"^ffo$", 1000)],
+        vec![
+            (Metric::Affo, Unit::Total, r"^affo$", 1000),
+            (Metric::Affo, Unit::PerShare, r"^affo per share/unit$", 1),
+            (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     company.ownership = Some(crate::ownership::Rules {
         exchange_pattern: Some(
             r"(?i)Class B LLC units, together with the special voting shares, are convertible into common shares of the Company on a one\s*-for-one basis",

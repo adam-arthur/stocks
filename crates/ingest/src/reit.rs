@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use alpaca_client::Asset;
 use anyhow::Result;
 use chrono::NaiveDate;
-use reit_metrics::{Fetch, Unit, source::Sources};
+use reit_metrics::{Fetch, Metric, Unit, source::Sources};
 
 use crate::{Category, Store, models::ReitQuarter, progress::Progress};
 
@@ -12,24 +12,45 @@ pub async fn update(
     assets: &[Asset],
     progress_bar: &indicatif::ProgressBar,
 ) -> Result<()> {
+    update_symbols(
+        store,
+        &assets
+            .iter()
+            .map(|asset| asset.symbol.clone())
+            .collect::<Vec<_>>(),
+        progress_bar,
+    )
+    .await?;
+    Ok(())
+}
+
+pub async fn update_symbols(
+    store: &Store,
+    symbols: &[String],
+    progress_bar: &indicatif::ProgressBar,
+) -> Result<usize> {
+    let mut failed = 0;
     let sources = Sources::new(&store.sec_directory()?.join("reit-metrics"))?;
     let mut progress = Progress::new(
         progress_bar,
         "REIT financials",
-        assets.len(),
+        symbols.len(),
         "deterministic",
     );
-    for asset in assets {
+    for symbol in symbols {
         if store
-            .metadata(&asset.symbol)?
+            .metadata(symbol)?
             .is_none_or(|meta| !matches!(meta.category, Category::EquityReit))
         {
             progress.advance(1, "");
             continue;
         }
         let result = async {
-            reit_metrics::companies::company(&asset.symbol)?;
-            let previous = store.reit(&asset.symbol)?;
+            let company = reit_metrics::companies::company(symbol)?;
+            let history = store.reit(symbol)?;
+            let previous = history
+                .as_ref()
+                .map_or(&[][..], |history| history.quarters.as_slice());
             let latest = previous.iter().max_by_key(|quarter| quarter.end);
             let mut backfill = latest.is_none_or(|latest| {
                 previous.iter().any(|quarter| {
@@ -38,7 +59,7 @@ pub async fn update(
                         || quarter.ffo_total.is_some() != latest.ffo_total.is_some()
                 })
             });
-            let ownership_backfill = reit_metrics::ownership::supports(&asset.symbol)
+            let ownership_backfill = reit_metrics::ownership::supports(symbol)
                 && [false, true].into_iter().any(|equivalents| {
                     let present = |quarter: &ReitQuarter| {
                         quarter.ownership.as_ref().is_some_and(|ownership| {
@@ -61,7 +82,7 @@ pub async fn update(
                         })
                 });
             let mut report = reit_metrics::fetch(
-                &asset.symbol,
+                symbol,
                 latest.filter(|_| !backfill && !ownership_backfill).map_or(
                     Fetch::All {
                         since: NaiveDate::from_ymd_opt(2016, 1, 1).unwrap(),
@@ -81,7 +102,7 @@ pub async fn update(
             if !backfill && report.observations.is_empty() {
                 backfill = true;
                 report = reit_metrics::fetch(
-                    &asset.symbol,
+                    symbol,
                     Fetch::All {
                         since: NaiveDate::from_ymd_opt(2016, 1, 1).unwrap(),
                     },
@@ -112,15 +133,30 @@ pub async fn update(
                             published_on: None,
                             ffo_per_share: None,
                             ffo_total: None,
+                            affo_per_share: None,
+                            affo_total: None,
                             ownership: Default::default(),
                         });
-                quarter.ffo_per_share = (value.unit == Unit::PerShare).then_some(value.value);
+                anyhow::ensure!(
+                    quarter.published_on.is_none() || quarter.published_on == value.published_on,
+                    "conflicting publication dates for quarter ending {}",
+                    value.end
+                );
                 quarter.published_on = value.published_on;
-                quarter.ffo_total = (value.unit == Unit::Total)
-                    .then_some((value.value * value.scale as f64).round() as i64);
+                match (value.metric, value.unit) {
+                    (Metric::Ffo, Unit::PerShare) => quarter.ffo_per_share = Some(value.value),
+                    (Metric::Ffo, Unit::Total) => {
+                        quarter.ffo_total = Some((value.value * value.scale as f64).round() as i64);
+                    }
+                    (Metric::Affo, Unit::PerShare) => quarter.affo_per_share = Some(value.value),
+                    (Metric::Affo, Unit::Total) => {
+                        quarter.affo_total =
+                            Some((value.value * value.scale as f64).round() as i64);
+                    }
+                }
             }
             let facts = store
-                .metadata(&asset.symbol)?
+                .metadata(symbol)?
                 .and_then(|meta| meta.cik)
                 .map(|cik| store.company_facts(cik))
                 .transpose()?
@@ -156,19 +192,24 @@ pub async fn update(
             }) {
                 quarters.clear();
             }
-            if serde_json::to_value(&previous)? != serde_json::to_value(&quarters)? {
-                store.save_reit(&asset.symbol, &quarters)?;
+            let updated = reit_metrics::ReitHistory {
+                affo_support: company.affo_support,
+                quarters,
+            };
+            if serde_json::to_value(&history)? != serde_json::to_value(&updated)? {
+                store.save_reit(symbol, &updated)?;
             }
             Ok::<_, anyhow::Error>(())
         }
         .await;
         if let Err(error) = result {
-            log::warn!("{}: REIT metrics unavailable: {error:#}", asset.symbol);
+            failed += 1;
+            log::warn!("{}: REIT metrics unavailable: {error:#}", symbol);
         }
-        progress.advance(1, &asset.symbol);
+        progress.advance(1, symbol);
     }
     progress.finish();
-    Ok(())
+    Ok(failed)
 }
 
 pub fn contiguous_quarters(mut quarters: Vec<ReitQuarter>) -> Vec<ReitQuarter> {

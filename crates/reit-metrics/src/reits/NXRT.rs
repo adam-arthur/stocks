@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["nxrt.nexpoint.com", "www.nexpointliving.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per share\s*[-–—]\s*diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo attributable to common stockholders$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per share\s*[-–—]\s*diluted$",
@@ -34,6 +46,7 @@ pub fn company() -> Result<Company> {
             })
             .collect()
     };
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

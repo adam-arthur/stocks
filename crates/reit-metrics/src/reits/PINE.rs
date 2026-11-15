@@ -9,6 +9,12 @@ pub fn company() -> Result<Company> {
         &["alpinereit.com", "www.alpinereit.com", "ir.alpinereit.com"][..],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo (?:attributable to common stockholders )?per diluted share$",
+                1,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo (?:attributable to common stockholders )?per diluted share$",
@@ -24,6 +30,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

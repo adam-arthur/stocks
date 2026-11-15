@@ -11,16 +11,31 @@ pub fn company() -> Result<Company> {
             "www.pkhotelsandresorts.com",
             "investors.pkhotelsandresorts.com",
         ],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^(?:nareit )?ffo per share\s*[-–—]\s*diluted$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo (?:per share\s*[-–—]\s*diluted|attributable to stockholders per diluted share)$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted ffo attributable to stockholders$",
+                1000000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^(?:nareit )?ffo per share\s*[-–—]\s*diluted$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

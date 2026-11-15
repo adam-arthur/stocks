@@ -17,6 +17,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.rules[0].section = Some(regex::Regex::new(r"(?i)^diluted per common share data")?);
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     Ok(company)
 }

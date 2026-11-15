@@ -39,6 +39,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     let mut stopped = None;
     let client = AlpacaClient::from_env()?;
     let mut assets = client.list_tradable_stocks().await?;
+    assets.retain(|asset| asset.symbol != "AIV");
     assets.sort_by(|a, b| a.symbol.cmp(&b.symbol));
     let mut failures = store.failures()?;
     let mut categorized = 0;

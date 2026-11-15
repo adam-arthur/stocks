@@ -25,6 +25,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.derive = Some(|documents| crate::derive::fourth_quarters("BHM", documents));
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules {

@@ -26,6 +26,8 @@ pub fn company() -> Result<Company> {
     company.rules[1].section = Some(regex::Regex::new(r"(?i)^per common share data")?);
     company.tables = crate::table::joined_parentheses;
     company.extra_observations = Some(extract);
+    company.affo_support = crate::AffoSupport::Reported;
+    company.affo_comparatives = true;
     company.debt = Some(debt);
     Ok(company)
 }
@@ -49,38 +51,60 @@ pub(crate) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation
         {
             continue;
         }
-        let Some(values) = crate::presentation::values(
-            &text[section.end()..],
-            "FFO attributable to common shareholders",
-        )?
-        .into_iter()
-        .next()
-        .filter(|values| values.len() == headers.len()) else {
-            continue;
-        };
-        let quarterly_columns = if headers.len() <= 4 { 2 } else { 5 };
-        for (column, (end, value)) in headers.into_iter().zip(values).enumerate() {
-            observations.push(crate::Observation {
-                published_on: None,
-                metric: Metric::Ffo,
-                start: NaiveDate::from_ymd_opt(
-                    end.year(),
-                    if column < quarterly_columns {
-                        end.month() - 2
-                    } else {
-                        1
-                    },
-                    1,
-                )
-                .unwrap(),
-                end,
-                label: "FFO attributable to common shareholders".into(),
-                value,
-                unit: Unit::PerShare,
-                scale: 1,
-                source: source.to_owned(),
-                location: format!("presentation page {}, column {}", page + 1, column + 1),
-            });
+        for (metric, unit, label, text, scale) in [
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                "FFO attributable to common shareholders",
+                &text[section.end()..],
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                "CAD attributable to common shareholders",
+                &text[section.end()..],
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                "CAD attributable to common shareholders",
+                &text[..section.start()],
+                1000,
+            ),
+        ] {
+            let Some(values) = crate::presentation::values(text, label)?
+                .into_iter()
+                .next()
+                .filter(|values| values.len() == headers.len())
+            else {
+                continue;
+            };
+            let quarterly_columns = if headers.len() <= 4 { 2 } else { 5 };
+            for (column, (end, value)) in headers.iter().copied().zip(values).enumerate() {
+                observations.push(crate::Observation {
+                    published_on: None,
+                    metric,
+                    start: NaiveDate::from_ymd_opt(
+                        end.year(),
+                        if column < quarterly_columns {
+                            end.month() - 2
+                        } else {
+                            1
+                        },
+                        1,
+                    )
+                    .unwrap(),
+                    end,
+                    label: label.into(),
+                    value,
+                    unit,
+                    scale,
+                    source: source.to_owned(),
+                    location: format!("presentation page {}, column {}", page + 1, column + 1),
+                });
+            }
         }
     }
     Ok(observations)

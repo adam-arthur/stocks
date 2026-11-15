@@ -12,6 +12,12 @@ pub fn company() -> Result<Company> {
             "investors.regencycenters.com",
         ],
         vec![
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted core funds from operations$",
+                1000,
+            ),
             (Metric::Ffo, Unit::PerShare, r"^nareit ffo per share$", 1),
             (
                 Metric::Ffo,
@@ -25,7 +31,26 @@ pub fn company() -> Result<Company> {
     company.tables = tables;
     company.extra_observations = Some(extract);
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
+    company.sections.push(affo_per_share);
     Ok(company)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^weighted average shares (?:for diluted nareit ffo and core ffo per share|\(diluted\)\s*[-–—]\s*nareit ffo and core ffo)$",
+            )?,
+            scale: Some(1000),
+            section: None,
+        },
+    )
 }
 
 fn tables(html: &str) -> Vec<crate::table::Table> {

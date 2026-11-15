@@ -6,8 +6,20 @@ pub fn company() -> Result<Company> {
     let mut company = build((
         "LAND",
         1495240,
-        &[],
+        &["www.gladstonefarms.com"],
         vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^(?:(?:diluted )?affo per weighted[- ]average (?:common|total(?: common)?) share|affo available to common stockholders(?: and (?:non-controlling op unitholders|op unit ?holders))?\s*[-–—]\s*diluted)$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo available to common stockholders(?: and (?:non-controlling op unitholders|op unit ?holders))?$",
+                0,
+            ),
             (
                 Metric::Ffo,
                 Unit::PerShare,
@@ -23,7 +35,16 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
+    company.tables = |html| {
+        crate::table::joined_parentheses(html)
+            .into_iter()
+            .map(|mut table| {
+                table.amount_scale = Some(table.amount_scale.unwrap_or(1));
+                table
+            })
+            .collect()
+    };
     company.debt = Some(debt);
     Ok(company)
 }

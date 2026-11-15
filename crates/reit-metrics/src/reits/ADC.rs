@@ -13,6 +13,18 @@ pub fn company() -> Result<Company> {
         ],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^(?:adjusted ffo|adjusted funds from operations) per (?:common )?share(?: and (?:op|partnership) unit)?\s*[-–—]\s*diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted funds from operations(?:\s*[-–—]\s*(?:operating partnership|op) common unitholders)?$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^(?:ffo|funds from operations) per (?:common )?share(?: and (?:op|partnership) unit)?\s*[-–—]\s*diluted$",
@@ -28,6 +40,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

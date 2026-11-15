@@ -162,10 +162,16 @@ impl Sources {
                 .iter()
                 .enumerate()
             {
-                if form != "8-K"
-                    || !company.additional_items.is_some_and(|accept| {
+                let form = form.as_str().context("invalid SEC filing form")?;
+                if !(form == "8-K"
+                    && company.additional_items.is_some_and(|accept| {
                         accept(group["items"][index].as_str().unwrap_or_default())
-                    })
+                    }))
+                    && !(company.filings.contains(&form)
+                        && !matches!(
+                            form,
+                            "8-K" | "8-K/A" | "10-Q" | "10-Q/A" | "10-K" | "10-K/A"
+                        ))
                 {
                     continue;
                 }
@@ -180,7 +186,7 @@ impl Sources {
                             .context("missing SEC accession")?
                             .to_owned(),
                         filed_on,
-                        form: "8-K".into(),
+                        form: form.into(),
                     });
                 }
             }
@@ -194,16 +200,27 @@ impl Sources {
         accession: &str,
         form: &str,
     ) -> Result<Vec<String>> {
-        self.document_urls(
-            company,
-            accession,
-            if form.starts_with("8-K") {
-                "EX-99"
-            } else {
-                form
-            },
-        )
-        .await
+        let urls = self
+            .document_urls(
+                company,
+                accession,
+                if form.starts_with("8-K") || form.starts_with("6-K") {
+                    "EX-99"
+                } else {
+                    form
+                },
+            )
+            .await?;
+        if !form.starts_with("6-K") {
+            return Ok(urls);
+        }
+        let mut releases = Vec::new();
+        for url in urls {
+            if crate::publication::is_earnings_release(&self.get(company, &url).await?)? {
+                releases.push(url);
+            }
+        }
+        Ok(releases)
     }
 
     pub async fn publication_date(
@@ -211,6 +228,23 @@ impl Sources {
         company: &Company,
         filing: &sec_client::EarningsFiling,
     ) -> Result<chrono::NaiveDate> {
+        if filing.form.starts_with("6-K") {
+            let mut dates = std::collections::BTreeSet::new();
+            for url in self
+                .filing_urls(company, &filing.accession, &filing.form)
+                .await?
+            {
+                dates.insert(crate::publication::extract_6k(
+                    &self.get(company, &url).await?,
+                    filing.filed_on,
+                )?);
+            }
+            ensure!(
+                dates.len() == 1,
+                "missing or conflicting 6-K earnings release dates"
+            );
+            return Ok(dates.into_iter().next().unwrap());
+        }
         ensure!(
             filing.form.starts_with("8-K"),
             "announcement date requires an 8-K with Item 2.02"
@@ -259,7 +293,10 @@ impl Sources {
         let mut result = Vec::new();
         for row in html.select(&Selector::parse("table.tableFile tr").unwrap()) {
             let cells: Vec<_> = row.select(&cells).collect();
-            if cells.len() < 4 || !cells[3].text().collect::<String>().trim().starts_with(kind) {
+            if cells.len() < 4 {
+                continue;
+            }
+            if !cells[3].text().collect::<String>().trim().starts_with(kind) {
                 continue;
             }
             if let Some(href) = cells[2]

@@ -7,15 +7,24 @@ pub fn company() -> Result<Company> {
         "MKZR",
         1550913,
         &["www.mackenzierealty.com", "mackenzierealty.com"],
-        vec![(
-            Metric::Ffo,
-            Unit::Total,
-            r"^(?:ffo|funds from operations(?:\s*[-–—]\s*ffo)?)$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^(?:affo|adjusted funds from operations(?: affo)?)$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::Total,
+                r"^(?:ffo|funds from operations(?:\s*[-–—]\s*ffo)?)$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.additional_items = Some(|items| {
         items
@@ -42,10 +51,10 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             .join(" "),
     );
     let period = regex::Regex::new(
-        r"(?i)financial results for the (?:(?:first|second|third|fourth|fiscal) )?(quarter|year) ended ([A-Za-z]+ \d{1,2},? 20\d{2})",
+        r"(?i)financial results for the (?:(?:first|second|third|fourth|fiscal) )*(quarter|year) ended ([A-Za-z]+ \d{1,2},? 20\d{2})",
     ).unwrap();
     let Some(period) = period.captures(&text) else {
-        return Vec::new();
+        return crate::table::joined_parentheses(html);
     };
     let Ok(end) = NaiveDate::parse_from_str(&period[2].replace(',', ""), "%B %d %Y") else {
         return Vec::new();
@@ -56,7 +65,10 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         .filter(|row| {
             row.iter()
                 .find(|cell| !cell.text.is_empty())
-                .is_some_and(|cell| cell.text.eq_ignore_ascii_case("ffo"))
+                .is_some_and(|cell| {
+                    cell.text.eq_ignore_ascii_case("ffo")
+                        || cell.text.eq_ignore_ascii_case("affo")
+                })
         })
         .filter_map(|row| {
             let values = row

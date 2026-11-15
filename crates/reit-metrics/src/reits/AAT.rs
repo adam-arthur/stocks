@@ -8,6 +8,7 @@ pub fn company() -> Result<Company> {
         1500217,
         &["ir.americanassetstrust.com", "www.americanassetstrust.com"],
         vec![
+            (Metric::Affo, Unit::Total, r"^fad$", 1000),
             (
                 Metric::Ffo,
                 Unit::PerShare,
@@ -23,7 +24,10 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.sections.push(affo_per_share);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 
@@ -77,4 +81,22 @@ fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate:
         );
     }
     crate::debt::tables(html, as_of, &[crate::debt::Rule::new(0, 1000)], None)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    let values = crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^weighted average number of common shares and common units, diluted$",
+            )?,
+            scale: Some(1),
+            section: None,
+        },
+    )?;
+    Ok(values)
 }

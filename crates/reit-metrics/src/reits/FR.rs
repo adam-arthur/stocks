@@ -8,6 +8,12 @@ pub fn company() -> Result<Company> {
         &[],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r#"^adjusted funds from operations(?: \([“"]affo[”"]\))?$"#,
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^(?:basic/|basic and )?diluted per share/unit$",
@@ -23,6 +29,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

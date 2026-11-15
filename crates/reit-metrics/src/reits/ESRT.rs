@@ -11,6 +11,7 @@ pub fn company() -> Result<Company> {
             "investors.esrtreit.com",
         ],
         vec![
+            (Metric::Affo, Unit::Total, r"^core fad$", 1000),
             (Metric::Ffo, Unit::PerShare, r#"^ffo per share diluted$"#, 1),
             (
                 Metric::Ffo,
@@ -19,11 +20,33 @@ pub fn company() -> Result<Company> {
                 1000,
             ),
         ],
-        None,
+        Some("core ffo"),
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.sections.push(affo_per_share);
+    company.affo_support = crate::AffoSupport::Reported;
+    company.affo_comparatives = true;
     company.debt = Some(debt);
     Ok(company)
+}
+
+fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<crate::Observation>> {
+    crate::affo_per_share(
+        company()?,
+        tables,
+        source,
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(
+                r"^total weighted average shares and operating partnership units diluted$",
+            )?,
+            scale: Some(1000),
+            section: Some(regex::Regex::new(
+                r"(?i)^total weighted average shares and operating partnership units$",
+            )?),
+        },
+    )
 }
 
 fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {

@@ -13,7 +13,7 @@ pub(crate) struct Rules {
     pub current_only: fn(&str, &str, usize, usize) -> bool,
 }
 
-pub fn extract(rules: &Rules, path: &Path, source: &str) -> Result<Vec<Observation>> {
+pub fn text(path: &Path) -> Result<String> {
     let output = Command::new("pdftotext")
         .args(["-layout", "-enc", "UTF-8"])
         .arg(path)
@@ -25,7 +25,10 @@ pub fn extract(rules: &Rules, path: &Path, source: &str) -> Result<Vec<Observati
         "pdftotext failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    let text = String::from_utf8(output.stdout)?;
+    Ok(String::from_utf8(output.stdout)?)
+}
+
+pub fn extract(rules: &Rules, text: &str, source: &str) -> Result<Vec<Observation>> {
     let year = Regex::new(r"\b20\d{2}\b")?;
     let date = Regex::new(r"(?i)(mar(?:ch)?|jun(?:e)?|sep(?:tember)?|dec(?:ember)?)\.?\s+(31|30)")?;
     let gap = Regex::new(r"\s{2,}")?;
@@ -39,7 +42,11 @@ pub fn extract(rules: &Rules, path: &Path, source: &str) -> Result<Vec<Observati
         let lines: Vec<_> = text.lines().collect();
         let Some(header_start) = lines
             .iter()
-            .position(|line| compact(line).contains("threemonthsended"))
+            .position(|line| {
+                ["threemonthsended", "quarterended"]
+                    .iter()
+                    .any(|header| compact(line).contains(header))
+            })
         else {
             continue;
         };

@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+reit-metrics = { path = "../reit-metrics" }
 financials = { path = "../financials" }
 anyhow.workspace = true
 chrono.workspace = true

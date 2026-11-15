@@ -21,6 +21,15 @@ pub struct Table {
     pub amount_scale: Option<u64>,
 }
 
+impl Table {
+    pub fn is_forecast(&self) -> bool {
+        self.rows.iter().take(6).flatten().any(|cell| {
+            let text = cell.text.to_lowercase();
+            text.contains("guidance") || text.contains("outlook")
+        })
+    }
+}
+
 pub fn normalize(text: &str) -> String {
     text.replace(['\u{200b}', '\u{feff}', '\u{ad}'], "")
         .split_whitespace()

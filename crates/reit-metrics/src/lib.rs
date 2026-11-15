@@ -18,12 +18,84 @@ use anyhow::Result;
 use chrono::{Datelike, NaiveDate};
 use regex::Regex;
 
-pub use models::{Extraction, Metric, Observation, Unit};
+pub use models::{AffoSupport, Extraction, Metric, Observation, ReitHistory, Unit};
 use table::{Cell, normalize};
 
 pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
     let company = companies::company(symbol)?;
     source::validate_url(&company, source)?;
+    let tables = (company.tables)(html);
+    let (mut candidates, report_period) = reported_sections(&company, &tables, source)?;
+    for observation in company
+        .extra_observations
+        .map(|extract| extract(html, source))
+        .transpose()?
+        .unwrap_or_default()
+    {
+        candidates.push((0, observation));
+    }
+    for section in &company.sections {
+        for observation in section(&tables, source)? {
+            candidates.push((usize::MAX, observation));
+        }
+    }
+    let mut result = select(&company, candidates)?;
+    result.report_period = result.report_period.max(report_period);
+    result.source = Some(source.to_owned());
+    Ok(result)
+}
+
+fn affo_per_share(
+    mut company: companies::Company,
+    tables: &[table::Table],
+    source: &str,
+    shares: companies::Rule,
+) -> Result<Vec<Observation>> {
+    company.rules.retain(|rule| rule.metric == Metric::Affo);
+    let reported = select(&company, reported_sections(&company, tables, source)?.0)?.observations;
+    company.rules = vec![shares];
+    let denominators = reported_sections(&company, tables, source)?.0;
+    Ok(reported
+        .iter()
+        .filter(|total| {
+            total.unit == Unit::Total
+                && !reported.iter().any(|value| {
+                    value.unit == Unit::PerShare
+                        && value.start == total.start
+                        && value.end == total.end
+                })
+        })
+        .filter_map(|total| {
+            let matching: Vec<_> = denominators
+                .iter()
+                .map(|(_, value)| value)
+                .filter(|value| value.start == total.start && value.end == total.end)
+                .map(|value| value.value * value.scale as f64)
+                .collect();
+            let denominator = *matching.first()?;
+            if denominator <= 0.0
+                || !denominator.is_finite()
+                || matching.iter().any(|value| *value != denominator)
+            {
+                return None;
+            }
+            let value = total.value * total.scale as f64 / denominator;
+            value.is_finite().then(|| Observation {
+                value,
+                unit: Unit::PerShare,
+                scale: 1,
+                label: "Calculated AFFO per diluted share/unit".into(),
+                ..total.clone()
+            })
+        })
+        .collect())
+}
+
+fn reported_sections(
+    company: &companies::Company,
+    tables: &[table::Table],
+    source: &str,
+) -> Result<(Vec<(usize, Observation)>, Option<NaiveDate>)> {
     let year = Regex::new(r"\b(20\d{2})\b")?;
     let date = Regex::new(
         r"(?i)(mar(?:ch)?|jun(?:e)?|sep(?:tember)?|dec(?:ember)?)\.?\s*(31|30)|\b(0?[369]|12)/(30|31)/(\d{4}|\d{2})\b|\b(30|31)-(Mar|Jun|Sep|Dec)-(\d{4}|\d{2})\b",
@@ -36,7 +108,6 @@ pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
     let mut candidates = BTreeMap::<_, Vec<(usize, Observation)>>::new();
     let mut previous_headers = Vec::new();
     let mut report_period = None;
-    let tables = (company.tables)(html);
     for (table_number, table) in tables.iter().enumerate() {
         let heading = table
             .rows
@@ -46,7 +117,7 @@ pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
             .map(|cell| cell.text.to_lowercase())
             .collect::<Vec<_>>()
             .join(" ");
-        if heading.contains("guidance") || heading.contains("outlook") {
+        if table.is_forecast() {
             previous_headers.clear();
             continue;
         }
@@ -149,24 +220,10 @@ pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
         }
         previous_headers = headers;
     }
-    for observation in company
-        .extra_observations
-        .map(|extract| extract(html, source))
-        .transpose()?
-        .unwrap_or_default()
-    {
-        candidates
-            .entry((observation.metric, observation.start, observation.end))
-            .or_default()
-            .push((0, observation));
-    }
-    let mut result = select(&company, candidates.into_values().flatten().collect());
-    result.report_period = result.report_period.max(report_period);
-    result.source = Some(source.to_owned());
-    Ok(result)
+    Ok((candidates.into_values().flatten().collect(), report_period))
 }
 
-fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Extraction {
+fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Result<Extraction> {
     let report_period = values.iter().map(|(_, value)| value.end).max();
     let mut candidates = BTreeMap::<_, Vec<_>>::new();
     for (priority, value) in values {
@@ -179,23 +236,45 @@ fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Ex
     for mut values in candidates.into_values() {
         values.sort_by_key(|(priority, value)| (value.unit, *priority, value.scale));
         let (priority, selected) = &values[0];
-        if !values.iter().any(|(other_priority, value)| {
+        if let Some((_, other)) = values.iter().find(|(other_priority, value)| {
             other_priority == priority
-                && value.unit == selected.unit
-                && value.scale == selected.scale
-                && value.value != selected.value
+                && value.value * value.scale as f64 != selected.value * selected.scale as f64
         }) {
-            observations.push(selected.clone());
+            return Err(Conflict(format!(
+                "{}: conflicting {:?} {:?} for {} through {}: {} ({}) versus {} ({})",
+                company.symbol,
+                selected.metric,
+                selected.unit,
+                selected.start,
+                selected.end,
+                selected.value,
+                selected.location,
+                other.value,
+                other.location
+            ))
+            .into());
         }
+        observations.push(selected.clone());
     }
-    Extraction {
+    Ok(Extraction {
         symbol: company.symbol.to_owned(),
         source: None,
         report_period,
         filed_on: None,
         observations,
+    })
+}
+
+#[derive(Debug)]
+pub(crate) struct Conflict(String);
+
+impl std::fmt::Display for Conflict {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
+
+impl std::error::Error for Conflict {}
 
 fn number(text: &str) -> Option<f64> {
     let value = text.trim().replace(['$', ',', ' '], "");
@@ -320,13 +399,18 @@ pub fn extract_file(symbol: &str, path: &std::path::Path, source: &str) -> Resul
             .pdf
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("{symbol}: PDF adapter has not been researched"))?;
+        let text = pdf::text(path)?;
+        let mut observations = pdf::extract(rules, &text, source)?;
+        if let Some(extract) = company.pdf_observations {
+            observations = extract(&text, source, observations)?;
+        }
         let mut result = select(
             &company,
-            pdf::extract(rules, path, source)?
+            observations
                 .into_iter()
-                .map(|value| (0, value))
+                .map(|value| (usize::from(value.label.starts_with("Calculated ")), value))
                 .collect(),
-        );
+        )?;
         result.source = Some(source.to_owned());
         Ok(result)
     } else {

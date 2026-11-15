@@ -28,6 +28,11 @@ pub fn company() -> Result<Company> {
     ))?;
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = crate::table::joined_parentheses;
+    company.rules.extend([
+        crate::companies::Rule { metric: Metric::Affo, unit: Unit::PerShare, label: regex::Regex::new(r"(?i)^affo applicable to common shares and dilutive securities per share, diluted$")?, scale: Some(1), section: None },
+        crate::companies::Rule { metric: Metric::Affo, unit: Unit::Total, label: regex::Regex::new(r"(?i)^affo applicable to common shares and dilutive securities$")?, scale: Some(1000), section: None },
+    ]);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

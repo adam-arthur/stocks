@@ -11,16 +11,31 @@ pub fn company() -> Result<Company> {
             "www.xeniareit.com",
             "investors.xeniareit.com",
         ],
-        vec![(
-            Metric::Ffo,
-            Unit::Total,
-            r"^ffo attributable to common stock and unit holders$",
-            1000,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo per diluted share$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted ffo attributable to common stock and unit holders$",
+                1000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::Total,
+                r"^ffo attributable to common stock and unit holders$",
+                1000,
+            ),
+        ],
         None,
     ))?;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

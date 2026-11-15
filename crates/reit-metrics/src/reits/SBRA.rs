@@ -11,12 +11,17 @@ pub fn company() -> Result<Company> {
             "www.sabrahealth.com",
             "ir.sabrahealth.com",
         ],
-        vec![(Metric::Ffo, Unit::PerShare, r"^ffo$", 1)],
+        vec![
+            (Metric::Ffo, Unit::PerShare, r"^ffo$", 1),
+            (Metric::Affo, Unit::PerShare, r"^affo$", 1),
+        ],
         None,
     ))?;
     company.rules[0].section = Some(regex::Regex::new(
         r"(?i)^amounts per diluted common share(?: attributable to (?:common stockholders|sabra health care reit, inc\.))?:",
     )?);
+    company.rules[1].section = company.rules[0].section.clone();
+    company.affo_support = crate::AffoSupport::Reported;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
     Ok(company)

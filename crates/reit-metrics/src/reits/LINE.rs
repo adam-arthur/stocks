@@ -5,10 +5,20 @@ pub fn company() -> Result<Company> {
     let mut company = build((
         "LINE",
         1868159,
-        &[],
-        vec![(Metric::Ffo, Unit::Total, r"^ffo$", 1000000)],
+        &["ir.onelineage.com"],
+        vec![
+            (Metric::Ffo, Unit::Total, r"^ffo$", 1000000),
+            (Metric::Affo, Unit::Total, r"^adjusted ffo$", 1000000),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo per diluted common share$",
+                1,
+            ),
+        ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Reported;
     company.tables = tables;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules {

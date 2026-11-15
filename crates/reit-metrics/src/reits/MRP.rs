@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["ir.millroseproperties.com", "www.millroseproperties.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo attributable to millrose properties, inc\. common stockholders$",
+                1000,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo (?:basic and )?diluted earnings per share of class a and class b common stock$",
+                1,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^gaap reported basic and diluted earnings per share of class a and class b common stock$",
@@ -24,13 +36,14 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
+    company.affo_support = crate::AffoSupport::Reported;
     company.tables = tables;
     company.debt = Some(debt);
     Ok(company)
 }
 
 fn tables(html: &str) -> Vec<crate::table::Table> {
-    if !crate::table::normalize(
+    let ffo = crate::table::normalize(
         &scraper::Html::parse_document(html)
             .root_element()
             .text()
@@ -38,10 +51,7 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             .join(" "),
     )
     .to_lowercase()
-    .contains("there were no applicable adjustments to net income of the company to calculate ffo")
-    {
-        return Vec::new();
-    }
+    .contains("there were no applicable adjustments to net income of the company to calculate ffo");
     crate::table::joined_parentheses(html)
         .into_iter()
         .filter(|table| {
@@ -50,6 +60,16 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
                     .to_lowercase()
                     .starts_with("affo attributable to millrose")
             })
+        })
+        .map(|mut table| {
+            if !ffo {
+                table.rows.retain(|row| !row.iter().any(|cell| {
+                    let label = cell.text.to_lowercase();
+                    label == "net income attributable to millrose properties, inc. common stockholders"
+                        || label == "gaap reported basic and diluted earnings per share of class a and class b common stock"
+                }));
+            }
+            table
         })
         .collect()
 }

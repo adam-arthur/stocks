@@ -23,21 +23,23 @@ pub fn company() -> Result<Company> {
         Some(|_, _, since, through| Box::pin(async move { Ok(supplements(since, through)) }));
     company.supplement_period_required = true;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Unavailable;
     Ok(company)
 }
 
 pub fn supplements(
     since: chrono::NaiveDate,
     through: chrono::NaiveDate,
-) -> Vec<(chrono::NaiveDate, String)> {
+) -> Vec<(chrono::NaiveDate, String, Option<chrono::NaiveDate>)> {
     use chrono::Datelike;
 
     (since.year()..=through.year())
         .map(|year| (
             chrono::NaiveDate::from_ymd_opt(year, 12, 31).unwrap(),
             format!("https://alx-inc.com/press-release/news-details/{}/Alexanders-Announces-Fourth-Quarter-Financial-Results/default.aspx", year + 1),
+            None,
         ))
-        .filter(|(end, _)| *end >= since && *end <= through)
+        .filter(|(end, _, _)| *end >= since && *end <= through)
         .collect()
 }
 

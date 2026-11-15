@@ -13,6 +13,24 @@ pub fn company() -> Result<Company> {
         ],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per common share(?: outstanding)?(?:,|\s*[-–—]) diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted funds from operations per diluted share$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^(?:affo|adjusted funds from operations(?: \(affo\))?)$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per common share, diluted$",
@@ -30,6 +48,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

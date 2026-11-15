@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["investor.equinix.com", "www.equinix.com"][..],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^diluted affo per share$"#,
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r#"^affo(?: attributable to common (?:stock|share)holders)?$"#,
+                0,
+            ),
+            (
                 Metric::Ffo,
                 Unit::Total,
                 r"^ffo(?: attributable to common (?:stock|share)holders)?$",
@@ -25,6 +37,7 @@ pub fn company() -> Result<Company> {
                 .replace_all(html, "(dollars in $1"),
         )
     };
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)

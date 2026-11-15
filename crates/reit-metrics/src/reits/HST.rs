@@ -24,6 +24,23 @@ pub fn company() -> Result<Company> {
         url.host_str() == Some("www.sec.gov")
             && url.path().starts_with("/Archives/edgar/data/1061937/")
     };
+    company.rules.extend([
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::PerShare,
+            label: regex::Regex::new(r"(?i)^(?:nareit ffo and )?adjusted ffo per diluted share$")?,
+            scale: Some(1),
+            section: None,
+        },
+        crate::companies::Rule {
+            metric: Metric::Affo,
+            unit: Unit::Total,
+            label: regex::Regex::new(r"(?i)^diluted adjusted ffo$")?,
+            scale: Some(1000000),
+            section: None,
+        },
+    ]);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

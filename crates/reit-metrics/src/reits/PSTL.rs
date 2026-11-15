@@ -11,16 +11,32 @@ pub fn company() -> Result<Company> {
             "www.postalrealtytrust.com",
             "investor.postalrealtytrust.com",
         ],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo per (?:share|common share and common unit outstanding(?:\s*[-–—]\s*diluted)?)$",
-            1,
-        )],
+        vec![
+            (Metric::Affo, Unit::Total, r"^affo$", 0),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per (?:share|common share and common unit outstanding(?:\s*[-–—]\s*diluted)?)$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo per (?:share|common share and common unit outstanding(?:\s*[-–—]\s*diluted)?)$",
+                1,
+            ),
+        ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        crate::table::joined_parentheses(
+            &regex::Regex::new(r"(?i)\(in\s+(thousands|millions)")
+                .unwrap()
+                .replace_all(html, "(dollars in $1"),
+        )
+    };
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

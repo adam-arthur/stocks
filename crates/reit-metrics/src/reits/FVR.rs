@@ -9,6 +9,13 @@ pub fn company() -> Result<Company> {
         &[],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per share(?:, diluted)?$",
+                1,
+            ),
+            (Metric::Affo, Unit::Total, r"^affo$", 1000),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per share(?:, diluted)?$",
@@ -24,6 +31,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules {
         units: &[(
@@ -42,6 +50,25 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
     crate::table::joined_parentheses(html)
         .into_iter()
         .map(|mut table| {
+            if table
+                .rows
+                .iter()
+                .flatten()
+                .any(|cell| cell.text == "Financial Summary")
+                && table
+                    .rows
+                    .iter()
+                    .flatten()
+                    .any(|cell| cell.text == "AFFO per share")
+            {
+                let date = regex::Regex::new(r"^(March|June|September|December) (30|31), 20\d{2}$")
+                    .unwrap();
+                for cell in table.rows.iter_mut().take(3).flatten() {
+                    if date.is_match(&cell.text) {
+                        cell.text = format!("Three months ended {}", cell.text);
+                    }
+                }
+            }
             let pro_forma = table
                 .rows
                 .iter()

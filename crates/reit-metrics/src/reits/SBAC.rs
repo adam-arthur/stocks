@@ -8,6 +8,13 @@ pub fn company() -> Result<Company> {
         1034054,
         &["www.sbasite.com", "ir.sbasite.com"],
         vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo attributable to sba communications corporation per share$",
+                1,
+            ),
+            (Metric::Affo, Unit::PerShare, r"^affo per share$", 1),
             (Metric::Ffo, Unit::PerShare, r"^ffo per share$", 1),
             (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
         ],
@@ -15,6 +22,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 
@@ -36,8 +44,13 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
                 .collect::<Vec<_>>();
             if !columns.is_empty() {
                 for row in &mut table.rows {
-                    if let Some(label) = row.iter().position(|cell| cell.text == "FFO") {
-                        row[label].text = "FFO per share".into();
+                    if let Some(label) = row.iter().position(|cell| {
+                        matches!(
+                            cell.text.as_str(),
+                            "FFO" | "AFFO" | "AFFO attributable to SBA Communications Corporation"
+                        )
+                    }) {
+                        row[label].text.push_str(" per share");
                         for cell in row.iter_mut().skip(label + 1) {
                             if !columns.iter().any(|header| header.covers(cell.column)) {
                                 cell.text.clear();

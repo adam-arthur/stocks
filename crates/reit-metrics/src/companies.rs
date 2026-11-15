@@ -9,7 +9,12 @@ pub(crate) type Supplements = for<'a> fn(
     chrono::NaiveDate,
     chrono::NaiveDate,
 ) -> std::pin::Pin<
-    Box<dyn std::future::Future<Output = Result<Vec<(chrono::NaiveDate, String)>>> + Send + 'a>,
+    Box<
+        dyn std::future::Future<
+                Output = Result<Vec<(chrono::NaiveDate, String, Option<chrono::NaiveDate>)>>,
+            > + Send
+            + 'a,
+    >,
 >;
 
 pub struct Rule {
@@ -26,9 +31,12 @@ pub struct Company {
     pub hosts: &'static [&'static str],
     pub filings: &'static [&'static str],
     pub rules: Vec<Rule>,
+    pub affo_support: crate::AffoSupport,
+    pub affo_comparatives: bool,
     pub(crate) ownership: Option<crate::ownership::Rules>,
     pub(crate) debt: Option<fn(&scraper::Html, chrono::NaiveDate) -> Result<crate::debt::Debt>>,
     pub(crate) tables: fn(&str) -> Vec<crate::table::Table>,
+    pub(crate) sections: Vec<fn(&[crate::table::Table], &str) -> Result<Vec<Observation>>>,
     pub(crate) extra_observations: Option<fn(&str, &str) -> Result<Vec<Observation>>>,
     pub(crate) derive: Option<fn(&[Extraction]) -> Vec<Extraction>>,
     pub(crate) official_url: fn(&reqwest::Url) -> bool,
@@ -36,6 +44,8 @@ pub struct Company {
     pub(crate) supplements: Option<Supplements>,
     pub(crate) supplement_period_required: bool,
     pub(crate) pdf: Option<crate::pdf::Rules>,
+    pub(crate) pdf_observations:
+        Option<fn(&str, &str, Vec<Observation>) -> Result<Vec<Observation>>>,
     pub continuation: Option<&'static str>,
 }
 
@@ -245,13 +255,17 @@ pub(crate) fn build((symbol, cik, hosts, patterns, continuation): Definition) ->
         filings: &["8-K", "8-K/A"],
         continuation,
         tables: crate::table::tables,
+        sections: Vec::new(),
         extra_observations: None,
+        affo_support: crate::AffoSupport::Unreviewed,
+        affo_comparatives: false,
         derive: None,
         official_url: |_| false,
         additional_items: None,
         supplements: None,
         supplement_period_required: false,
         pdf: None,
+        pdf_observations: None,
         ownership: None,
         debt: None,
         rules: patterns

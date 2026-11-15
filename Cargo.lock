@@ -284,6 +284,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "financials",
+ "reit-metrics",
  "serde",
  "serde_json",
  "tempfile",

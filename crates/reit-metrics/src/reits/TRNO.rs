@@ -18,6 +18,7 @@ pub fn company() -> Result<Company> {
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = crate::table::joined_parentheses;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Unavailable;
     Ok(company)
 }
 

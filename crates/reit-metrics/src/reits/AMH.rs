@@ -21,12 +21,27 @@ pub fn company() -> Result<Company> {
                 r"^ffo attributable to common share and unit holders$",
                 1000,
             ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^adjusted ffo attributable to common share and unit holders$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted ffo attributable to common share and unit holders$",
+                1000,
+            ),
         ],
         None,
     ))?;
     company.rules[0].section = Some(Regex::new(r"(?i)^per ffo share and unit:$")?);
     company.rules[1].section = Some(Regex::new(r"^$")?);
+    company.rules[2].section = Some(Regex::new(r"(?i)^per ffo share and unit:$")?);
+    company.rules[3].section = Some(Regex::new(r"^$")?);
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

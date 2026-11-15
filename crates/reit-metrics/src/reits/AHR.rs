@@ -28,6 +28,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.additional_items = Some(|items| items.split(',').any(|item| item.trim() == "7.01"));
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Unavailable;
     Ok(company)
 }
 

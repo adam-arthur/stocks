@@ -8,6 +8,18 @@ pub fn company() -> Result<Company> {
         1650132,
         &["investors.fcpt.com"],
         vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^affo per diluted share$"#,
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r#"^adjusted funds from operations(?: \(affo\))?$"#,
+                1000,
+            ),
             (Metric::Ffo, Unit::PerShare, r"^ffo per diluted share$", 1),
             (Metric::Ffo, Unit::Total, r"^funds from operations$", 1000),
         ],
@@ -15,6 +27,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.extra_observations = Some(extract);
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

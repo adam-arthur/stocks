@@ -7,16 +7,25 @@ pub fn company() -> Result<Company> {
         "VNO",
         899689,
         &["vno.com", "www.vno.com", "investors.vno.com"],
-        vec![(
-            Metric::Ffo,
-            Unit::Total,
-            r"^ffo attributable to common shareholders plus assumed conversions(?: \(non-gaap\))?$",
-            1000,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^fad \(non-gaap\)(?: \(a\+b\))?$",
+                1000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::Total,
+                r"^ffo attributable to common shareholders plus assumed conversions(?: \(non-gaap\))?$",
+                1000,
+            ),
+        ],
         None,
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     company.ownership = Some(crate::ownership::Rules {
         units: &[(
             "us-gaap:TemporaryEquitySharesOutstanding",

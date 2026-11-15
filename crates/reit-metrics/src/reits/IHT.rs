@@ -13,6 +13,7 @@ pub fn company() -> Result<Company> {
     company.extra_observations = Some(extract);
     company.derive = Some(quarters);
     company.filings = &["10-Q", "10-Q/A", "10-K", "10-K/A"];
+    company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)
@@ -115,7 +116,7 @@ fn quarters(documents: &[crate::Extraction]) -> Vec<crate::Extraction> {
         for value in document
             .observations
             .iter()
-            .filter(|value| value.unit == Unit::Total)
+            .filter(|value| value.metric == Metric::Ffo && value.unit == Unit::Total)
         {
             periods
                 .entry((value.start, value.end))

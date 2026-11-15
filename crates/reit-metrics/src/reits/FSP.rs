@@ -7,10 +7,20 @@ pub fn company() -> Result<Company> {
         "FSP",
         1031316,
         &[],
-        vec![(Metric::Ffo, Unit::Total, r"^nareit ffo$", 1000)],
+        vec![
+            (Metric::Affo, Unit::PerShare, r#"^affo$"#, 1),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r#"^adjusted funds from operations(?: \(affo\))?$"#,
+                1000,
+            ),
+            (Metric::Ffo, Unit::Total, r"^nareit ffo$", 1000),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)

@@ -8,7 +8,8 @@ pub(crate) fn fourth_quarters(symbol: &str, documents: &[Extraction]) -> Vec<Ext
         .filter(|document| document.symbol == symbol)
     {
         for value in document.observations.iter().filter(|value| {
-            value.unit == Unit::Total
+            value.metric == crate::Metric::Ffo
+                && value.unit == Unit::Total
                 && value.start == NaiveDate::from_ymd_opt(value.end.year(), 1, 1).unwrap()
                 && matches!((value.end.month(), value.end.day()), (9, 30) | (12, 31))
         }) {

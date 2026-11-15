@@ -9,6 +9,18 @@ pub fn company() -> Result<Company> {
         &["strawberryfieldsreit.com", "www.strawberryfieldsreit.com"],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^(?:affo|adjusted ffo) per weighted average common share and op units$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^funds from operations, as adjusted$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per weighted average common share and op units$",
@@ -23,6 +35,7 @@ pub fn company() -> Result<Company> {
     company.derive = Some(|documents| crate::derive::fourth_quarters("STRW", documents));
     company.additional_items = Some(|items| items.split(',').any(|item| item.trim() == "7.01"));
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     company.ownership = Some(crate::ownership::Rules {
         units: &[(
             "us-gaap:LimitedPartnersCapitalAccountUnitsOutstanding",

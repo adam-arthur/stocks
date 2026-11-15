@@ -23,6 +23,7 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Reported;
     company.tables = crate::table::joined_parentheses;
     company.rules[1].section = Some(regex::Regex::new(
         r"(?i)^(?:per (?:common )?share (?:data|amounts)|basic and diluted per common share amounts)",
@@ -49,6 +50,41 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
             .collect::<Vec<_>>();
         if !text.to_lowercase().contains("for the three months ended") || headers.len() != 5 {
             continue;
+        }
+        for (unit, scale, label, content) in [
+            (Unit::Total, 1000, "CAD", &text[..section.start()]),
+            (
+                Unit::PerShare,
+                1,
+                "CAD per common share (basic and diluted)",
+                &text[section.end()..],
+            ),
+        ] {
+            let content = &content[..content
+                .to_lowercase()
+                .find("rolling four quarter cad")
+                .unwrap_or(content.len())];
+            let Some(values) = crate::presentation::values(content, "CAD")?
+                .into_iter()
+                .next()
+                .filter(|values| matches!(values.len(), 5 | 7))
+            else {
+                continue;
+            };
+            for (column, (end, value)) in headers.iter().zip(values).enumerate() {
+                observations.push(crate::Observation {
+                    published_on: None,
+                    metric: Metric::Affo,
+                    start: NaiveDate::from_ymd_opt(end.year(), end.month() - 2, 1).unwrap(),
+                    end: *end,
+                    label: label.into(),
+                    value,
+                    unit,
+                    scale,
+                    source: source.to_owned(),
+                    location: format!("presentation page {}, column {}", page + 1, column + 1),
+                });
+            }
         }
         let Some(values) = crate::presentation::values(&text[section.end()..], "FFO")?
             .into_iter()

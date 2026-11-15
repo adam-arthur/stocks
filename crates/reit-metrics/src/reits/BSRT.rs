@@ -10,6 +10,13 @@ pub fn company() -> Result<Company> {
         1777917,
         &["investors.bsrreit.com", "www.bsrreit.com", "bsrreit.com"],
         vec![
+            (Metric::Affo, Unit::PerShare, r"^affo per unit\s*\d*$", 1),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r#"^(?:affo|adjusted funds from operations \("affo"\))\s*\d*$"#,
+                1000,
+            ),
             (Metric::Ffo, Unit::PerShare, r"^ffo per unit\s*\d*$", 1),
             (
                 Metric::Ffo,
@@ -21,14 +28,15 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
-    company.filings = &[];
+    company.affo_support = crate::AffoSupport::Reported;
+    company.filings = &["6-K", "6-K/A"];
     company.supplements = Some(|_, company, since, _| Box::pin(supplements(company, since)));
     company.supplement_period_required = true;
     company.debt = Some(debt);
     Ok(company)
 }
 
-async fn supplements(company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDate, String)>> {
+async fn supplements(company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDate, String, Option<NaiveDate>)>> {
     let feed: serde_json::Value = reqwest::Client::builder()
         .user_agent(format!(
             "stocks-reit-metrics {}",
@@ -94,7 +102,7 @@ async fn supplements(company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDa
                     .context("missing BSR release URL")?,
             )?;
             crate::source::validate_url(company, url.as_str())?;
-            result.push((end, url.to_string()));
+            result.push((end, url.to_string(), None));
         }
     }
     ensure!(
@@ -143,7 +151,11 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             let per_unit = row
                 .iter()
                 .find(|cell| !cell.text.is_empty())
-                .is_some_and(|cell| cell.text.to_lowercase().starts_with("ffo per unit"));
+                .is_some_and(|cell| {
+                    ["ffo per unit", "affo per unit"]
+                        .iter()
+                        .any(|label| cell.text.to_lowercase().starts_with(label))
+                });
             for cell in row {
                 if per_unit && decimal.is_match(&cell.text) {
                     cell.text = cell.text.replace(',', ".");

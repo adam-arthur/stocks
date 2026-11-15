@@ -7,14 +7,24 @@ pub fn company() -> Result<Company> {
         "CLDT",
         1476045,
         &["www.chathamlodgingtrust.com", "chathamlodgingtrust.com"],
-        vec![(
-            Metric::Ffo,
-            Unit::Total,
-            r"^ffo attribut(?:able|ed) to common (?:shareholders|share and unit holders)$",
-            1000,
-        )],
+        vec![
+            (Metric::Affo, Unit::PerShare, r"^affo per diluted share$", 1),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^adjusted ffo attributable to common (?:shareholders|share and unit holders)$",
+                1000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::Total,
+                r"^ffo attribut(?:able|ed) to common (?:shareholders|share and unit holders)$",
+                1000,
+            ),
+        ],
         None,
     ))?;
+    company.affo_support = crate::AffoSupport::Reported;
     company.tables = tables;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());

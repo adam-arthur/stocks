@@ -6,8 +6,20 @@ pub fn company() -> Result<Company> {
     let mut company = build((
         "MAA",
         912595,
-        &[],
+        &["ir.maac.com", "www.prnewswire.com"],
         vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^core (?:affo|adjusted funds from operations) per share(?:\s*[-–—]\s*diluted)?$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^core (?:adjusted funds from operations|affo attributable to common shareholders and unitholders)$",
+                1000,
+            ),
             (
                 Metric::Ffo,
                 Unit::PerShare,
@@ -24,6 +36,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

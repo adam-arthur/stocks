@@ -71,6 +71,12 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
                 }
                 if let Some(valuation) = data.as_object_mut().unwrap().remove("valuation") {
                     write(&directory.join("valuation.json"), &valuation)?;
+                } else {
+                    match fs::remove_file(directory.join("valuation.json")) {
+                        Ok(()) => {}
+                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                        Err(error) => return Err(error.into()),
+                    }
                 }
                 write(&directory.join("meta.json"), &data)?;
                 saved += 1;
@@ -246,13 +252,19 @@ fn security(
     output::round_summary(&mut summary);
     let mut quarters = quarters::group(&financials);
     let mut valuation = None;
+    let mut affo_support = None;
     if meta["category"] == "EQUITY_REIT" {
-        let reit = read::<Vec<Value>>(&input.join("stocks").join(symbol).join("reit.json"))?
-            .unwrap_or_default();
-        valuation = Some(
-            valuation::derive(&reit, &market, as_of)
-                .with_context(|| format!("{symbol}: AFFO valuation"))?,
-        );
+        let history = read::<reit_metrics::ReitHistory<Value>>(
+            &input.join("stocks").join(symbol).join("reit.json"),
+        )?;
+        affo_support = history.as_ref().map(|history| history.affo_support);
+        let reit = history.map(|history| history.quarters).unwrap_or_default();
+        if affo_support.is_some_and(reit_metrics::AffoSupport::is_supported) {
+            valuation = Some(
+                valuation::derive(&reit, &market, as_of)
+                    .with_context(|| format!("{symbol}: AFFO valuation"))?,
+            );
+        }
         reit::merge(&mut quarters, reit);
     }
     let mut result = json!({
@@ -273,6 +285,9 @@ fn security(
             None
         },
     });
+    if let Some(affo_support) = affo_support {
+        result["affo_support"] = json!(affo_support);
+    }
     if let Some(valuation) = valuation {
         result["valuation"] = valuation;
     }

@@ -9,6 +9,30 @@ pub fn company() -> Result<Company> {
         &["www.realtyincome.com"][..],
         vec![
             (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per (?:diluted )?share$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per common share:? (?:basic and )?diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per common share, basic and diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo available to common stockholders$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo per (?:diluted )?share$",
@@ -36,6 +60,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

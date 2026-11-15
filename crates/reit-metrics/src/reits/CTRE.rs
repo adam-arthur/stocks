@@ -7,15 +7,30 @@ pub fn company() -> Result<Company> {
         "CTRE",
         1590717,
         &[],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo (?:per share(?: attributable to caretrust reit, inc\.)?|attributable to caretrust reit, inc\., per share)$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^fad (?:per share(?: attributable to caretrust reit, inc\.)?|attributable to caretrust reit, inc\., per share)$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^(?:fad|funds available for distribution)(?: attributable to caretrust reit, inc\.)?$",
+                1000,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo (?:per share(?: attributable to caretrust reit, inc\.)?|attributable to caretrust reit, inc\., per share)$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.tables = tables;
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
 }

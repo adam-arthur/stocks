@@ -7,11 +7,21 @@ pub fn company() -> Result<Company> {
         "FPI",
         1591670,
         &[],
-        vec![(Metric::Ffo, Unit::Total, r"^ffo$", 1000)],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r#"^affo per diluted weighted average share$"#,
+                1,
+            ),
+            (Metric::Affo, Unit::Total, r#"^affo$"#, 1000),
+            (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
+        ],
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
     company.derive = Some(|documents| crate::derive::fourth_quarters("FPI", documents));
+    company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)

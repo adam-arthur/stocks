@@ -57,8 +57,8 @@ impl Store {
         )
     }
 
-    pub fn reit(&self, symbol: &str) -> Result<Vec<ReitQuarter>> {
-        Ok(read_optional(&self.symbol_path(symbol)?.join("reit.json"))?.unwrap_or_default())
+    pub fn reit(&self, symbol: &str) -> Result<Option<reit_metrics::ReitHistory<ReitQuarter>>> {
+        read_optional(&self.symbol_path(symbol)?.join("reit.json"))
     }
 
     pub fn debt(&self, symbol: &str) -> Result<Option<reit_metrics::debt::Debt>> {
@@ -102,8 +102,12 @@ impl Store {
         write_atomic(&self.symbol_path(symbol)?.join("preferred.json"), preferred)
     }
 
-    pub fn save_reit(&self, symbol: &str, quarters: &[ReitQuarter]) -> Result<()> {
-        write_atomic(&self.symbol_path(symbol)?.join("reit.json"), quarters)
+    pub fn save_reit(
+        &self,
+        symbol: &str,
+        history: &reit_metrics::ReitHistory<ReitQuarter>,
+    ) -> Result<()> {
+        write_atomic(&self.symbol_path(symbol)?.join("reit.json"), history)
     }
 
     pub fn prices(&self, symbol: &str) -> Result<BTreeMap<NaiveDate, f64>> {

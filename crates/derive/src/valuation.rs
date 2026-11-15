@@ -24,7 +24,6 @@ pub fn derive(quarters: &[Value], market: &Market, as_of: NaiveDate) -> Result<V
         .context("invalid AFFO quarter")?;
     quarters.retain(|quarter| quarter.end <= as_of);
     quarters.sort_by_key(|quarter| (quarter.end, quarter.start));
-    ensure!(!quarters.is_empty(), "missing AFFO quarters");
     for quarter in &quarters {
         ensure!(
             (70..=110).contains(&(quarter.end - quarter.start).num_days()),
@@ -32,22 +31,12 @@ pub fn derive(quarters: &[Value], market: &Market, as_of: NaiveDate) -> Result<V
             quarter.end
         );
     }
-    for pair in quarters.windows(2) {
-        ensure!(
-            pair[0].end.succ_opt() == Some(pair[1].start),
-            "missing or overlapping AFFO quarters between {} and {}",
-            pair[0].end,
-            pair[1].end
-        );
-    }
     let mut events = Vec::new();
     for window in quarters.windows(4) {
-        ensure!(
-            (350..=380).contains(&(window[3].end - window[0].start).num_days()),
-            "AFFO quarters ending {} do not cover a full year",
-            window[3].end
-        );
-        let mut total = 0.0;
+        let mut total = window
+            .windows(2)
+            .all(|pair| pair[0].end.succ_opt() == Some(pair[1].start))
+            .then_some(0.0);
         let mut published = NaiveDate::MIN;
         for quarter in window {
             let date = quarter.published_on.with_context(|| {
@@ -60,14 +49,16 @@ pub fn derive(quarters: &[Value], market: &Market, as_of: NaiveDate) -> Result<V
                 date >= quarter.end,
                 "AFFO publication date precedes quarter end"
             );
-            let value = quarter.affo_per_share.with_context(|| {
-                format!("missing affo_per_share for quarter ending {}", quarter.end)
-            })?;
-            ensure!(value.is_finite(), "non-finite AFFO for {}", quarter.end);
-            total += value / market::factor(&market.splits, date, as_of);
+            if let Some(value) = quarter.affo_per_share {
+                ensure!(value.is_finite(), "non-finite AFFO for {}", quarter.end);
+                total =
+                    total.map(|total| total + value / market::factor(&market.splits, date, as_of));
+            } else {
+                total = None;
+            }
             published = published.max(date);
         }
-        ensure!(total.is_finite(), "non-finite TTM AFFO");
+        ensure!(total.is_none_or(f64::is_finite), "non-finite TTM AFFO");
         events.push((published, window[3].end, total));
     }
     events.sort_by_key(|&(published, end, _)| (published, end));
@@ -91,11 +82,13 @@ pub fn derive(quarters: &[Value], market: &Market, as_of: NaiveDate) -> Result<V
                 ttm.insert(date, value);
                 previous = Some(value);
             }
-            ensure!(
-                (value / price.close).is_finite(),
-                "non-finite AFFO yield on {date}"
-            );
-            yields.insert(date, value / price.close);
+            if let Some(value) = value {
+                ensure!(
+                    (value / price.close).is_finite(),
+                    "non-finite AFFO yield on {date}"
+                );
+                yields.insert(date, value / price.close);
+            }
         }
     }
     Ok(json!({"affo_per_share_ttm": ttm, "affo_yield": yields}))

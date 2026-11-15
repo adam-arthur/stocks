@@ -11,11 +11,16 @@ pub fn company() -> Result<Company> {
             "www.uhrit.com",
             "universalhealthrealty.gcs-web.com",
         ],
-        vec![(Metric::Ffo, Unit::PerShare, r"^ffo$", 1)],
+        vec![
+            (Metric::Ffo, Unit::PerShare, r"^ffo$", 1),
+            (Metric::Affo, Unit::PerShare, r"^affo$", 1),
+            (Metric::Affo, Unit::Total, r"^affo total$", 1000),
+        ],
         None,
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 
@@ -41,9 +46,18 @@ pub(crate) fn tables(html: &str) -> Vec<crate::table::Table> {
                     .cloned()
                     .collect();
             }
-            if row.iter().any(|cell| cell.text == "FFO") {
+            if columns.is_empty() {
+                for cell in row.iter_mut().filter(|cell| cell.text == "AFFO") {
+                    cell.text = "AFFO total".into();
+                }
+            }
+            if row
+                .iter()
+                .any(|cell| matches!(cell.text.as_str(), "FFO" | "AFFO"))
+            {
                 row.retain(|cell| {
-                    cell.text == "FFO" || columns.iter().any(|header| header.covers(cell.column))
+                    matches!(cell.text.as_str(), "FFO" | "AFFO")
+                        || columns.iter().any(|header| header.covers(cell.column))
                 });
             }
         }

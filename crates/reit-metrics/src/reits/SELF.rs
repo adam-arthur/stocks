@@ -7,17 +7,32 @@ pub fn company() -> Result<Company> {
         "SELF",
         1031235,
         &["www.globalselfstorage.us", "ir.globalselfstorage.us"],
-        vec![(
-            Metric::Ffo,
-            Unit::PerShare,
-            r"^ffo per share(?:\s*[-–—]\s*diluted| attributable to common stockholders)?$",
-            1,
-        )],
+        vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per share(?:\s*[-–—]\s*diluted| attributable to common stockholders)?$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo attributable to common stockholders$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^ffo per share(?:\s*[-–—]\s*diluted| attributable to common stockholders)?$",
+                1,
+            ),
+        ],
         None,
     ))?;
     company.filings = &["8-K", "8-K/A", "10-Q", "10-Q/A", "10-K", "10-K/A"];
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 

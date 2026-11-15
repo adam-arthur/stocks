@@ -8,6 +8,24 @@ pub fn company() -> Result<Company> {
         751364,
         &["www.nnnreit.com", "nnnreit.com"],
         vec![
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per (?:common )?share:? diluted$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^affo per (?:common )?share$",
+                1,
+            ),
+            (
+                Metric::Affo,
+                Unit::Total,
+                r"^affo(?: available to common stockholders)?$",
+                1000,
+            ),
             (Metric::Ffo, Unit::PerShare, r"^ffo per share:? diluted$", 1),
             (Metric::Ffo, Unit::PerShare, r"^ffo per share$", 1),
             (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
@@ -15,7 +33,24 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.pdf = Some(crate::pdf::Rules {
+        page: |text| {
+            text.contains("financialresults")
+                && (text.contains("dollarsinthousands,exceptpersharedata")
+                    || text.contains("dollarsinthousands,exceptperdilutedsharedata"))
+        },
+        metric: |label, _| match label {
+            "affo" => Some((Metric::Affo, Unit::Total)),
+            "affopershare" => Some((Metric::Affo, Unit::PerShare)),
+            "ffo" => Some((Metric::Ffo, Unit::Total)),
+            "ffopershare" => Some((Metric::Ffo, Unit::PerShare)),
+            _ => None,
+        },
+        total_scale: 1000,
+        current_only: |_, _, _, _| false,
+    });
     company.debt = Some(debt);
+    company.affo_support = crate::AffoSupport::Reported;
     Ok(company)
 }
 
