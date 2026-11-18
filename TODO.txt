@@ -1,1 +1,2 @@
 - External vs Internally managed
+- Review and fix REIT metrics before re-enabling financial and debt extraction. Investigate conflicting FFO/AFFO values, missing Item 2.02 announcement dates, and unsupported symbols.

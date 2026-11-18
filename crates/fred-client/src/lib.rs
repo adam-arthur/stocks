@@ -7,6 +7,20 @@ use serde::{Deserialize, Serialize};
 
 pub const TREASURY_30_YEAR: &str = "DGS30";
 
+pub const TREASURY_SERIES: &[&str] = &[
+    "DGS1MO",
+    "DGS3MO",
+    "DGS6MO",
+    "DGS1",
+    "DGS2",
+    "DGS3",
+    "DGS5",
+    "DGS7",
+    "DGS10",
+    "DGS20",
+    TREASURY_30_YEAR,
+];
+
 #[derive(Clone)]
 pub struct FredClient {
     http: Client,

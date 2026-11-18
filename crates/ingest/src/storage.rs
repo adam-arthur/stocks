@@ -30,6 +30,17 @@ impl Store {
         Ok(Self { root, _lock: lock })
     }
 
+    pub(crate) fn treasury(&self) -> Result<BTreeMap<String, BTreeMap<NaiveDate, f64>>> {
+        Ok(read_optional(&self.root.join("treasury.json"))?.unwrap_or_default())
+    }
+
+    pub(crate) fn save_treasury(
+        &self,
+        yields: &BTreeMap<String, BTreeMap<NaiveDate, f64>>,
+    ) -> Result<()> {
+        write_atomic(&self.root.join("treasury.json"), yields)
+    }
+
     pub fn metadata(&self, symbol: &str) -> Result<Option<Metadata>> {
         read_optional(&self.symbol_path(symbol)?.join("meta.json"))
     }
@@ -108,6 +119,10 @@ impl Store {
         history: &reit_metrics::ReitHistory<ReitQuarter>,
     ) -> Result<()> {
         write_atomic(&self.symbol_path(symbol)?.join("reit.json"), history)
+    }
+
+    pub(crate) fn has_prices(&self, symbol: &str) -> Result<bool> {
+        Ok(self.symbol_path(symbol)?.join("prices.json").try_exists()?)
     }
 
     pub fn prices(&self, symbol: &str) -> Result<BTreeMap<NaiveDate, f64>> {

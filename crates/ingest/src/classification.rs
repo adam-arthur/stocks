@@ -42,6 +42,7 @@ pub(crate) async fn save_category(
         exchange: asset.exchange.clone(),
         cik: cik_for_symbol(tickers.as_ref().unwrap(), &asset.symbol),
         category,
+        perpetual_note: crate::models::PerpetualNote::for_security(&asset.symbol, &asset.name),
         management: if matches!(
             category,
             Category::EquityReit | Category::MortgageReit | Category::Bdc

@@ -19,6 +19,34 @@ async fn main() -> Result<()> {
     log::set_logger(&Logger).unwrap();
     log::set_max_level(log::LevelFilter::Info);
     let store = ingest::Store::open("data/raw")?;
+    if let Some(symbol) = std::env::args().nth(1) {
+        if symbol == "--all-cached" {
+            let mut symbols = Vec::new();
+            for entry in std::fs::read_dir("data/raw/stocks")? {
+                let entry = entry?;
+                if entry.path().join("preferred.json").is_file() {
+                    let symbol = entry.file_name().into_string().unwrap();
+                    if store
+                        .metadata(&symbol)?
+                        .is_some_and(|m| matches!(m.category, ingest::Category::Preferred))
+                        && store
+                            .preferred(&symbol)?
+                            .is_some_and(|p| p.structured_dividend_terms.is_none())
+                    {
+                        symbols.push(symbol);
+                    }
+                }
+            }
+            symbols.sort();
+            return ingest::preferred::extract_all(
+                &store,
+                &symbols,
+                std::env::var("LLM_MIN_REMAINING_PERCENT")?.parse()?,
+            )
+            .await;
+        }
+        return ingest::preferred::extract_dividend_terms(&store, &symbol).await;
+    }
     let mut assets = alpaca_client::AlpacaClient::from_env()?
         .list_tradable_stocks()
         .await?;
@@ -29,10 +57,9 @@ async fn main() -> Result<()> {
     let (mut total, mut cached, mut unattempted) = (0, 0, 0);
     let failures = store.preferred_failures()?;
     for asset in &assets {
-        if store
-            .metadata(&asset.symbol)?
-            .is_some_and(|meta| matches!(meta.category, ingest::Category::Preferred))
-        {
+        if store.metadata(&asset.symbol)?.is_some_and(|meta| {
+            meta.perpetual_note.is_none() && matches!(meta.category, ingest::Category::Preferred)
+        }) {
             total += 1;
             if store.preferred(&asset.symbol)?.is_some() {
                 cached += 1;

@@ -16,6 +16,7 @@ use tokio::task::JoinSet;
 
 pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Result<()> {
     let started = Instant::now();
+    crate::treasury::update(store).await?;
     log::info!("Checking usage and loading tradable symbols");
     let codex = CodexClient {
         executable: "codex".into(),
@@ -49,12 +50,25 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     let mut skipped_failures = 0;
     let mut failed = 0;
     let mut research = store.pending_research()?;
+    research.retain(|entry| !entry.error.starts_with("first pass failed: "));
     let mut unclassified = Vec::new();
     for asset in &assets {
-        if store
-            .metadata(&asset.symbol)?
-            .is_some_and(|meta| is_fresh(meta.updated_at, Utc::now()))
-        {
+        let metadata = store.metadata(&asset.symbol)?;
+        if let Some(note) = crate::models::PerpetualNote::for_security(&asset.symbol, &asset.name) {
+            if !metadata.as_ref().is_some_and(|m| {
+                matches!(m.category, Category::Preferred)
+                    && m.perpetual_note.as_ref() == Some(&note)
+                    && is_fresh(m.updated_at, Utc::now())
+            }) {
+                save_category(store, asset, Category::Preferred, &mut sec_tickers).await?;
+            }
+            research.retain(|entry| entry.symbol != asset.symbol);
+            failures.retain(|entry| entry.symbol != asset.symbol);
+            continue;
+        }
+        if metadata.is_some_and(|meta| {
+            meta.perpetual_note.is_none() && is_fresh(meta.updated_at, Utc::now())
+        }) {
             cached += 1;
             research.retain(|entry| entry.symbol != asset.symbol);
             failures.retain(|entry| entry.symbol != asset.symbol);
@@ -259,10 +273,9 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     failed += price_failures + action_failures;
     failed += crate::preferred::update(store, &assets, progress_bar).await?;
     financials::update(store, &assets, progress_bar).await?;
-    crate::reit::update(store, &assets, progress_bar).await?;
-    let debt_failures = crate::debt::update(store, &assets, progress_bar).await?;
+    log::info!("REIT financial metrics and debt extraction disabled");
     log::info!(
-        "Done · {categorized} classified · {excluded} excluded · {unresolved} research unresolved · {} {queue_label} · {prices} prices updated · {price_failures} price failures · {actions} corporate action histories updated · {action_failures} corporate action failures · {debt_failures} unavailable REIT debt schedules · elapsed {}m {}s",
+        "Done · {categorized} classified · {excluded} excluded · {unresolved} research unresolved · {} {queue_label} · {prices} prices updated · {price_failures} price failures · {actions} corporate action histories updated · {action_failures} corporate action failures · elapsed {}m {}s",
         research.len(),
         started.elapsed().as_secs() / 60,
         started.elapsed().as_secs() % 60

@@ -41,6 +41,7 @@ impl CodexClient {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
+            .env_remove("FRED_API_KEY")
             .env_remove("ALPACA_KEY")
             .env_remove("ALPACA_SECRET")
             .kill_on_drop(true)
@@ -137,6 +138,7 @@ impl CodexClient {
             .arg("--output-last-message")
             .arg(directory.path().join("response.json"))
             .current_dir(working_directory.unwrap_or(directory.path()))
+            .env_remove("FRED_API_KEY")
             .env_remove("ALPACA_KEY")
             .env_remove("ALPACA_SECRET")
             .stdin(Stdio::piped())
@@ -147,7 +149,7 @@ impl CodexClient {
             let catalog = timeout(
                 self.timeout,
                 Command::new(&self.executable)
-                    .args(["debug", "models", "--bundled"])
+                    .args(["debug", "models"])
                     .kill_on_drop(true)
                     .output(),
             )
@@ -159,7 +161,11 @@ impl CodexClient {
                 .as_array_mut()
                 .context("Codex model catalog is missing models")?;
             models.retain(|model| model["slug"].as_str() == Some(&self.model));
-            ensure!(!models.is_empty(), "model not found in Codex catalog");
+            ensure!(
+                !models.is_empty(),
+                "model {} not found in Codex catalog",
+                self.model
+            );
             for model in models {
                 model["tool_mode"] = "disabled".into();
                 model["multi_agent_version"] = "disabled".into();

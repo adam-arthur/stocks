@@ -9,6 +9,7 @@ mod prices;
 mod progress;
 pub mod reit;
 pub mod storage;
+mod treasury;
 mod update;
 
 pub use models::{Category, CorporateAction, Failure, Metadata};

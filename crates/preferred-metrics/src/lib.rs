@@ -9,6 +9,23 @@ use tokio::time::{Instant, sleep_until};
 
 const REQUEST_INTERVAL: Duration = Duration::from_millis(200);
 
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum RateType {
+    Fixed,
+    Floating,
+    FixedToFloating,
+    Reset,
+    Other,
+    Unknown,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DividendTerms {
+    pub rate_type: RateType,
+    pub fixed_annual_coupon: Option<f64>,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Preferred {
     pub series: Option<String>,
@@ -24,6 +41,8 @@ pub struct Preferred {
     pub liquidation_preference: f64,
     pub original_coupon: Option<f64>,
     pub dividend_terms: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub structured_dividend_terms: Option<DividendTerms>,
     pub pay_period: Option<String>,
     pub pay_dates: Option<String>,
 }
@@ -205,7 +224,7 @@ pub fn parse(symbol: &str, html: &str) -> Result<Preferred> {
             })
             .transpose()
     };
-    let preferred = Preferred {
+    let mut preferred = Preferred {
         series: text("Series").map(str::to_owned),
         redeemable: boolean("Redeemable")?,
         call_date: date("Call Date")?,
@@ -238,6 +257,7 @@ pub fn parse(symbol: &str, html: &str) -> Result<Preferred> {
             .collect::<Vec<_>>();
             (!terms.is_empty()).then(|| terms.join("; "))
         },
+        structured_dividend_terms: None,
         pay_period: text("Pay Frequency").map(str::to_owned),
         pay_dates: text("Pay Dates").map(str::to_owned),
     };
@@ -249,6 +269,16 @@ pub fn parse(symbol: &str, html: &str) -> Result<Preferred> {
         !(preferred.perpetual == Some(true) && preferred.maturity_date.is_some()),
         "perpetual preferred has a maturity date"
     );
+    if matches!(symbol.as_str(), "IIPR-P-A" | "IIPR-P-B") {
+        preferred.structured_dividend_terms = Some(DividendTerms {
+            rate_type: RateType::Fixed,
+            fixed_annual_coupon: Some(
+                preferred
+                    .original_coupon
+                    .context("missing IIPR fixed coupon")?,
+            ),
+        });
+    }
     Ok(preferred)
 }
 

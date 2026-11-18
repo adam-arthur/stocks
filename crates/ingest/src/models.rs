@@ -25,6 +25,34 @@ pub enum Management {
     Unknown,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct PerpetualNote {
+    pub principal_per_note: f64,
+    pub fixed_annual_coupon: f64,
+}
+
+impl PerpetualNote {
+    pub fn for_security(symbol: &str, name: &str) -> Option<Self> {
+        if !name
+            .to_ascii_lowercase()
+            .contains("perpetual subordinated notes")
+        {
+            return None;
+        }
+        Some(Self {
+            principal_per_note: 25.0,
+            fixed_annual_coupon: match symbol {
+                "BEPH" => 0.04625,
+                "BEPI" => 0.04875,
+                "BEPJ" => 0.0725,
+                "BIPI" => 0.05125,
+                "BNJ" => 0.045,
+                _ => return None,
+            },
+        })
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
     pub symbol: String,
@@ -32,6 +60,8 @@ pub struct Metadata {
     pub exchange: String,
     pub cik: Option<u64>,
     pub category: Category,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub perpetual_note: Option<PerpetualNote>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub management: Option<Management>,
     pub updated_at: DateTime<Utc>,

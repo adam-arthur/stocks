@@ -2,6 +2,7 @@ mod debt;
 mod financials;
 mod market;
 mod output;
+mod preferred_spread;
 mod quarters;
 mod reit;
 mod valuation;
@@ -31,6 +32,11 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
     input_lock
         .try_lock_shared()
         .context("ingest is running; derive requires a consistent input snapshot")?;
+    if input.join("treasury.json").try_exists()? {
+        let mut file = tempfile::NamedTempFile::new_in(output)?;
+        std::io::copy(&mut fs::File::open(input.join("treasury.json"))?, &mut file)?;
+        file.persist(output.join("treasury.json"))?;
+    }
     fs::create_dir_all(output.join("stocks"))?;
     let as_of = Utc::now().date_naive();
     let synced = read::<BTreeMap<String, NaiveDate>>(&input.join("corporate_actions_sync.json"))?
@@ -55,11 +61,20 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
             *companies.entry(cik).or_default() += 1;
         }
     }
+    let treasury =
+        read::<preferred_spread::Treasury>(&input.join("treasury.json"))?.unwrap_or_default();
     let mut saved = 0;
     let mut failures = BTreeMap::new();
     for meta in metadata.iter().filter(|m| m["category"] != "EXCLUDED") {
         let symbol = meta["symbol"].as_str().context("metadata missing symbol")?;
-        match security(input, meta, &companies, synced.get(symbol).copied(), as_of) {
+        match security(
+            input,
+            meta,
+            &companies,
+            synced.get(symbol).copied(),
+            as_of,
+            &treasury,
+        ) {
             Ok(mut data) => {
                 let directory = output.join("stocks").join(symbol);
                 fs::create_dir_all(&directory)?;
@@ -69,13 +84,16 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
                         &data.as_object_mut().unwrap().remove(history).unwrap(),
                     )?;
                 }
-                if let Some(valuation) = data.as_object_mut().unwrap().remove("valuation") {
-                    write(&directory.join("valuation.json"), &valuation)?;
-                } else {
-                    match fs::remove_file(directory.join("valuation.json")) {
-                        Ok(()) => {}
-                        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                        Err(error) => return Err(error.into()),
+                for name in ["valuation", "preferred_spread"] {
+                    let path = directory.join(format!("{name}.json"));
+                    if let Some(history) = data.as_object_mut().unwrap().remove(name) {
+                        write(&path, &history)?;
+                    } else {
+                        match fs::remove_file(path) {
+                            Ok(()) => {}
+                            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                            Err(error) => return Err(error.into()),
+                        }
                     }
                 }
                 write(&directory.join("meta.json"), &data)?;
@@ -115,9 +133,10 @@ fn security(
     companies: &BTreeMap<u64, usize>,
     synced: Option<NaiveDate>,
     as_of: NaiveDate,
+    treasury: &preferred_spread::Treasury,
 ) -> Result<Value> {
     let symbol = meta["symbol"].as_str().unwrap();
-    let market = market::derive(
+    let mut market = market::derive(
         read(&input.join("stocks").join(symbol).join("prices.json"))?.unwrap_or_default(),
         &read::<Vec<Value>>(
             &input
@@ -129,6 +148,15 @@ fn security(
         synced,
         as_of,
     )?;
+    let is_preferred = meta["category"] == "PREFERRED";
+    if is_preferred {
+        for price in market.prices.values_mut() {
+            price.dividend_yield = price
+                .dividend_yield
+                .filter(|_| meta["perpetual_note"].is_null())
+                .map(output::round_yield);
+        }
+    }
     let facts = if common(meta) {
         meta["cik"]
             .as_u64()
@@ -249,7 +277,7 @@ fn security(
                 .map(|(cap, denominator)| cap / denominator)
         );
     }
-    output::round_summary(&mut summary);
+    output::round_summary(&mut summary, is_preferred);
     let mut quarters = quarters::group(&financials);
     let mut valuation = None;
     let mut affo_support = None;
@@ -279,12 +307,26 @@ fn security(
         } else {
             None
         },
-        "preferred": if meta["category"] == "PREFERRED" {
+        "preferred": if is_preferred {
             read::<Value>(&input.join("stocks").join(symbol).join("preferred.json"))?
         } else {
             None
         },
     });
+    if let Some((history, snapshot)) = preferred_spread::derive(
+        &result["preferred"],
+        &meta["perpetual_note"],
+        &market,
+        treasury,
+    ) {
+        result["preferred_spread"] = history;
+        result["summary"]["preferred_spread"] = snapshot;
+    }
+    if let Some(preferred) = result["preferred"].as_object_mut()
+        && let Some(terms) = preferred.remove("structured_dividend_terms")
+    {
+        preferred.insert("dividend_terms".into(), terms);
+    }
     if let Some(affo_support) = affo_support {
         result["affo_support"] = json!(affo_support);
     }

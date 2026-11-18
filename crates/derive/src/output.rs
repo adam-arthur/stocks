@@ -70,10 +70,15 @@ const ORDER: &[&str] = &[
     "updated_at",
 ];
 
-pub fn round_summary(summary: &mut Value) {
+pub fn round_yield(value: f64) -> f64 {
+    (value * 10_000.0).round() / 10_000.0
+}
+
+pub fn round_summary(summary: &mut Value, is_preferred: bool) {
     for (metric, value) in summary.as_object_mut().unwrap() {
         if let Some(number) = value.as_f64() {
             *value = match metric.as_str() {
+                "closing_price" | "dividend_yield" if is_preferred => continue,
                 "dividend_yield" | "net_debt_to_assets" => {
                     serde_json::json!((number * 1_000_000.0).round() / 1_000_000.0)
                 }
