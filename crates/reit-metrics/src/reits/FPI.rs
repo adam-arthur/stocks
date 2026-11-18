@@ -19,7 +19,28 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            if let Some(column) = table
+                .rows
+                .iter()
+                .take(6)
+                .flatten()
+                .find(|cell| {
+                    cell.text
+                        .to_ascii_lowercase()
+                        .starts_with("adjusted for litigation")
+                })
+                .map(|cell| cell.column)
+            {
+                for row in &mut table.rows {
+                    row.retain(|cell| cell.column < column);
+                }
+            }
+        }
+        tables
+    };
     company.derive = Some(|documents| crate::derive::fourth_quarters("FPI", documents));
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);

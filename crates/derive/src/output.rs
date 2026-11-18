@@ -33,7 +33,8 @@ const ORDER: &[&str] = &[
     "shares_outstanding",
     "amount",
     "special",
-    "dividend_yield",
+    "dividend_yield_ttm",
+    "dividend_yield_fwd",
     "price_to_earnings",
     "price_to_sales",
     "price_to_book",
@@ -47,6 +48,8 @@ const ORDER: &[&str] = &[
     "diluted_earnings_per_share",
     "ffo_total",
     "ffo_per_share",
+    "affo_total",
+    "affo_per_share",
     "total_assets",
     "cash_and_equivalents",
     "total_debt",
@@ -78,8 +81,10 @@ pub fn round_summary(summary: &mut Value, is_preferred: bool) {
     for (metric, value) in summary.as_object_mut().unwrap() {
         if let Some(number) = value.as_f64() {
             *value = match metric.as_str() {
-                "closing_price" | "dividend_yield" if is_preferred => continue,
-                "dividend_yield" | "net_debt_to_assets" => {
+                "closing_price" | "dividend_yield_ttm" | "dividend_yield_fwd" if is_preferred => {
+                    continue;
+                }
+                "dividend_yield_ttm" | "dividend_yield_fwd" | "net_debt_to_assets" => {
                     serde_json::json!((number * 1_000_000.0).round() / 1_000_000.0)
                 }
                 "closing_price" | "diluted_eps" | "price_to_earnings" | "price_to_sales"

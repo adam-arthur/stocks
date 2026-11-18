@@ -23,7 +23,18 @@ pub fn company() -> Result<Company> {
     company.rules[0].section = Some(regex::Regex::new(r"(?i)^per common share amounts")?);
     company.affo_support = crate::AffoSupport::Unavailable;
     company.extra_observations = Some(extract);
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            table.rows.retain(|row| {
+                !row.iter().any(|cell| {
+                    cell.text.to_lowercase().starts_with("ffo")
+                        && cell.text.to_lowercase().ends_with("(basic)")
+                })
+            });
+        }
+        tables
+    };
     company.debt = Some(debt);
     Ok(company)
 }
@@ -50,16 +61,19 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
             .captures_iter(header)
             .filter_map(|date| {
                 Some((
-                    NaiveDate::parse_from_str(
-                        &format!("{} {} {}", &date[1], &date[2], &date[5]),
-                        "%B %d %Y",
-                    )
-                    .ok()?,
-                    NaiveDate::parse_from_str(
-                        &format!("{} {} {}", &date[3], &date[4], &date[5]),
-                        "%B %d %Y",
-                    )
-                    .ok()?,
+                    date.get(0)?.start(),
+                    (
+                        NaiveDate::parse_from_str(
+                            &format!("{} {} {}", &date[1], &date[2], &date[5]),
+                            "%B %d %Y",
+                        )
+                        .ok()?,
+                        NaiveDate::parse_from_str(
+                            &format!("{} {} {}", &date[3], &date[4], &date[5]),
+                            "%B %d %Y",
+                        )
+                        .ok()?,
+                    ),
                 ))
             })
             .collect::<Vec<_>>();
@@ -69,8 +83,11 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
                 .filter_map(|date| {
                     let end = NaiveDate::parse_from_str(&date[0], "%m/%d/%Y").ok()?;
                     Some((
-                        NaiveDate::from_ymd_opt(end.year(), end.month() - 2, 1)?,
-                        end,
+                        date.get(0)?.start(),
+                        (
+                            NaiveDate::from_ymd_opt(end.year(), end.month() - 2, 1)?,
+                            end,
+                        ),
                     ))
                 })
                 .take(if !periods.is_empty() {
@@ -88,6 +105,11 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
                     5
                 }),
         );
+        periods.sort_by_key(|(position, _)| *position);
+        let mut periods = periods
+            .into_iter()
+            .map(|(_, period)| period)
+            .collect::<Vec<_>>();
         if periods.len() == 7 {
             for (start, end) in &mut periods[5..] {
                 *start = NaiveDate::from_ymd_opt(end.year(), 1, 1).unwrap();
@@ -100,10 +122,14 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
             &text[section.end()..],
             1,
         )] {
-            let Some(values) = crate::presentation::values(text, label)?
-                .into_iter()
-                .next()
-                .filter(|values| values.len() == periods.len())
+            let text = text
+                .split_once("Normalized FFO")
+                .map_or(text, |(actual, _)| actual);
+            let Some(values) =
+                crate::presentation::values(text, r"FFO(?:\s*\((?:basic and )?diluted\))?")?
+                    .into_iter()
+                    .next()
+                    .filter(|values| values.len() == periods.len())
             else {
                 continue;
             };

@@ -234,7 +234,7 @@ impl Sources {
                 .filing_urls(company, &filing.accession, &filing.form)
                 .await?
             {
-                dates.insert(crate::publication::extract_6k(
+                dates.insert(crate::publication::release_date(
                     &self.get(company, &url).await?,
                     filing.filed_on,
                 )?);
@@ -249,9 +249,10 @@ impl Sources {
             filing.form.starts_with("8-K"),
             "announcement date requires an 8-K with Item 2.02"
         );
-        let urls = self
+        let mut urls = self
             .document_urls(company, &filing.accession, &filing.form)
             .await?;
+        urls.retain(|url| !url.to_ascii_lowercase().ends_with(".pdf"));
         ensure!(
             urls.len() == 1,
             "expected one primary 8-K for {}",
@@ -284,9 +285,16 @@ impl Sources {
             company.cik,
             accession.replace('-', "")
         );
-        let document = self
+        let document = match self
             .get(company, &format!("{base}{accession}-index.html"))
-            .await?;
+            .await
+        {
+            Ok(document) => document,
+            Err(error) => self
+                .get(company, &format!("{base}{accession}-index.htm"))
+                .await
+                .with_context(|| format!("filing index lookup failed: {error:#}"))?,
+        };
         let html = Html::parse_document(&document);
         let cells = Selector::parse("td").unwrap();
         let link = Selector::parse("a[href]").unwrap();

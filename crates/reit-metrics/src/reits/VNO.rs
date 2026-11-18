@@ -25,6 +25,7 @@ pub fn company() -> Result<Company> {
     ))?;
     company.tables = tables;
     company.debt = Some(debt);
+    company.affo_comparatives = true;
     company.affo_support = crate::AffoSupport::Reported;
     company.ownership = Some(crate::ownership::Rules {
         units: &[(

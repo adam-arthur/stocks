@@ -15,6 +15,30 @@ pub fn company() -> Result<Company> {
         )],
         None,
     ))?;
+    company.tables = |html| {
+        let mut tables = crate::table::tables(html);
+        for table in &mut tables {
+            if !table.rows.iter().flatten().any(|cell| {
+                cell.text.to_lowercase().starts_with("affo reconciliation")
+                    || cell
+                        .text
+                        .to_lowercase()
+                        .starts_with("recurring capital expenditures")
+            }) {
+                table.rows.retain(|row| {
+                    !row.iter()
+                        .find(|cell| !cell.text.is_empty())
+                        .is_some_and(|cell| {
+                            cell.text
+                                .split('(')
+                                .next()
+                                .is_some_and(|label| label.trim().eq_ignore_ascii_case("AFFO"))
+                        })
+                });
+            }
+        }
+        tables
+    };
     company.rules.extend([
         crate::companies::Rule {
             metric: Metric::Affo,

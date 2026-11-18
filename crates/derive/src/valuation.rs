@@ -26,7 +26,8 @@ pub fn derive(quarters: &[Value], market: &Market, as_of: NaiveDate) -> Result<V
     quarters.sort_by_key(|quarter| (quarter.end, quarter.start));
     for quarter in &quarters {
         ensure!(
-            (70..=110).contains(&(quarter.end - quarter.start).num_days()),
+            quarter.affo_per_share.is_none()
+                || (70..=110).contains(&(quarter.end - quarter.start).num_days()),
             "invalid AFFO quarter ending {}",
             quarter.end
         );

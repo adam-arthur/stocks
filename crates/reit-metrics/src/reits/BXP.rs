@@ -150,7 +150,7 @@ fn affo_per_share(tables: &[crate::table::Table], source: &str) -> Result<Vec<cr
         scale: Some(1000),
         section: None,
     }];
-    let adjustments = crate::reported_sections(&company, tables, source)?.0;
+    let adjustments = crate::reported_sections(&company, tables, source, chrono::NaiveDate::MAX)?.0;
     Ok(values
         .into_iter()
         .filter(|value| {

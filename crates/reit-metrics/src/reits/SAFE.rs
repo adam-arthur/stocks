@@ -66,7 +66,7 @@ async fn supplements(
                 && end >= since
                 && end <= filing.filed_on
             {
-                result.push((end, url, None));
+                result.push((end, url, Some(filing.filed_on)));
             }
         }
     }

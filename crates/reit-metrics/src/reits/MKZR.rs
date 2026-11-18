@@ -11,13 +11,13 @@ pub fn company() -> Result<Company> {
             (
                 Metric::Affo,
                 Unit::Total,
-                r"^(?:affo|adjusted funds from operations(?: affo)?)$",
+                r"^(?:affo(?: before allocations to non-controlling interest and preferred stockholders)?|adjusted funds from operations(?: affo)?)$",
                 1,
             ),
             (
                 Metric::Ffo,
                 Unit::Total,
-                r"^(?:ffo|funds from operations(?:\s*[-–—]\s*ffo)?)$",
+                r"^(?:ffo(?: before allocations to non-controlling interest and preferred stockholders)?|funds from operations(?:\s*[-–—]\s*ffo)?)$",
                 1,
             ),
         ],
@@ -66,8 +66,7 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             row.iter()
                 .find(|cell| !cell.text.is_empty())
                 .is_some_and(|cell| {
-                    cell.text.eq_ignore_ascii_case("ffo")
-                        || cell.text.eq_ignore_ascii_case("affo")
+                    cell.text.eq_ignore_ascii_case("ffo") || cell.text.eq_ignore_ascii_case("affo")
                 })
         })
         .filter_map(|row| {

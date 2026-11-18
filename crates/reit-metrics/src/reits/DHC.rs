@@ -33,7 +33,7 @@ pub fn company() -> Result<Company> {
     Ok(company)
 }
 
-fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
+pub(super) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
     use chrono::{Datelike, NaiveDate};
 
     let dates = regex::Regex::new(r"\b(3|6|9|12)/(30|31)/(20\d{2})\b")?;

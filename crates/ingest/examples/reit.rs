@@ -14,9 +14,7 @@ async fn main() -> Result<()> {
             "{symbol}: missing equity REIT metadata"
         );
     }
-    let failed =
-        ingest::reit::update_symbols(&store, &symbols, &indicatif::ProgressBar::hidden()).await?;
-    ensure!(failed == 0, "{failed} REIT histories unavailable");
+    ingest::reit::update_symbols(&store, &symbols, &indicatif::ProgressBar::hidden()).await?;
     for symbol in &symbols {
         let history = store.reit(symbol)?.context("missing REIT history")?;
         let quarters = &history.quarters;

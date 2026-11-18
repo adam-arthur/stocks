@@ -84,6 +84,30 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             }
         }
     }
+    for table in &mut tables {
+        if table
+            .rows
+            .iter()
+            .flatten()
+            .any(|c| c.text.eq_ignore_ascii_case("FFO (diluted)"))
+        {
+            for label in table
+                .rows
+                .iter_mut()
+                .filter_map(|r| r.iter_mut().find(|c| !c.text.is_empty()))
+            {
+                if label.text.eq_ignore_ascii_case("AFFO") {
+                    label.text = "AFFO attributable to common stockholders".into();
+                }
+            }
+        }
+        table.rows.retain(|row| {
+            !row.iter().any(|cell| {
+                cell.text.eq_ignore_ascii_case("FFO (basic)")
+                    || cell.text.eq_ignore_ascii_case("AFFO (basic)")
+            })
+        });
+    }
     for row in tables.iter_mut().flat_map(|table| &mut table.rows) {
         if let Some(label) = row.iter_mut().find(|cell| !cell.text.is_empty())
             && label

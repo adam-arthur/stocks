@@ -66,7 +66,7 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
     let text = text(html);
     let heading = Regex::new(r"(?im)^\s*item\s+([1-9])\s*\.\s*(\d{2})\b|^\s*signatures?\b")?;
     let headings = heading.captures_iter(&text).collect::<Vec<_>>();
-    let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d(?:\s*\d)?\s*,?\s+2\s*0\s*\d\s*\d|20\d{2}-\d{2}-\d{2})";
+    let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d(?:\s*\d)?\s*[,.]?\s+2\s*0\s*\d\s*\d|20\d{2}-\d{2}-\d{2})";
     let patterns = [
         format!(r"(?i)\bon\s+{date}\s*,?\s+[^;!?]{{0,250}}?\b(?:issued|announced|reported|released|published|furnished\s+the\s+following\s+documents|made\s+[^.;!?]{{0,70}}?\b(?:earnings|press|news)\s+release)\b"),
         format!(r"(?i)\b(?:press|earnings|news)\s+release(?:\s+and\s+supplemental\s+information)?(?:\s+(?:of|issued\s+by)\s+[^;!?]{{0,150}}?)?\s*,?\s+(?:dated|issued|published|on)\s+{date}"),
@@ -113,17 +113,41 @@ pub fn extract(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
                         + section[found.get(0).unwrap().end()..]
                             .find(['.', ';', '!', '?'])
                             .unwrap_or(section.len() - found.get(0).unwrap().end())];
-                if distribution.is_match(announcement) && !results.is_match(announcement) {
+                if found[0]
+                    .to_ascii_lowercase()
+                    .contains("held a conference call")
+                    || (distribution.is_match(announcement) && !results.is_match(announcement))
+                {
                     continue;
                 }
                 dates.insert(parse(&found["date"])?);
             }
         }
     }
-    ensure!(!dates.is_empty(), "missing announcement date in Item 2.02");
+    if dates.is_empty() {
+        let supplemental = Regex::new(&format!(
+            r"(?i)\bon\s+{date}\s*,?\s+[^;!?]{{0,180}}?\bmade available (?:certain )?(?:unaudited )?supplemental financial information\b"
+        ))?;
+        for (index, heading) in headings.iter().enumerate().filter(|(_, heading)| {
+            heading.get(1).is_some_and(|v| v.as_str() == "7")
+                && heading.get(2).is_some_and(|v| v.as_str() == "01")
+        }) {
+            let section = &text[heading.get(0).unwrap().end()
+                ..headings
+                    .get(index + 1)
+                    .map_or(text.len(), |h| h.get(0).unwrap().start())];
+            for matched in supplemental.captures_iter(section) {
+                dates.insert(parse(&matched["date"])?);
+            }
+        }
+    }
+    ensure!(
+        !dates.is_empty(),
+        "missing earnings announcement date in filing"
+    );
     ensure!(
         dates.len() == 1,
-        "conflicting announcement dates in Item 2.02: {dates:?}"
+        "conflicting earnings announcement dates in filing: {dates:?}"
     );
     let date = dates.into_iter().next().unwrap();
     ensure!(
@@ -137,35 +161,61 @@ pub fn is_earnings_release(html: &str) -> Result<bool> {
     Ok(Regex::new(
         r"(?i)\b(?:reports|announces|releases)\b[^.!?\n]{0,160}\b(?:results|earnings)\b",
     )?
-    .is_match(&text(html).chars().take(1500).collect::<String>()))
+    .is_match(
+        &text(html)
+            .chars()
+            .take(1500)
+            .collect::<String>()
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" "),
+    ))
 }
 
-pub fn extract_6k(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
+pub use release_date as extract_6k;
+
+pub fn release_date(html: &str, filed_on: NaiveDate) -> Result<NaiveDate> {
+    exhibit_date(html, filed_on)?.context("missing earnings exhibit dateline")
+}
+
+pub fn exhibit_date(html: &str, filed_on: NaiveDate) -> Result<Option<NaiveDate>> {
     let intro = text(html).chars().take(5000).collect::<String>();
-    ensure!(
-        is_earnings_release(html)?,
-        "missing earnings release heading in 6-K exhibit"
-    );
-    let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2},?\s+20\d{2}|20\d{2}-\d{2}-\d{2})";
+    if !is_earnings_release(html)? && !intro.contains("MEDIA RELEASE") {
+        let cover = Regex::new(
+            r"(?i)(?:supplemental financial information for (?:the )?three(?: and twelve)? months ended [a-z]+ \d{1,2}, 20\d{2}|definitions \d+ press release dated) ([a-z]+ \d{1,2}, 20\d{2})",
+        )?;
+        let intro = intro.split_whitespace().collect::<Vec<_>>().join(" ");
+        return cover
+            .captures(&intro)
+            .map(|m| parse(&m[1]))
+            .transpose()
+            .map(|date| date.filter(|&date| date <= filed_on));
+    }
+    let date = r"(?P<date>(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2}\s*,?\s+20\d{2}|20\d{2}-\d{2}-\d{2})";
     let mut dates = BTreeSet::new();
     for pattern in [
         format!(
-            r"(?im)^[^\n]{{0,180}}?\b{date}\s*(?:[–—-]|\((?:GLOBE NEWSWIRE|GLOBENEWSWIRE|BUSINESS WIRE|PRNewswire)\))"
+            r"(?im)(?:^[^\n]{{0,180}}?|\b[A-Z]{{3,}}[,]\s*)\b{date}\s*(?:[–—-]|[(/](?:GLOBE NEWSWIRE|GLOBENEWSWIRE|BUSINESS WIRE|PRNewswire)[)/])"
         ),
         format!(r"(?i)\b(?:press|earnings|news)\s+release\s+(?:dated|issued|published)\s+{date}"),
+        format!(r"(?i)\(\s*{date}\s*\)\s*[–—-]"),
+        format!(
+            r"(?is)\bVentas Reports 20\d{{2}} (?:First|Second|Third|Fourth) Quarter Results\s+{date}\s+Page 2\b"
+        ),
+        format!(r"(?i)\bfor immediate release\s*[-–—:]\s*{date}"),
     ] {
         for found in Regex::new(&pattern)?.captures_iter(&intro) {
             dates.insert(parse(&found["date"])?);
         }
     }
     ensure!(
-        dates.len() == 1,
-        "missing or conflicting 6-K earnings announcement dates: {dates:?}"
+        dates.len() <= 1,
+        "conflicting earnings announcement dates: {dates:?}"
     );
-    let date = dates.into_iter().next().unwrap();
+    let date = dates.pop_first();
     ensure!(
-        date <= filed_on,
-        "announcement date {date} is after filing date {filed_on}"
+        date.is_none_or(|date| date <= filed_on),
+        "announcement date {date:?} is after filing date {filed_on}"
     );
     Ok(date)
 }

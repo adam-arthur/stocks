@@ -22,7 +22,19 @@ pub fn company() -> Result<Company> {
     )?);
     company.rules[1].section = company.rules[0].section.clone();
     company.affo_support = crate::AffoSupport::Reported;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        crate::table::joined_parentheses(html)
+            .into_iter()
+            .filter(|table| {
+                !table
+                    .rows
+                    .iter()
+                    .take(6)
+                    .flatten()
+                    .any(|c| c.text.to_lowercase().contains("pro forma"))
+            })
+            .collect()
+    };
     company.debt = Some(debt);
     Ok(company)
 }

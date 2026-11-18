@@ -25,6 +25,12 @@ pub fn company() -> Result<Company> {
                 1000,
             ),
             (
+                Metric::Affo,
+                Unit::Total,
+                r"^fad available to common shareholders$",
+                1000,
+            ),
+            (
                 Metric::Ffo,
                 Unit::PerShare,
                 r"^ffo (?:available to common shareholders per share\s*[-–—]\s*diluted|per share)$",

@@ -30,6 +30,19 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.affo_support = crate::AffoSupport::Reported;
+    company.tables = |html| {
+        crate::table::tables(html)
+            .into_iter()
+            .filter(|table| {
+                !table
+                    .rows
+                    .iter()
+                    .take(8)
+                    .flatten()
+                    .any(|cell| cell.text.eq_ignore_ascii_case("Revenues"))
+            })
+            .collect()
+    };
     company.debt = Some(debt);
     Ok(company)
 }

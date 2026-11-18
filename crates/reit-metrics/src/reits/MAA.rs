@@ -36,6 +36,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = crate::table::joined_parentheses;
+    company.rules[1].scale = None;
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)

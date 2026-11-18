@@ -23,7 +23,11 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        crate::table::align_year_pairs(&mut tables);
+        tables
+    };
     company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     Ok(company)

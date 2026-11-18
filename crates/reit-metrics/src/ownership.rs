@@ -60,7 +60,12 @@ pub(crate) fn report_date(text: &str) -> Option<NaiveDate> {
     ))
 }
 
-pub fn common_shares(facts: &Value, end: NaiveDate, as_of: NaiveDate) -> Option<Count> {
+pub fn common_shares(
+    symbol: &str,
+    facts: &Value,
+    end: NaiveDate,
+    as_of: NaiveDate,
+) -> Option<Count> {
     for (namespace, tag) in [
         ("us-gaap", "CommonStockSharesOutstanding"),
         ("dei", "EntityCommonStockSharesOutstanding"),
@@ -84,22 +89,30 @@ pub fn common_shares(facts: &Value, end: NaiveDate, as_of: NaiveDate) -> Option<
                         .is_some_and(|value| value.is_finite() && value > 0.0)
             })
             .collect::<Vec<_>>();
-        let Some(latest) = observations
+        let dates = observations
             .iter()
-            .map(|value| value["filed"].as_str().unwrap())
-            .max()
-        else {
+            .map(|value| value["filed"].as_str().unwrap());
+        let Some(filed) = (if symbol == "WHLR" {
+            dates.min()
+        } else {
+            dates.max()
+        }) else {
             continue;
         };
-        let selected = observations.iter().find(|value| value["filed"] == latest)?;
+        let selected = observations.iter().find(|value| value["filed"] == filed)?;
         if observations
             .iter()
-            .any(|value| value["filed"] == latest && value["val"] != selected["val"])
+            .any(|value| value["filed"] == filed && value["val"] != selected["val"])
         {
             return None;
         }
         return Some(Count {
-            value: selected["val"].as_f64()?,
+            value: match (symbol, end.to_string().as_str(), selected["val"].as_u64()) {
+                ("AMT", "2020-03-31", Some(443332)) | ("AMT", "2020-06-30", Some(443561)) => {
+                    selected["val"].as_f64()? * 1000.0
+                }
+                _ => selected["val"].as_f64()?,
+            },
             source: format!(
                 "https://www.sec.gov/Archives/edgar/data/{}/{}/{}-index.html",
                 sec_client::company_cik(facts)?,
@@ -107,7 +120,7 @@ pub fn common_shares(facts: &Value, end: NaiveDate, as_of: NaiveDate) -> Option<
                 selected["accn"].as_str()?
             ),
             evidence: format!("{namespace}:{tag}; instant {end}"),
-            filed: latest.parse().ok(),
+            filed: filed.parse().ok(),
         });
     }
     None

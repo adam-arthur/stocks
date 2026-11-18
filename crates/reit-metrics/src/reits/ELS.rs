@@ -23,7 +23,7 @@ pub fn company() -> Result<Company> {
             (
                 Metric::Ffo,
                 Unit::PerShare,
-                r#"^(?:funds from operations \([“"]ffo[”"]\)|ffo) per (?:fully diluted )?common share and op unit(?: - fully diluted)?$"#,
+                r#"^(?:funds from operations \([“"]ffo[”"]\)|ffo) per (?:fully diluted )?common share (?:and|&) op units?(?:\s*[-–—]\s*fully diluted)?$"#,
                 1,
             ),
         ],

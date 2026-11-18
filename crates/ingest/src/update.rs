@@ -273,9 +273,11 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     failed += price_failures + action_failures;
     failed += crate::preferred::update(store, &assets, progress_bar).await?;
     financials::update(store, &assets, progress_bar).await?;
-    log::info!("REIT financial metrics and debt extraction disabled");
+    crate::reit::update(store, &assets, progress_bar).await?;
+    let debt_failures = crate::debt::update(store, &assets, progress_bar).await?;
+    failed += debt_failures;
     log::info!(
-        "Done · {categorized} classified · {excluded} excluded · {unresolved} research unresolved · {} {queue_label} · {prices} prices updated · {price_failures} price failures · {actions} corporate action histories updated · {action_failures} corporate action failures · elapsed {}m {}s",
+        "Done · {categorized} classified · {excluded} excluded · {unresolved} research unresolved · {} {queue_label} · {prices} prices updated · {price_failures} price failures · {actions} corporate action histories updated · {action_failures} corporate action failures · {debt_failures} unavailable REIT debt schedules · elapsed {}m {}s",
         research.len(),
         started.elapsed().as_secs() / 60,
         started.elapsed().as_secs() % 60

@@ -18,6 +18,17 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.tables = |html| {
+        crate::table::tables(html)
+            .into_iter()
+            .filter(|table| {
+                !table.rows.iter().take(6).any(|row| {
+                    row.iter().any(|c| c.text.eq_ignore_ascii_case("Amount"))
+                        && row.iter().any(|c| c.text.eq_ignore_ascii_case("Per Share"))
+                })
+            })
+            .collect()
+    };
     company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     Ok(company)

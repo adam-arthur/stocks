@@ -48,6 +48,23 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
     crate::table::joined_parentheses(html)
         .into_iter()
         .map(|mut table| {
+            if let Some(index) = table.rows.iter().take(7).position(|row| {
+                row.iter().any(|c| c.text.eq_ignore_ascii_case("Reported"))
+                    && row.iter().any(|c| c.text.to_lowercase().contains("basis"))
+            }) {
+                let reported = table.rows[index]
+                    .iter()
+                    .filter(|c| c.text.eq_ignore_ascii_case("Reported"))
+                    .cloned()
+                    .collect::<Vec<_>>();
+                for cell in table.rows.iter_mut().skip(index + 1).flatten() {
+                    if crate::number(&cell.text).is_some()
+                        && !reported.iter().any(|c| c.covers(cell.column))
+                    {
+                        cell.text.clear();
+                    }
+                }
+            }
             if table
                 .rows
                 .iter()

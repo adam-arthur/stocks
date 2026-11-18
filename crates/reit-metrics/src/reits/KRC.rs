@@ -30,6 +30,46 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.tables = |html| {
+        let mut tables = crate::table::tables(html);
+        for table in &mut tables {
+            for i in 1..table.rows.len() {
+                let headings = table.rows[i - 1]
+                    .iter()
+                    .filter(|c| crate::duration(&c.text).is_some())
+                    .map(|c| c.text.clone())
+                    .collect::<Vec<_>>();
+                if headings.first().and_then(|h| crate::duration(h)) != Some(3) {
+                    continue;
+                }
+                let dates = table.rows[i]
+                    .iter_mut()
+                    .filter_map(|c| {
+                        chrono::NaiveDate::parse_from_str(&c.text, "%m/%d/%Y")
+                            .ok()
+                            .map(|d| (c, d))
+                    })
+                    .collect::<Vec<_>>();
+                if !(dates.len() == 5 && headings.len() == 1
+                    || dates.len() == 7
+                        && headings.len() == 2
+                        && dates[0].1 == dates[5].1
+                        && dates[4].1 == dates[6].1)
+                    || !dates[..5].windows(2).all(|w| w[0].1 > w[1].1)
+                {
+                    continue;
+                }
+                for (index, (cell, date)) in dates.into_iter().enumerate() {
+                    cell.text = format!(
+                        "{} {}",
+                        headings[usize::from(index >= 5)],
+                        date.format("%B %d, %Y")
+                    );
+                }
+            }
+        }
+        tables
+    };
     company.affo_support = crate::AffoSupport::Reported;
     company.sections.push(affo_per_share);
     company.debt = Some(debt);

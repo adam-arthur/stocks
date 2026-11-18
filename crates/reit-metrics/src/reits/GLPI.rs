@@ -14,7 +14,12 @@ pub fn company() -> Result<Company> {
                 r"^ffo, per diluted common share(?: and op(?:/ltip)? units)?$",
                 1,
             ),
-            (Metric::Ffo, Unit::Total, r"^funds from operations$", 0),
+            (
+                Metric::Ffo,
+                Unit::Total,
+                r"^consolidated funds from operations$",
+                0,
+            ),
         ],
         None,
     ))?;
@@ -62,7 +67,9 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
             text.push(' ');
         }
     }
-    crate::table::joined_parentheses(html)
+    let mut tables = crate::table::joined_parentheses(html);
+    crate::table::align_year_pairs(&mut tables);
+    tables
         .into_iter()
         .zip(headings)
         .filter_map(|(mut table, consolidated)| {
@@ -73,6 +80,8 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
                         .eq_ignore_ascii_case("Adjusted funds from operations")
                     {
                         cell.text = "Consolidated adjusted funds from operations".into();
+                    } else if cell.text.eq_ignore_ascii_case("Funds from operations") {
+                        cell.text = "Consolidated funds from operations".into();
                     }
                 }
             }

@@ -151,10 +151,11 @@ fn security(
     let is_preferred = meta["category"] == "PREFERRED";
     if is_preferred {
         for price in market.prices.values_mut() {
-            price.dividend_yield = price
-                .dividend_yield
-                .filter(|_| meta["perpetual_note"].is_null())
-                .map(output::round_yield);
+            for value in [&mut price.dividend_yield_ttm, &mut price.dividend_yield_fwd] {
+                *value = value
+                    .filter(|_| meta["perpetual_note"].is_null())
+                    .map(output::round_yield);
+            }
         }
     }
     let facts = if common(meta) {
@@ -178,7 +179,7 @@ fn security(
     let mut financials = extracted.financials;
     financials::calculate(&mut financials);
     let mut summary = json!({"latest_quarter_end": null, "closing_price": null, "market_cap": null,
-        "shares_outstanding": null, "dividend_yield": null,
+        "shares_outstanding": null, "dividend_yield_ttm": null, "dividend_yield_fwd": null,
         "revenue_ttm": null, "earnings_ttm": null, "common_shareholder_earnings_ttm": null,
         "diluted_eps": null, "price_to_earnings": null, "price_to_sales": null, "price_to_book": null,
         "total_assets": null, "cash_and_equivalents": null, "total_debt": null, "preferred_stock_value": null, "total_debt_including_preferred_stock": null,
@@ -197,7 +198,8 @@ fn security(
     );
     if let Some((_, price)) = market.prices.last_key_value() {
         summary["closing_price"] = json!(price.close);
-        summary["dividend_yield"] = json!(price.dividend_yield);
+        summary["dividend_yield_ttm"] = json!(price.dividend_yield_ttm);
+        summary["dividend_yield_fwd"] = json!(price.dividend_yield_fwd);
         let ambiguous = meta["cik"]
             .as_u64()
             .is_some_and(|cik| companies.get(&cik).is_some_and(|count| *count > 1))
@@ -287,13 +289,19 @@ fn security(
         )?;
         affo_support = history.as_ref().map(|history| history.affo_support);
         let reit = history.map(|history| history.quarters).unwrap_or_default();
-        if affo_support.is_some_and(reit_metrics::AffoSupport::is_supported) {
+        if affo_support.is_some_and(reit_metrics::AffoSupport::is_supported)
+            && reit.windows(4).any(|window| {
+                window
+                    .iter()
+                    .all(|quarter| quarter["affo_per_share"].is_number())
+            })
+        {
             valuation = Some(
                 valuation::derive(&reit, &market, as_of)
                     .with_context(|| format!("{symbol}: AFFO valuation"))?,
             );
         }
-        reit::merge(&mut quarters, reit);
+        reit::merge(&mut quarters, reit, symbol != "MKZR");
     }
     let mut result = json!({
         "metadata": meta,

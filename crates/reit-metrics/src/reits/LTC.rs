@@ -33,7 +33,7 @@ pub fn company() -> Result<Company> {
                 1000,
             ),
         ],
-        None,
+        Some("nareit basic ffo attributable"),
     ))?;
     company.affo_support = crate::AffoSupport::Reported;
     company.sections.push(affo_per_share);

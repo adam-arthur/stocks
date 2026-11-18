@@ -15,7 +15,7 @@ pub fn company() -> Result<Company> {
             (
                 Metric::Affo,
                 Unit::Total,
-                r"^adjusted core funds from operations$",
+                r"^adjusted (?:core )?funds from operations$",
                 1000,
             ),
             (Metric::Ffo, Unit::PerShare, r"^nareit ffo per share$", 1),
@@ -31,6 +31,7 @@ pub fn company() -> Result<Company> {
     company.tables = tables;
     company.extra_observations = Some(extract);
     company.debt = Some(debt);
+    company.affo_comparatives = true;
     company.affo_support = crate::AffoSupport::Reported;
     company.sections.push(affo_per_share);
     Ok(company)
@@ -64,7 +65,36 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         .flat_map(|table| &table.rows)
         .flatten()
         .find_map(|cell| date(&cell.text));
+    let years = regex::Regex::new(r"(?i)for the periods ended (?:march|june|september|december) (?:30|31), (20\d{2}) and (20\d{2})").unwrap();
     for table in &mut tables {
+        if let Some(per_share) = table.rows.iter().position(|row| {
+            row.iter()
+                .any(|c| c.text.to_lowercase().contains("ffo (per diluted share)"))
+        }) {
+            if table.rows[..per_share].iter().flatten().any(|c| {
+                c.text
+                    .to_lowercase()
+                    .starts_with("reconciliation of net income")
+            }) {
+                table.rows.truncate(per_share);
+            } else {
+                table.rows.clear();
+            }
+        }
+        if let Some(expected) = table
+            .rows
+            .iter()
+            .take(2)
+            .flatten()
+            .find_map(|cell| years.captures(&cell.text))
+            && let Some(first) = table.rows.iter().take(4).flatten().find(|c| {
+                c.text.len() == 4 && c.text.starts_with("20") && c.text.parse::<u32>().is_ok()
+            })
+            && first.text != expected[1]
+        {
+            table.rows.clear();
+            continue;
+        }
         if let Some(date) = table
             .rows
             .iter()

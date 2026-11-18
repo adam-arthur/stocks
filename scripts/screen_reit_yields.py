@@ -35,7 +35,7 @@ def main():
         if not dates or (args.as_of - date.fromisoformat(dates[-1])).days > 7:
             counts["missing_or_stale_price"] += 1
             continue
-        current = prices[dates[-1]].get("dividend_yield")
+        current = prices[dates[-1]].get("dividend_yield_ttm")
         if not number(current) or current <= 0:
             counts["missing_or_zero_yield"] += 1
             continue
@@ -58,10 +58,10 @@ def main():
         end = date.fromisoformat(dates[-1])
         start = end.replace(year=end.year - 5, day=min(end.day, monthrange(end.year - 5, end.month)[1]))
         history = [
-            (d, prices[d]["dividend_yield"])
+            (d, prices[d]["dividend_yield_ttm"])
             for d in dates if start.isoformat() <= d < dates[-1]
-            and number(prices[d].get("dividend_yield"))
-            and prices[d]["dividend_yield"] >= 0
+            and number(prices[d].get("dividend_yield_ttm"))
+            and prices[d]["dividend_yield_ttm"] >= 0
         ]
         if len(history) < 1200 or date.fromisoformat(history[0][0]) > start + timedelta(days=7):
             counts["insufficient_five_year_history"] += 1

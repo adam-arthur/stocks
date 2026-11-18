@@ -28,7 +28,15 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            table
+                .rows
+                .retain(|row| !row.iter().any(|cell| cell.text.eq_ignore_ascii_case("to")));
+        }
+        tables
+    };
     company.rules[0].section = Some(regex::Regex::new(
         r"(?i)^per (?:diluted |common )?share data:?",
     )?);

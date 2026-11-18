@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use alpaca_client::Asset;
-use anyhow::Result;
+use anyhow::{Context, Result, ensure};
 use chrono::NaiveDate;
 use reit_metrics::{Fetch, Metric, Unit, source::Sources};
 
@@ -20,16 +20,14 @@ pub async fn update(
             .collect::<Vec<_>>(),
         progress_bar,
     )
-    .await?;
-    Ok(())
+    .await
 }
 
 pub async fn update_symbols(
     store: &Store,
     symbols: &[String],
     progress_bar: &indicatif::ProgressBar,
-) -> Result<usize> {
-    let mut failed = 0;
+) -> Result<()> {
     let sources = Sources::new(&store.sec_directory()?.join("reit-metrics"))?;
     let mut progress = Progress::new(
         progress_bar,
@@ -52,7 +50,12 @@ pub async fn update_symbols(
                 .as_ref()
                 .map_or(&[][..], |history| history.quarters.as_slice());
             let latest = previous.iter().max_by_key(|quarter| quarter.end);
-            let mut backfill = latest.is_none_or(|latest| {
+            let mut backfill = history.as_ref().is_some_and(|history| {
+                history.affo_support.is_supported()
+                    && !previous.iter().rev().take(12).all(|quarter| {
+                        quarter.affo_per_share.is_some() || quarter.affo_total.is_some()
+                    })
+            }) || latest.is_none_or(|latest| {
                 previous.iter().any(|quarter| {
                     quarter.published_on.is_none()
                         || quarter.ffo_per_share.is_some() != latest.ffo_per_share.is_some()
@@ -81,9 +84,10 @@ pub async fn update_symbols(
                                 .any(|quarter| quarter.end >= start && !present(quarter))
                         })
                 });
+            backfill |= ownership_backfill;
             let mut report = reit_metrics::fetch(
                 symbol,
-                latest.filter(|_| !backfill && !ownership_backfill).map_or(
+                latest.filter(|_| !backfill).map_or(
                     Fetch::All {
                         since: NaiveDate::from_ymd_opt(2016, 1, 1).unwrap(),
                     },
@@ -99,7 +103,17 @@ pub async fn update_symbols(
                 &sources,
             )
             .await?;
-            if !backfill && report.observations.is_empty() {
+            if !backfill
+                && (report.observations.is_empty()
+                    || (company.affo_support.is_supported()
+                        && history
+                            .as_ref()
+                            .is_some_and(|history| !history.affo_support.is_supported())
+                        && report.observations.iter().any(|value| {
+                            value.metric == Metric::Affo && reit_metrics::scan::is_quarter(value)
+                        }))
+                    || latest.is_some_and(|quarter| report.report_period != Some(quarter.end)))
+            {
                 backfill = true;
                 report = reit_metrics::fetch(
                     symbol,
@@ -116,6 +130,13 @@ pub async fn update_symbols(
                 .cloned()
                 .map(|quarter| ((quarter.start, quarter.end), quarter))
                 .collect();
+            if !backfill
+                && let Some(quarter) = latest.and_then(|q| quarters.get_mut(&(q.start, q.end)))
+            {
+                quarter.published_on = None;
+                quarter.affo_per_share = None;
+                quarter.affo_total = None;
+            }
             for value in report
                 .observations
                 .iter()
@@ -137,12 +158,7 @@ pub async fn update_symbols(
                             affo_total: None,
                             ownership: Default::default(),
                         });
-                anyhow::ensure!(
-                    quarter.published_on.is_none() || quarter.published_on == value.published_on,
-                    "conflicting publication dates for quarter ending {}",
-                    value.end
-                );
-                quarter.published_on = value.published_on;
+                quarter.published_on = quarter.published_on.max(value.published_on);
                 match (value.metric, value.unit) {
                     (Metric::Ffo, Unit::PerShare) => quarter.ffo_per_share = Some(value.value),
                     (Metric::Ffo, Unit::Total) => {
@@ -165,11 +181,19 @@ pub async fn update_symbols(
                 let mut ownership = report.ownership.remove(&quarter.end).unwrap_or_default();
                 if let Some(shares) = facts.as_ref().and_then(|facts| {
                     reit_metrics::ownership::common_shares(
+                        symbol,
                         facts,
                         quarter.end,
                         chrono::Utc::now().date_naive(),
                     )
                 }) {
+                    if symbol == "AMT"
+                        && shares
+                            .evidence
+                            .starts_with("us-gaap:CommonStockSharesOutstanding;")
+                    {
+                        ownership.shares_outstanding = None;
+                    }
                     reit_metrics::ownership::merge(
                         &mut ownership,
                         reit_metrics::ownership::Ownership {
@@ -186,14 +210,70 @@ pub async fn update_symbols(
                 }
             }
             let mut quarters = contiguous_quarters(quarters.into_values().collect());
-            if report.report_period.is_some_and(|end| {
-                report.observations.iter().all(|value| value.end != end)
-                    || quarters.last().is_none_or(|quarter| quarter.end < end)
-            }) {
-                quarters.clear();
+            let expected = if !company.rules.is_empty()
+                && company.rules.iter().all(|rule| rule.metric == Metric::Affo)
+            {
+                Metric::Affo
+            } else {
+                Metric::Ffo
+            };
+            ensure!(
+                (report.report_period.is_none()
+                    && report.documents.is_empty()
+                    && report.affo_support == reit_metrics::AffoSupport::Unavailable)
+                    || (expected == Metric::Affo
+                        && report.report_period.is_some_and(|end| report
+                            .documents
+                            .iter()
+                            .flat_map(|d| &d.observations)
+                            .any(|v| v.metric == Metric::Affo
+                                && v.end == end
+                                && v.published_on.is_some_and(|date| date > end))))
+                    || report.report_period.is_some_and(|end| {
+                        report
+                            .observations
+                            .iter()
+                            .any(|value| value.metric == expected && value.end == end)
+                            && quarters.last().is_some_and(|quarter| quarter.end == end)
+                    }),
+                "missing {expected:?} for latest report period {:?}",
+                report.report_period
+            );
+            let contiguous = quarters
+                .iter()
+                .rev()
+                .take_while(|quarter| {
+                    (quarter.affo_per_share.is_some() || quarter.affo_total.is_some())
+                        && quarter.start.checked_add_months(chrono::Months::new(3))
+                            == quarter.end.succ_opt()
+                })
+                .count();
+            let retained = if company.affo_support.is_supported()
+                && contiguous >= 12
+                && quarters.last().map(|q| q.end) == report.report_period
+            {
+                contiguous
+            } else {
+                0
+            };
+            let clear = quarters.len() - retained;
+            for quarter in &mut quarters[..clear] {
+                quarter.affo_per_share = None;
+                quarter.affo_total = None;
             }
+            quarters.retain(|q| {
+                q.ffo_total.is_some()
+                    || q.ffo_per_share.is_some()
+                    || q.affo_total.is_some()
+                    || q.affo_per_share.is_some()
+            });
+            let affo_support = if company.affo_support.is_supported() && retained == 0 {
+                reit_metrics::AffoSupport::Unavailable
+            } else {
+                company.affo_support
+            };
             let updated = reit_metrics::ReitHistory {
-                affo_support: company.affo_support,
+                affo_support,
                 quarters,
             };
             if serde_json::to_value(&history)? != serde_json::to_value(&updated)? {
@@ -202,32 +282,18 @@ pub async fn update_symbols(
             Ok::<_, anyhow::Error>(())
         }
         .await;
-        if let Err(error) = result {
-            failed += 1;
-            log::warn!("{}: REIT metrics unavailable: {error:#}", symbol);
-        }
+        result.with_context(|| format!("{symbol}: REIT metrics"))?;
         progress.advance(1, symbol);
     }
     progress.finish();
-    Ok(failed)
+    Ok(())
 }
 
 pub fn contiguous_quarters(mut quarters: Vec<ReitQuarter>) -> Vec<ReitQuarter> {
     quarters.sort_by_key(|quarter| (quarter.end, quarter.start));
-    if quarters
-        .last()
-        .is_none_or(|quarter| quarter.ffo_per_share.is_none() && quarter.ffo_total.is_none())
-    {
-        return Vec::new();
-    }
     let start = quarters
         .windows(2)
-        .rposition(|pair| {
-            pair[0].end.succ_opt() != Some(pair[1].start)
-                || (pair[0].ffo_per_share.is_none() && pair[0].ffo_total.is_none())
-                || pair[0].ffo_per_share.is_some() != pair[1].ffo_per_share.is_some()
-                || pair[0].ffo_total.is_some() != pair[1].ffo_total.is_some()
-        })
+        .rposition(|pair| pair[0].end.succ_opt() != Some(pair[1].start))
         .map_or(0, |index| index + 1);
     quarters.drain(..start);
     let mut contiguous = [true; 2];

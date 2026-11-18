@@ -31,6 +31,18 @@ pub(crate) fn tables(html: &str) -> Vec<crate::table::Table> {
     let mut tables = crate::table::joined_parentheses(html);
     let quarter = regex::Regex::new(r"^Q([1-4]) 20\d{2}$").unwrap();
     for table in &mut tables {
+        if table
+            .rows
+            .iter()
+            .take(6)
+            .flatten()
+            .any(|cell| cell.text.to_lowercase().contains("in millions"))
+        {
+            table.rows.retain(|row| {
+                !row.iter()
+                    .any(|cell| cell.text.eq_ignore_ascii_case("AFFO"))
+            });
+        }
         let month = table.rows.iter().take(6).flatten().find_map(|cell| {
             quarter
                 .captures(&cell.text)
@@ -74,17 +86,21 @@ pub(crate) fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation
             NaiveDate::from_ymd_opt(date[2].parse().ok()?, date[1].parse::<u32>().ok()? * 3, 1)
         })
         .max();
+    let footnotes = regex::Regex::new(r"%\s+\([1-9]\)\s+[A-Za-z]")?;
     let mut observations = Vec::new();
     for (page, text) in pages.iter().enumerate() {
         if !text.to_lowercase().contains("reconciliation of net") {
             continue;
         }
+        let rows = footnotes
+            .find(text)
+            .map_or(text.as_str(), |note| &text[..note.start() + 1]);
         for (metric, label, affo_unit) in [
             (Metric::Ffo, r"FFO\s*\(NAREIT\)", None),
             (Metric::Affo, r"AFFO", Some(Unit::Total)),
             (Metric::Affo, r"AFFO\s+Per\s+Share", Some(Unit::PerShare)),
         ] {
-            let Some(values) = crate::presentation::values(text, label)?.into_iter().last() else {
+            let Some(values) = crate::presentation::values(rows, label)?.into_iter().last() else {
                 continue;
             };
             let periods = if values.len() == 4 || (values.len() == 2 && pair.is_match(text)) {

@@ -8,13 +8,31 @@ pub fn company() -> Result<Company> {
         1649096,
         &["www.clipperrealty.com", "investors.clipperrealty.com"],
         vec![
-            (Metric::Affo, Unit::Total, r"^affo$", 1000),
+            (Metric::Affo, Unit::Total, r"^(?:total )?affo$", 1000),
             (Metric::Affo, Unit::PerShare, r"^affo per share/unit$", 1),
             (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            for i in 1..table.rows.len().saturating_sub(1) {
+                if table.rows[i - 1].iter().any(|cell| {
+                    cell.text
+                        .eq_ignore_ascii_case("Real estate depreciation and amortization")
+                }) && table.rows[i + 1]
+                    .iter()
+                    .any(|cell| cell.text.eq_ignore_ascii_case("AFFO:"))
+                    && let Some(first) = table.rows[i].iter_mut().find(|cell| !cell.text.is_empty())
+                    && first.text == "$"
+                {
+                    first.text = "FFO".into();
+                }
+            }
+        }
+        tables
+    };
     company.debt = Some(debt);
     company.affo_support = crate::AffoSupport::Reported;
     company.ownership = Some(crate::ownership::Rules {

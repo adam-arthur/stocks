@@ -13,6 +13,7 @@ pub fn company() -> Result<Company> {
         ],
         vec![
             (Metric::Affo, Unit::Total, r#"^affo$"#, 1000),
+            (Metric::Affo, Unit::Total, r"^affo in millions$", 1_000_000),
             (
                 Metric::Ffo,
                 Unit::PerShare,
@@ -22,7 +23,28 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            if table
+                .rows
+                .iter()
+                .take(8)
+                .flatten()
+                .any(|cell| cell.text.to_ascii_lowercase().contains("in millions"))
+            {
+                for cell in table
+                    .rows
+                    .iter_mut()
+                    .flatten()
+                    .filter(|cell| cell.text.eq_ignore_ascii_case("AFFO"))
+                {
+                    cell.text = "AFFO in millions".into();
+                }
+            }
+        }
+        tables
+    };
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)

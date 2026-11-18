@@ -11,13 +11,14 @@ pub fn company() -> Result<Company> {
             (
                 Metric::Affo,
                 Unit::PerShare,
-                r"^affo per common share(?: and (?:common|op) units?)?$",
+                r"^affo per common share(?: and (?:common|op(?: common)?) units?)?$",
                 1,
             ),
+            (Metric::Affo, Unit::Total, r"^affo$", 1000),
             (
                 Metric::Ffo,
                 Unit::PerShare,
-                r"^ffo per common share(?: and (?:common|op) units?)?$",
+                r"^ffo per common share(?: and (?:common|op(?: common)?) units?)?$",
                 1,
             ),
         ],

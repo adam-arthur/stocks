@@ -5,7 +5,7 @@ use chrono::{Datelike, NaiveDate};
 use serde::Serialize;
 
 use crate::{
-    Extraction, Metric, Observation, Unit, companies::company, extract_file, source::Sources,
+    Extraction, Metric, Observation, Unit, companies::company, extract_document, source::Sources,
 };
 
 #[derive(Serialize)]
@@ -44,6 +44,80 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                     && matches!(filing.form.as_str(), "10-Q" | "10-Q/A" | "10-K" | "10-K/A"))
         })
         .collect::<Vec<_>>();
+    if matches!(symbol, "FRMI" | "SRG" | "PW" | "SAFE") {
+        let filing = filings
+            .iter()
+            .max_by_key(|filing| (&filing.filed_on, &filing.accession))
+            .context("missing earnings filing")?;
+        let mut urls = sources
+            .filing_urls(&company, &filing.accession, &filing.form)
+            .await?;
+        ensure!(!urls.is_empty(), "{symbol}: missing earnings exhibits");
+        if symbol == "SAFE" {
+            let release = filings
+                .iter()
+                .filter(|f| f.form.starts_with("8-K") != filing.form.starts_with("8-K"))
+                .max_by_key(|f| f.filed_on)
+                .context("missing corresponding Safehold earnings filing")?;
+            let exhibits = sources
+                .filing_urls(&company, &release.accession, &release.form)
+                .await?;
+            ensure!(!exhibits.is_empty(), "missing Safehold earnings exhibits");
+            urls.extend(exhibits);
+            urls.sort();
+            urls.dedup();
+        }
+        let mut reports_metrics = false;
+        let metric = regex::Regex::new(
+            r"(?i)\b(?:affo|ffo|fad|funds from operations|funds available for distribution)\b",
+        )?;
+        for url in urls {
+            let path = sources.download(&company, &url).await?;
+            let bytes = std::fs::read(&path)?;
+            if symbol == "PW" {
+                let tables = crate::table::joined_parentheses(std::str::from_utf8(&bytes)?);
+                let labels = tables
+                    .iter()
+                    .flat_map(|table| &table.rows)
+                    .filter(|row| row.iter().any(|cell| crate::number(&cell.text).is_some()))
+                    .filter_map(|row| row.iter().find(|cell| !cell.text.is_empty()))
+                    .map(|cell| cell.text.to_lowercase())
+                    .collect::<Vec<_>>();
+                ensure!(
+                    labels.iter().any(|label| label.starts_with("core ffo"))
+                        && !labels.iter().any(|label| metric.is_match(label)
+                            && !label.contains("core ffo")
+                            && !label.contains("core funds from operations")),
+                    "{symbol}: expected only Core FFO in the reported figures: {url}"
+                );
+                continue;
+            }
+            let text = if bytes.starts_with(b"%PDF-") {
+                crate::pdf::text(&path)?
+            } else {
+                let document = scraper::Html::parse_document(std::str::from_utf8(&bytes)?);
+                document.root_element().text().collect::<Vec<_>>().join(" ")
+            };
+            if symbol == "SAFE" && metric.is_match(&crate::table::normalize(&text)) {
+                reports_metrics = true;
+                continue;
+            }
+            ensure!(
+                !metric.is_match(&crate::table::normalize(&text)),
+                "{symbol}: earnings exhibit mentions REIT metrics and requires extraction rules: {url}"
+            );
+        }
+        if !reports_metrics {
+            return Ok(Report {
+                affo_support: crate::AffoSupport::Unavailable,
+                symbol: symbol.to_owned(),
+                report_period: None,
+                observations: Vec::new(),
+                documents,
+                ownership,
+            });
+        }
+    }
     if company.additional_items.is_some()
         || company.filings.iter().any(|form| {
             !matches!(
@@ -90,9 +164,17 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                             &url,
                             Some(filing.filed_on),
                             &mut ownership,
-                        );
+                        )?;
                         if company.filings.contains(&filing.form.as_str()) {
-                            extract_file(symbol, &path, &url).map(Some)
+                            extract_document(
+                                &company,
+                                &path,
+                                &url,
+                                !company.affo_comparatives,
+                                since,
+                                filing.filed_on,
+                            )
+                            .map(Some)
                         } else {
                             Ok(None)
                         }
@@ -108,17 +190,7 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                                 result.report_period =
                                     result.observations.iter().map(|value| value.end).max();
                             }
-                            if !matches!(
-                                filing.form.as_str(),
-                                "8-K"
-                                    | "8-K/A"
-                                    | "6-K"
-                                    | "6-K/A"
-                                    | "10-Q"
-                                    | "10-Q/A"
-                                    | "10-K"
-                                    | "10-K/A"
-                            ) {
+                            if !matches!(filing.form.as_str(), "8-K" | "8-K/A" | "6-K" | "6-K/A") {
                                 for value in &mut result.observations {
                                     value.published_on = Some(filing.filed_on);
                                 }
@@ -127,20 +199,57 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                             documents.push(result);
                         }
                         Ok(None) => {}
-                        Err(error) if error.is::<crate::Conflict>() => return Err(error),
-                        Err(error) => log::warn!("{url}: {error:#}"),
+                        Err(error)
+                            if error.to_string() == "unsupported document format"
+                                || error
+                                    .to_string()
+                                    .ends_with("PDF adapter has not been researched") =>
+                        {
+                            log::warn!("{url}: {error:#}")
+                        }
+                        Err(error) => return Err(error.context(url)),
                     }
                 }
             }
             Ok(_) => log::debug!("{}: no earnings exhibits", filing.accession),
-            Err(error) => log::warn!("{}: {error:#}", filing.accession),
+            Err(error) => return Err(error.context(format!("filing index {}", filing.accession))),
         }
         if documents[document_start..]
             .iter()
             .any(|document| !document.observations.is_empty())
             && (filing.form.starts_with("8-K") || filing.form.starts_with("6-K"))
         {
-            let published_on = sources.publication_date(&company, &filing).await;
+            let mut published_on = sources.publication_date(&company, &filing).await;
+            if filing.form.starts_with("8-K")
+                && (published_on.is_err()
+                    || documents[document_start..]
+                        .iter()
+                        .filter_map(|doc| doc.report_period)
+                        .max()
+                        .is_some_and(|end| published_on.as_ref().is_ok_and(|date| *date <= end)))
+            {
+                let mut dates = std::collections::BTreeSet::new();
+                for url in documents[document_start..]
+                    .iter()
+                    .filter_map(|doc| doc.source.as_ref())
+                    .filter(|url| !url.to_ascii_lowercase().ends_with(".pdf"))
+                {
+                    let html = sources.get(&company, url).await?;
+                    if let Some(date) = crate::publication::exhibit_date(&html, filing.filed_on)
+                        .with_context(|| format!("reading dateline in {url}"))?
+                    {
+                        dates.insert(date);
+                    }
+                }
+                ensure!(
+                    dates.len() <= 1,
+                    "{symbol}: conflicting earnings exhibit datelines in {}",
+                    filing.accession
+                );
+                if let Some(date) = dates.pop_first() {
+                    published_on = Ok(date);
+                }
+            }
             for document in &mut documents[document_start..] {
                 for value in &mut document.observations {
                     match &published_on {
@@ -180,8 +289,15 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                     }
                     log::debug!("{symbol}: official supplement {end}");
                     match sources.download(&company, &url).await.and_then(|path| {
-                        collect_ownership(symbol, &path, &url, None, &mut ownership);
-                        let result = extract_file(symbol, &path, &url)?;
+                        collect_ownership(symbol, &path, &url, None, &mut ownership)?;
+                        let result = extract_document(
+                            &company,
+                            &path,
+                            &url,
+                            !company.affo_comparatives,
+                            since,
+                            published_on.unwrap_or(end),
+                        )?;
                         ensure!(
                             !company.supplement_period_required
                                 || result.report_period == Some(end),
@@ -202,12 +318,11 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
                             }
                             documents.push(result);
                         }
-                        Err(error) if error.is::<crate::Conflict>() => return Err(error),
-                        Err(error) => log::warn!("{url}: {error:#}"),
+                        Err(error) => return Err(error.context(url)),
                     }
                 }
             }
-            Err(error) => log::warn!("corporate archive: {error:#}"),
+            Err(error) => return Err(error.context("corporate earnings archive")),
         }
     }
     ensure!(
@@ -236,18 +351,19 @@ pub async fn fetch(symbol: &str, mode: Fetch, sources: &Sources) -> Result<Repor
     for value in &observations {
         let date = value.published_on.with_context(|| {
             format!(
-                "{symbol}: missing Item 2.02 announcement date for quarter ending {} ({}): {}",
+                "{symbol}: missing verified publication date for quarter ending {} ({}): {}",
                 value.end,
                 value.source,
                 publication_errors
                     .get(&value.source)
-                    .map_or("no associated Item 2.02 filing", String::as_str)
+                    .map_or("no associated dated filing", String::as_str)
             )
         })?;
         ensure!(
             date > value.end,
-            "{symbol}: announcement date {date} must follow quarter ending {}",
-            value.end
+            "{symbol}: announcement date {date} must follow quarter ending {} in {}",
+            value.end,
+            value.source
         );
     }
     Ok(Report {
@@ -286,6 +402,7 @@ fn original_series(
                 document.report_period != Some(end),
                 value.label.starts_with("Calculated "),
                 document.filed_on.unwrap_or(NaiveDate::MAX),
+                value.scale,
             )
         });
         let (document, selected) = candidates[0];
@@ -295,7 +412,7 @@ fn original_series(
                 && other.published_on == selected.published_on
                 && other.label.starts_with("Calculated ")
                     == selected.label.starts_with("Calculated ")
-                && other.value * other.scale as f64 != selected.value * selected.scale as f64
+                && !crate::same_amount(selected, other)
             {
                 return Err(crate::Conflict(format!(
                     "{}: conflicting {:?} {:?} for {} through {} in {} and {}",
@@ -317,13 +434,15 @@ fn original_series(
 
 pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) -> Vec<Observation> {
     let mut metrics = BTreeMap::<_, Vec<_>>::new();
+    let mut affo = Vec::new();
     for value in values.into_iter().filter(is_quarter) {
-        metrics
-            .entry((value.metric, value.unit))
-            .or_default()
-            .push(value);
+        if value.metric == Metric::Affo {
+            affo.push(value);
+            continue;
+        }
+        metrics.entry(value.unit).or_default().push(value);
     }
-    let mut selected = BTreeMap::<_, Vec<Observation>>::new();
+    let mut selected = Vec::new();
     for values in metrics
         .into_values()
         .map(|mut values| {
@@ -340,17 +459,25 @@ pub fn contiguous_series(values: Vec<Observation>, latest: Option<NaiveDate>) ->
         })
         .filter(|values| !values.is_empty())
     {
-        let current = selected
-            .entry((
-                values[0].metric,
-                (values[0].metric == Metric::Affo).then_some(values[0].unit),
-            ))
-            .or_default();
-        if values.len() > current.len() {
-            *current = values;
+        if values.len() > selected.len() {
+            selected = values;
         }
     }
-    selected.into_values().flatten().collect()
+    let periods: BTreeMap<_, _> = selected.iter().map(|v| (v.end, v.start)).collect();
+    affo.retain(|v| {
+        v.start.checked_add_months(chrono::Months::new(3)) == v.end.succ_opt()
+            && periods.get(&v.end).is_none_or(|&start| start == v.start)
+    });
+    let dates: BTreeMap<_, _> = affo.iter().map(|v| (v.end, v.start)).collect();
+    let mut end = latest;
+    while let Some(start) = end.and_then(|date| dates.get(&date)) {
+        end = start.pred_opt();
+    }
+    selected.extend(
+        affo.into_iter()
+            .filter(|v| Some(v.end) > end && Some(v.end) <= latest),
+    );
+    selected
 }
 
 pub fn is_quarter(value: &Observation) -> bool {
@@ -371,19 +498,17 @@ fn collect_ownership(
     source: &str,
     filed: Option<NaiveDate>,
     result: &mut BTreeMap<NaiveDate, crate::ownership::Ownership>,
-) {
+) -> Result<()> {
     if !crate::ownership::supports(symbol) {
-        return;
+        return Ok(());
     }
-    let Ok(html) = std::fs::read_to_string(path) else {
-        return;
-    };
-    match crate::ownership::extract(symbol, &html, source, filed) {
-        Ok(values) => {
-            for (end, value) in values {
-                crate::ownership::merge(result.entry(end).or_default(), value);
-            }
-        }
-        Err(error) => log::warn!("{symbol}: ownership extraction failed for {source}: {error:#}"),
+    let bytes = std::fs::read(path)?;
+    if bytes.starts_with(b"%PDF-") {
+        return Ok(());
     }
+    let html = std::str::from_utf8(&bytes)?;
+    for (end, value) in crate::ownership::extract(symbol, html, source, filed)? {
+        crate::ownership::merge(result.entry(end).or_default(), value);
+    }
+    Ok(())
 }

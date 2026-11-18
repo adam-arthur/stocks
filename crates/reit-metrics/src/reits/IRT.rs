@@ -23,7 +23,41 @@ pub fn company() -> Result<Company> {
         ],
         Some("funds from operations"),
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            if let Some(core) = table.rows.iter().position(|row| {
+                row.iter().any(|c| {
+                    c.text
+                        .to_lowercase()
+                        .starts_with("core funds from operations")
+                })
+            }) {
+                if table.rows[core + 1..].iter().any(|row| {
+                    row.iter()
+                        .any(|c| c.text.eq_ignore_ascii_case("Funds From Operations"))
+                }) {
+                    for row in &mut table.rows[..core] {
+                        if row
+                            .iter()
+                            .any(|c| c.text.eq_ignore_ascii_case("Funds From Operations"))
+                        {
+                            row.clear();
+                        }
+                    }
+                }
+            }
+        }
+        tables
+            .into_iter()
+            .filter(|table| {
+                !table.rows.iter().take(5).any(|row| {
+                    row.iter().any(|cell| cell.text == "IRT")
+                        && row.iter().any(|cell| cell.text == "STAR")
+                })
+            })
+            .collect()
+    };
     company.affo_support = crate::AffoSupport::Unavailable;
     company.debt = Some(debt);
     Ok(company)

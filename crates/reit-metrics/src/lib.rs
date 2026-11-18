@@ -22,10 +22,27 @@ pub use models::{AffoSupport, Extraction, Metric, Observation, ReitHistory, Unit
 use table::{Cell, normalize};
 
 pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
-    let company = companies::company(symbol)?;
-    source::validate_url(&company, source)?;
+    extract_html(
+        &companies::company(symbol)?,
+        html,
+        source,
+        false,
+        NaiveDate::MIN,
+        NaiveDate::MAX,
+    )
+}
+
+fn extract_html(
+    company: &companies::Company,
+    html: &str,
+    source: &str,
+    current_affo_only: bool,
+    since: NaiveDate,
+    until: NaiveDate,
+) -> Result<Extraction> {
+    source::validate_url(company, source)?;
     let tables = (company.tables)(html);
-    let (mut candidates, report_period) = reported_sections(&company, &tables, source)?;
+    let (mut candidates, report_period) = reported_sections(&company, &tables, source, until)?;
     for observation in company
         .extra_observations
         .map(|extract| extract(html, source))
@@ -39,7 +56,19 @@ pub fn extract(symbol: &str, html: &str, source: &str) -> Result<Extraction> {
             candidates.push((usize::MAX, observation));
         }
     }
-    let mut result = select(&company, candidates)?;
+    candidates.retain(|(_, value)| value.end <= until);
+    let report_period = report_period.max(candidates.iter().map(|(_, value)| value.end).max());
+    if current_affo_only {
+        candidates.retain(|(_, value)| {
+            value.metric != Metric::Affo
+                || (Some(value.end) == report_period
+                    && (scan::is_quarter(value)
+                        || (matches!(company.symbol, "STRW" | "FPI") && value.unit == Unit::Total)
+                        || company.rules.iter().all(|rule| rule.metric == Metric::Affo)))
+        });
+    }
+    candidates.retain(|(_, value)| value.start >= since);
+    let mut result = select(company, candidates)?;
     result.report_period = result.report_period.max(report_period);
     result.source = Some(source.to_owned());
     Ok(result)
@@ -52,9 +81,13 @@ fn affo_per_share(
     shares: companies::Rule,
 ) -> Result<Vec<Observation>> {
     company.rules.retain(|rule| rule.metric == Metric::Affo);
-    let reported = select(&company, reported_sections(&company, tables, source)?.0)?.observations;
+    let reported = select(
+        &company,
+        reported_sections(&company, tables, source, NaiveDate::MAX)?.0,
+    )?
+    .observations;
     company.rules = vec![shares];
-    let denominators = reported_sections(&company, tables, source)?.0;
+    let denominators = reported_sections(&company, tables, source, NaiveDate::MAX)?.0;
     Ok(reported
         .iter()
         .filter(|total| {
@@ -95,6 +128,7 @@ fn reported_sections(
     company: &companies::Company,
     tables: &[table::Table],
     source: &str,
+    until: NaiveDate,
 ) -> Result<(Vec<(usize, Observation)>, Option<NaiveDate>)> {
     let year = Regex::new(r"\b(20\d{2})\b")?;
     let date = Regex::new(
@@ -170,7 +204,7 @@ fn reported_sections(
                 for cell in row.iter().filter(|cell| number(&cell.text).is_some()) {
                     if let Some((_, end)) =
                         period(&headers, cell.column, &year, &date, &quarter, &range)
-                        && end <= chrono::Utc::now().date_naive()
+                        && end <= until.min(chrono::Utc::now().date_naive())
                         && end.month() % 3 == 0
                         && end.succ_opt().is_some_and(|next| next.day() == 1)
                     {
@@ -223,6 +257,24 @@ fn reported_sections(
     Ok((candidates.into_values().flatten().collect(), report_period))
 }
 
+fn same_amount(a: &Observation, b: &Observation) -> bool {
+    let (fine, coarse) = if a.scale <= b.scale { (a, b) } else { (b, a) };
+    if fine.value * fine.scale as f64 == coarse.value * coarse.scale as f64 {
+        return true;
+    }
+    if fine.unit != Unit::Total || fine.scale == coarse.scale {
+        return false;
+    }
+    let decimals = coarse
+        .value
+        .to_string()
+        .split_once('.')
+        .map_or(1, |(_, fraction)| fraction.len().max(1));
+    let factor = 10_f64.powi(decimals as i32);
+    (fine.value * fine.scale as f64 / coarse.scale as f64 * factor).round()
+        == (coarse.value * factor).round()
+}
+
 fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Result<Extraction> {
     let report_period = values.iter().map(|(_, value)| value.end).max();
     let mut candidates = BTreeMap::<_, Vec<_>>::new();
@@ -237,19 +289,20 @@ fn select(company: &companies::Company, values: Vec<(usize, Observation)>) -> Re
         values.sort_by_key(|(priority, value)| (value.unit, *priority, value.scale));
         let (priority, selected) = &values[0];
         if let Some((_, other)) = values.iter().find(|(other_priority, value)| {
-            other_priority == priority
-                && value.value * value.scale as f64 != selected.value * selected.scale as f64
+            other_priority == priority && !same_amount(selected, value)
         }) {
             return Err(Conflict(format!(
-                "{}: conflicting {:?} {:?} for {} through {}: {} ({}) versus {} ({})",
+                "{}: conflicting {:?} {:?} for {} through {}: {} × {} ({}) versus {} × {} ({})",
                 company.symbol,
                 selected.metric,
                 selected.unit,
                 selected.start,
                 selected.end,
                 selected.value,
+                selected.scale,
                 selected.location,
                 other.value,
+                other.scale,
                 other.location
             ))
             .into());
@@ -392,20 +445,45 @@ fn period(
 }
 
 pub fn extract_file(symbol: &str, path: &std::path::Path, source: &str) -> Result<Extraction> {
-    let company = companies::company(symbol)?;
-    source::validate_url(&company, source)?;
-    if std::fs::read(path)?.starts_with(b"%PDF-") {
-        let rules = company
-            .pdf
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("{symbol}: PDF adapter has not been researched"))?;
+    extract_document(
+        &companies::company(symbol)?,
+        path,
+        source,
+        false,
+        NaiveDate::MIN,
+        NaiveDate::MAX,
+    )
+}
+
+fn extract_document(
+    company: &companies::Company,
+    path: &std::path::Path,
+    source: &str,
+    current_affo_only: bool,
+    since: NaiveDate,
+    until: NaiveDate,
+) -> Result<Extraction> {
+    source::validate_url(company, source)?;
+    let bytes = std::fs::read(path)?;
+    if bytes.starts_with(b"%PDF-") {
+        let rules = company.pdf.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("{}: PDF adapter has not been researched", company.symbol)
+        })?;
         let text = pdf::text(path)?;
         let mut observations = pdf::extract(rules, &text, source)?;
         if let Some(extract) = company.pdf_observations {
             observations = extract(&text, source, observations)?;
         }
+        observations.retain(|value| value.end <= until);
+        if current_affo_only {
+            let end = observations.iter().map(|value| value.end).max();
+            observations.retain(|value| {
+                value.metric != Metric::Affo || (Some(value.end) == end && scan::is_quarter(value))
+            });
+        }
+        observations.retain(|value| value.start >= since);
         let mut result = select(
-            &company,
+            company,
             observations
                 .into_iter()
                 .map(|value| (usize::from(value.label.starts_with("Calculated ")), value))
@@ -414,7 +492,14 @@ pub fn extract_file(symbol: &str, path: &std::path::Path, source: &str) -> Resul
         result.source = Some(source.to_owned());
         Ok(result)
     } else {
-        extract(symbol, &std::fs::read_to_string(path)?, source)
+        extract_html(
+            company,
+            std::str::from_utf8(&bytes)?,
+            source,
+            current_affo_only,
+            since,
+            until,
+        )
     }
 }
 

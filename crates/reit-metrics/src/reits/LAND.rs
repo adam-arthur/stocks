@@ -37,9 +37,34 @@ pub fn company() -> Result<Company> {
     ))?;
     company.affo_support = crate::AffoSupport::Reported;
     company.tables = |html| {
+        let annual = crate::table::normalize(
+            &scraper::Html::parse_document(html)
+                .root_element()
+                .text()
+                .collect::<Vec<_>>()
+                .join(" "),
+        )
+        .to_lowercase()
+        .contains("fourth quarter and year ended december 31");
         crate::table::joined_parentheses(html)
             .into_iter()
             .map(|mut table| {
+                if annual
+                    && table.rows.iter().take(4).flatten().any(|c| {
+                        c.text
+                            .to_lowercase()
+                            .contains("for and as of the quarters ended")
+                    })
+                {
+                    for cell in table.rows.iter_mut().take(4).flatten() {
+                        if cell.text.len() == 4
+                            && cell.text.starts_with("20")
+                            && cell.text.parse::<u32>().is_ok()
+                        {
+                            cell.text = format!("Three months ended December 31, {}", cell.text);
+                        }
+                    }
+                }
                 table.amount_scale = Some(table.amount_scale.unwrap_or(1));
                 table
             })

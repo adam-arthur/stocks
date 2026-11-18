@@ -23,7 +23,17 @@ pub struct Table {
 
 impl Table {
     pub fn is_forecast(&self) -> bool {
-        self.rows.iter().take(6).flatten().any(|cell| {
+        self.rows.iter().any(|row| {
+            row.iter().any(|cell| {
+                ["Low", "Low End", "Low Case"]
+                    .iter()
+                    .any(|label| cell.text.eq_ignore_ascii_case(label))
+            }) && row.iter().any(|cell| {
+                ["High", "High End", "High Case"]
+                    .iter()
+                    .any(|label| cell.text.eq_ignore_ascii_case(label))
+            })
+        }) || self.rows.iter().take(6).flatten().any(|cell| {
             let text = cell.text.to_lowercase();
             text.contains("guidance") || text.contains("outlook")
         })
@@ -41,9 +51,9 @@ pub fn tables(html: &str) -> Vec<Table> {
     let html = Html::parse_document(html);
     let selector = Selector::parse("table").unwrap();
     let rows = Selector::parse("tr").unwrap();
-    let local_units = regex::Regex::new(r"(?i)\(in\s+(thousands|millions)").unwrap();
+    let local_units = regex::Regex::new(r"(?i)^(?:\(\s*(?:(?:dollars?|amounts|\$)\s+)?|\b(?:dollars?|amounts|\$)\s+)in\s+(thousands|millions)\b").unwrap();
     let units =
-        regex::Regex::new(r"(?i)(?:\$|dollars?|amounts)\s+in\s+(thousands|millions)").unwrap();
+        regex::Regex::new(r"(?i)(?:\$|dollars?|amounts)\s+in\s+(thousands|millions)|\(\s*in\s+(thousands|millions)[^()]{0,90}\)\s*\(unaudited\)").unwrap();
     let mut text = String::new();
     let mut offsets = HashMap::new();
     for node in html.root_element().descendants() {
@@ -64,7 +74,13 @@ pub fn tables(html: &str) -> Vec<Table> {
         .map(|matched| {
             (
                 matched.get(0).unwrap().end(),
-                if matched[1].eq_ignore_ascii_case("millions") {
+                if matched
+                    .get(1)
+                    .or_else(|| matched.get(2))
+                    .unwrap()
+                    .as_str()
+                    .eq_ignore_ascii_case("millions")
+                {
                     1_000_000
                 } else {
                     1000
@@ -77,21 +93,20 @@ pub fn tables(html: &str) -> Vec<Table> {
         .map(|table| {
             let mut occupied = BTreeMap::<usize, (usize, Cell)>::new();
             Table {
-                amount_scale: local_units
-                    .captures(&normalize(
-                        &table
-                            .select(&rows)
-                            .take(4)
-                            .flat_map(|row| row.text())
-                            .collect::<Vec<_>>()
-                            .join(" "),
-                    ))
-                    .map(|matched| {
-                        if matched[1].eq_ignore_ascii_case("millions") {
-                            1_000_000
-                        } else {
-                            1000
-                        }
+                amount_scale: table
+                    .select(&rows)
+                    .filter(|row| row.text().any(|text| !text.trim().is_empty()))
+                    .take(8)
+                    .flat_map(|row| row.children().filter_map(ElementRef::wrap))
+                    .find_map(|cell| {
+                        let text = normalize(&cell.text().collect::<Vec<_>>().join(" "));
+                        local_units.captures(&text).map(|found| {
+                            if found[1].eq_ignore_ascii_case("millions") {
+                                1_000_000
+                            } else {
+                                1000
+                            }
+                        })
                     })
                     .or_else(|| {
                         scales[..scales.partition_point(|(end, _)| *end <= offsets[&table.id()])]
@@ -142,6 +157,18 @@ pub fn tables(html: &str) -> Vec<Table> {
                     .collect(),
             }
         })
+        .map(|mut table| {
+            if table.rows.iter().any(|row| {
+                row.iter()
+                    .any(|cell| cell.text.eq_ignore_ascii_case("As Previously Reported"))
+                    && row
+                        .iter()
+                        .any(|cell| cell.text.eq_ignore_ascii_case("Adjustments"))
+            }) {
+                table.rows.clear();
+            }
+            table
+        })
         .collect()
 }
 
@@ -159,4 +186,34 @@ pub(crate) fn joined_parentheses(html: &str) -> Vec<Table> {
         }
     }
     tables
+}
+
+pub(crate) fn align_year_pairs(tables: &mut [Table]) {
+    let year = regex::Regex::new(r"^20\d{2}(?: Actual)?$").unwrap();
+    for table in tables {
+        for i in 1..table.rows.len() {
+            let years: Vec<_> = table.rows[i]
+                .iter()
+                .filter(|cell| year.is_match(&cell.text))
+                .cloned()
+                .collect();
+            if years.len() != 4 || years[0].text != years[2].text || years[1].text != years[3].text
+            {
+                continue;
+            }
+            let mut headings: Vec<_> = table.rows[i - 1]
+                .iter_mut()
+                .filter(|cell| crate::duration(&cell.text).is_some())
+                .collect();
+            if headings.len() == 2
+                && crate::duration(&headings[0].text) == Some(3)
+                && crate::duration(&headings[1].text) != Some(3)
+            {
+                for (heading, pair) in headings.iter_mut().zip(years.chunks_exact(2)) {
+                    heading.column = pair[0].column;
+                    heading.width = pair[1].column + pair[1].width - pair[0].column;
+                }
+            }
+        }
+    }
 }

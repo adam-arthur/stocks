@@ -1,3 +1,13 @@
+#[path = "AHRT.rs"]
+pub(crate) mod ahrt;
+#[path = "BXDC.rs"]
+pub(crate) mod bxdc;
+#[path = "FRMI.rs"]
+pub(crate) mod frmi;
+#[path = "SRG.rs"]
+pub(crate) mod srg;
+#[path = "XRN.rs"]
+pub(crate) mod xrn;
 #[path = "AAT.rs"]
 pub(crate) mod aat;
 #[path = "ADC.rs"]

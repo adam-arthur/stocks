@@ -1,18 +1,11 @@
 use serde_json::{Value, json};
 
-pub fn merge(quarters: &mut Vec<Value>, reit: Vec<Value>) {
-    let latest = quarters
-        .iter()
-        .filter_map(|quarter| quarter["end"].as_str())
-        .max()
-        .map(str::to_owned);
-    for quarter in reit.into_iter().filter(|quarter| {
-        quarter["end"]
-            .as_str()
-            .zip(latest.as_deref())
-            .is_some_and(|(end, latest)| end <= latest)
-    }) {
+pub fn merge(quarters: &mut Vec<Value>, reit: Vec<Value>, common_basis: bool) {
+    for quarter in reit {
         let per_share = quarter["ffo_per_share"].as_f64().or_else(|| {
+            if !common_basis {
+                return None;
+            }
             let shares = quarter["ownership"]["shares_outstanding"]
                 .as_f64()
                 .filter(|shares| *shares > 0.0)?;
@@ -39,6 +32,11 @@ pub fn merge(quarters: &mut Vec<Value>, reit: Vec<Value>) {
             });
         quarters[index]["ffo_total"] = quarter["ffo_total"].clone();
         quarters[index]["ffo_per_share"] = json!(per_share);
+        for key in ["affo_per_share", "affo_total"] {
+            if let Some(value) = quarter.get(key) {
+                quarters[index][key] = value.clone();
+            }
+        }
     }
     quarters.sort_by(|a, b| a["end"].as_str().cmp(&b["end"].as_str()));
 }

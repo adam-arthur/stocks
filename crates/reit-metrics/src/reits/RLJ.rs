@@ -12,8 +12,8 @@ pub fn company() -> Result<Company> {
             "investor.rljlodgingtrust.com",
         ],
         vec![
-            (Metric::Ffo, Unit::Total, r"^ffo$", 1000),
-            (Metric::Affo, Unit::Total, r"^adjusted ffo$", 1000),
+            (Metric::Ffo, Unit::Total, r"^ffo$", 0),
+            (Metric::Affo, Unit::Total, r"^adjusted ffo$", 0),
             (
                 Metric::Affo,
                 Unit::PerShare,

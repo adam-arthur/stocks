@@ -18,7 +18,8 @@ pub struct Dividend {
 #[derive(Serialize)]
 pub struct Price {
     pub close: f64,
-    pub dividend_yield: Option<f64>,
+    pub dividend_yield_ttm: Option<f64>,
+    pub dividend_yield_fwd: Option<f64>,
 }
 
 pub struct Market {
@@ -33,6 +34,29 @@ pub fn factor(splits: &[(NaiveDate, f64)], date: NaiveDate, through: NaiveDate) 
         .filter(|(ex, _)| *ex > date && *ex <= through)
         .map(|(_, ratio)| ratio)
         .product()
+}
+
+fn indicated_rate(history: &[Dividend]) -> Option<(NaiveDate, i64, f64)> {
+    let mut regular = history.iter().rev().filter(|dividend| !dividend.special);
+    let (latest, second, first) = (regular.next()?, regular.next()?, regular.next()?);
+    let older_gap = (second.ex_date - first.ex_date).num_days();
+    let newer_gap = (latest.ex_date - second.ex_date).num_days();
+    [
+        (5..=9, 52),
+        (24..=38, 12),
+        (75..=110, 4),
+        (150..=215, 2),
+        (330..=400, 1),
+    ]
+    .into_iter()
+    .find(|(days, _)| days.contains(&older_gap) && days.contains(&newer_gap))
+    .map(|(days, frequency)| {
+        (
+            latest.ex_date,
+            *days.end(),
+            latest.amount * frequency as f64,
+        )
+    })
 }
 
 pub fn derive(
@@ -89,12 +113,14 @@ pub fn derive(
     dividends.sort_by(|a, b| (a.ex_date, &a.id).cmp(&(b.ex_date, &b.id)));
     let mut result = BTreeMap::new();
     let (mut first, mut last, mut regular) = (0, 0, 0.0);
+    let mut indicated = None;
     for (date, raw) in prices.into_iter().filter(|(date, _)| *date <= as_of) {
         let close = raw / factor(&splits, date, as_of);
         ensure!(close.is_finite() && close > 0.0, "invalid close on {date}");
         while last < dividends.len() && dividends[last].ex_date <= date {
             if !dividends[last].special {
                 regular += dividends[last].amount;
+                indicated = indicated_rate(&dividends[..=last]);
             }
             last += 1;
         }
@@ -112,7 +138,12 @@ pub fn derive(
             date,
             Price {
                 close,
-                dividend_yield: covered.then_some(regular.max(0.0) / close),
+                dividend_yield_ttm: covered.then_some(regular.max(0.0) / close),
+                dividend_yield_fwd: indicated
+                    .filter(|(ex_date, max_gap, _)| {
+                        covered && (date - *ex_date).num_days() <= *max_gap
+                    })
+                    .map(|(_, _, rate)| rate / close),
             },
         );
     }

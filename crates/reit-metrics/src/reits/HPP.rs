@@ -27,6 +27,7 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = tables;
+    company.extra_observations = Some(highlights);
     company.rules.extend([
         crate::companies::Rule {
             metric: Metric::Affo,
@@ -46,6 +47,55 @@ pub fn company() -> Result<Company> {
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
+}
+
+fn highlights(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
+    let text = crate::table::normalize(
+        &scraper::Html::parse_document(html)
+            .root_element()
+            .text()
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+    let title = regex::Regex::new(
+        r"(?i)Hudson Pacific Properties Reports (First|Second|Third|Fourth) Quarter (20[0-9]{2}) Financial Results",
+    )?;
+    let Some(title) = title.captures(&text) else {
+        return Ok(Vec::new());
+    };
+    let metric = regex::Regex::new(
+        r"(?i)FFO, including specified items, of \$[0-9.]+ million, or \$([0-9.]+) per diluted share",
+    )?;
+    let Some(value) = metric.captures(&text) else {
+        return Ok(Vec::new());
+    };
+    let start = chrono::NaiveDate::from_ymd_opt(
+        title[2].parse()?,
+        match title[1].to_ascii_lowercase().as_str() {
+            "first" => 1,
+            "second" => 4,
+            "third" => 7,
+            _ => 10,
+        },
+        1,
+    )
+    .unwrap();
+    Ok(vec![crate::Observation {
+        metric: Metric::Ffo,
+        unit: Unit::PerShare,
+        scale: 1,
+        label: "FFO including specified items per diluted share".into(),
+        value: value[1].parse()?,
+        source: source.into(),
+        published_on: None,
+        start,
+        end: start
+            .checked_add_months(chrono::Months::new(3))
+            .unwrap()
+            .pred_opt()
+            .unwrap(),
+        location: "earnings release highlights".into(),
+    }])
 }
 
 fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {

@@ -31,11 +31,22 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.tables = |html| {
-        crate::table::tables(
-            &regex::Regex::new(r"(?i)\(in\s+(thousands|millions)")
-                .unwrap()
-                .replace_all(html, "(dollars in $1"),
-        )
+        let mut tables = crate::table::tables(html);
+        for table in &mut tables {
+            if let Some(start) = table
+                .rows
+                .iter()
+                .position(|row| row.iter().any(|cell| cell.text == "(1)"))
+                && table.rows[..start].iter().flatten().any(|cell| {
+                    cell.text
+                        .to_ascii_lowercase()
+                        .starts_with("diluted affo per share")
+                })
+            {
+                table.rows.truncate(start);
+            }
+        }
+        tables
     };
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);

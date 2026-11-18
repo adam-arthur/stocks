@@ -18,7 +18,27 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            let mut basic = false;
+            table.rows.retain(|row| {
+                let label = row
+                    .iter()
+                    .find(|cell| !cell.text.is_empty())
+                    .map(|cell| cell.text.to_lowercase())
+                    .unwrap_or_default();
+                if label.starts_with("basic per share amounts") {
+                    basic = true;
+                }
+                if label.starts_with("diluted per share amounts") {
+                    basic = false;
+                }
+                !basic || !label.ends_with("per share")
+            });
+        }
+        tables
+    };
     company.rules.extend([
         crate::companies::Rule {
             metric: Metric::Affo,

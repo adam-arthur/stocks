@@ -12,6 +12,18 @@ pub fn company() -> Result<Company> {
             (Metric::Affo, Unit::Total, r#"^affo$"#, 0),
             (Metric::Ffo, Unit::PerShare, r"^ffo per share$", 1),
             (Metric::Ffo, Unit::Total, r"^ffo$", 0),
+            (
+                Metric::Affo,
+                Unit::PerShare,
+                r"^reconciled affo per share$",
+                1,
+            ),
+            (
+                Metric::Ffo,
+                Unit::PerShare,
+                r"^reconciled ffo per share$",
+                1,
+            ),
         ],
         None,
     ))?;
@@ -48,9 +60,9 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
         {
             for cell in table.rows.iter_mut().filter_map(|row| row.first_mut()) {
                 if cell.text.starts_with("AFFO") && !cell.text.contains("from above") {
-                    cell.text = format!("AFFO per share{}", &cell.text[4..]);
+                    cell.text = format!("Reconciled AFFO per share{}", &cell.text[4..]);
                 } else if cell.text.starts_with("FFO (") && !cell.text.contains("from above") {
-                    cell.text = format!("FFO per share{}", &cell.text[3..]);
+                    cell.text = format!("Reconciled FFO per share{}", &cell.text[3..]);
                 }
             }
         }

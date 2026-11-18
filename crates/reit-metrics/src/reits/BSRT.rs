@@ -30,13 +30,13 @@ pub fn company() -> Result<Company> {
     company.tables = tables;
     company.affo_support = crate::AffoSupport::Reported;
     company.filings = &["6-K", "6-K/A"];
-    company.supplements = Some(|_, company, since, _| Box::pin(supplements(company, since)));
+    company.supplements = Some(|sources, company, since, _| Box::pin(supplements(sources, company, since)));
     company.supplement_period_required = true;
     company.debt = Some(debt);
     Ok(company)
 }
 
-async fn supplements(company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDate, String, Option<NaiveDate>)>> {
+async fn supplements(sources: &crate::source::Sources, company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDate, String, Option<NaiveDate>)>> {
     let feed: serde_json::Value = reqwest::Client::builder()
         .user_agent(format!(
             "stocks-reit-metrics {}",
@@ -102,7 +102,18 @@ async fn supplements(company: &Company, since: NaiveDate) -> Result<Vec<(NaiveDa
                     .context("missing BSR release URL")?,
             )?;
             crate::source::validate_url(company, url.as_str())?;
-            result.push((end, url.to_string(), None));
+            let html = sources.get(company, url.as_str()).await?;
+            let document = scraper::Html::parse_document(&html);
+            let selector = scraper::Selector::parse(r#"script[type="application/ld+json"]"#).unwrap();
+            let mut dates = std::collections::BTreeSet::new();
+            for script in document.select(&selector) {
+                let item: serde_json::Value = serde_json::from_str(&script.inner_html())?;
+                if item["@type"] == "NewsArticle" && item["mainEntityOfPage"]["@id"].as_str() == Some(url.as_str()) {
+                    dates.insert(chrono::DateTime::parse_from_rfc3339(item["datePublished"].as_str().context("BSR release missing publication date")?)?.date_naive());
+                }
+            }
+            ensure!(dates.len() == 1, "missing or ambiguous BSR release date for {url}");
+            result.push((end, url.to_string(), dates.pop_first()));
         }
     }
     ensure!(

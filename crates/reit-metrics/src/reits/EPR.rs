@@ -35,7 +35,24 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        let mut tables = crate::table::joined_parentheses(html);
+        for table in &mut tables {
+            let mut adjusted = false;
+            table.rows.retain(|row| {
+                let label = row
+                    .iter()
+                    .find(|cell| !cell.text.is_empty())
+                    .map(|cell| cell.text.to_lowercase())
+                    .unwrap_or_default();
+                if label.starts_with("ffo:") || label.starts_with("ffoaa:") {
+                    adjusted = label.starts_with("ffoaa:");
+                }
+                !(adjusted && label == "ffo available to common shareholders of epr properties")
+            });
+        }
+        tables
+    };
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)

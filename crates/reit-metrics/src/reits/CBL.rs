@@ -25,7 +25,17 @@ pub fn company() -> Result<Company> {
         None,
     ))?;
     company.affo_support = crate::AffoSupport::Unavailable;
-    company.tables = crate::table::joined_parentheses;
+    company.tables = |html| {
+        crate::table::joined_parentheses(html)
+            .into_iter()
+            .filter(|table| {
+                !table.rows.iter().flatten().any(|cell| {
+                    cell.text
+                        .eq_ignore_ascii_case("Add amounts per share included in FFO:")
+                })
+            })
+            .collect()
+    };
     company.debt = Some(debt);
     company.ownership = Some(crate::ownership::Rules::default());
     Ok(company)

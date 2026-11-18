@@ -32,6 +32,14 @@ pub fn company() -> Result<Company> {
 
 fn tables(html: &str) -> Vec<crate::table::Table> {
     let mut tables = crate::table::joined_parentheses(html);
+    tables.retain(|table| {
+        !table
+            .rows
+            .iter()
+            .take(6)
+            .flatten()
+            .any(|cell| cell.text.to_ascii_lowercase().contains("recasted"))
+    });
     let quarter = regex::Regex::new(r"^Q([1-4]) (\d{2})$").unwrap();
     for cell in tables
         .iter_mut()

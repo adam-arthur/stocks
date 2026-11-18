@@ -23,6 +23,7 @@ pub fn company() -> Result<Company> {
         ],
         None,
     ))?;
+    company.extra_observations = Some(highlights);
     company.tables = crate::table::joined_parentheses;
     company.rules.extend([
         crate::companies::Rule { metric: Metric::Affo, unit: Unit::PerShare, label: regex::Regex::new(r"(?i)^affo per diluted common share$")?, scale: Some(1), section: None },
@@ -31,6 +32,45 @@ pub fn company() -> Result<Company> {
     company.affo_support = crate::AffoSupport::Reported;
     company.debt = Some(debt);
     Ok(company)
+}
+
+fn highlights(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
+    let text = crate::table::normalize(
+        &scraper::Html::parse_document(html)
+            .root_element()
+            .text()
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+    let quarter = regex::Regex::new(
+        r"(?i)financial and operating results for the quarter ended ([a-z]+ [0-9]+, 20[0-9]{2})",
+    )?;
+    let Some(period) = quarter.captures(&text) else {
+        return Ok(Vec::new());
+    };
+    let end = chrono::NaiveDate::parse_from_str(&period[1], "%B %d, %Y")?;
+    let value = regex::Regex::new(
+        r#"(?i)NAREIT defined Funds from Operations \([“"]FFO[”"]\) of \$[0-9.]+ million, or \$([0-9.]+) per share"#,
+    )?;
+    let Some(value) = value.captures(&text[period.get(0).unwrap().end()..]) else {
+        return Ok(Vec::new());
+    };
+    Ok(vec![crate::Observation {
+        metric: Metric::Ffo,
+        unit: Unit::PerShare,
+        label: "NAREIT defined FFO per share".into(),
+        scale: 1,
+        value: value[1].parse()?,
+        published_on: None,
+        start: end
+            .succ_opt()
+            .unwrap()
+            .checked_sub_months(chrono::Months::new(3))
+            .unwrap(),
+        end,
+        source: source.into(),
+        location: "quarterly operating results".into(),
+    }])
 }
 
 fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {

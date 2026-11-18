@@ -40,20 +40,15 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
             .collect::<Vec<_>>()
             .join(" "),
     );
-    let title =
-        regex::Regex::new(r"(?i)FCPT Announces (First|Second|Third|Fourth) Quarter (20\d{2})")?;
+    let title = regex::Regex::new(
+        r"(?i)FCPT Announces (First|Second|Third|Fourth) Quarter (?:and (?:Full|Fiscal) Year )?(20\d{2})",
+    )?;
     let Some(title) = title.captures(&text) else {
         return Ok(Vec::new());
     };
     let value = regex::Regex::new(
-        r"(?i)NAREIT-defined FFO per diluted share for the (first|second|third|fourth) quarter was \$(\d+\.\d+)",
+        r"(?i)(NAREIT-defined FFO|AFFO) per diluted share for the (first|second|third|fourth) quarter was \$(\d+\.\d+)",
     )?;
-    let Some(value) = value
-        .captures(&text)
-        .filter(|value| value[1].eq_ignore_ascii_case(&title[1]))
-    else {
-        return Ok(Vec::new());
-    };
     let start = chrono::NaiveDate::from_ymd_opt(
         title[2].parse()?,
         match title[1].to_lowercase().as_str() {
@@ -65,22 +60,32 @@ fn extract(html: &str, source: &str) -> Result<Vec<crate::Observation>> {
         1,
     )
     .unwrap();
-    Ok(vec![crate::Observation {
-        published_on: None,
-        metric: Metric::Ffo,
-        start,
-        end: start
-            .checked_add_months(chrono::Months::new(3))
-            .unwrap()
-            .pred_opt()
-            .unwrap(),
-        label: "NAREIT-defined FFO per diluted share".into(),
-        value: value[2].parse()?,
-        unit: Unit::PerShare,
-        scale: 1,
-        source: source.into(),
-        location: "earnings release FFO highlights".into(),
-    }])
+    value
+        .captures_iter(&text)
+        .filter(|value| value[2].eq_ignore_ascii_case(&title[1]))
+        .map(|value| {
+            Ok(crate::Observation {
+                published_on: None,
+                metric: if value[1].eq_ignore_ascii_case("AFFO") {
+                    Metric::Affo
+                } else {
+                    Metric::Ffo
+                },
+                start,
+                end: start
+                    .checked_add_months(chrono::Months::new(3))
+                    .unwrap()
+                    .pred_opt()
+                    .unwrap(),
+                label: format!("{} per diluted share", &value[1]),
+                value: value[3].parse()?,
+                unit: Unit::PerShare,
+                scale: 1,
+                source: source.into(),
+                location: "earnings release highlights".into(),
+            })
+        })
+        .collect()
 }
 
 fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
