@@ -48,6 +48,28 @@ pub fn company() -> Result<Company> {
     Ok(company)
 }
 
-fn debt(_html: &scraper::Html, _as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
-    anyhow::bail!("maturity schedule combines borrowings with finance leases")
+fn debt(html: &scraper::Html, as_of: chrono::NaiveDate) -> Result<crate::debt::Debt> {
+    use crate::debt::{Rule, scalar, tables};
+    use anyhow::{Context, ensure};
+
+    let leases = scalar(html, "us-gaap:FinanceLeaseLiability", as_of)?
+        .context("missing consolidated finance lease balance")?;
+    let rule = if leases == 0 {
+        Rule {
+            anchor: "amt:LongTermDebtAndLeaseObligationMaturityYearOne",
+            ..Rule::new(0, 1_000_000)
+        }
+    } else {
+        Rule::new(0, 1_000_000)
+    };
+    let debt = tables(html, as_of, &[rule], None).with_context(|| {
+        format!("no complete borrowing principal schedule excluding ${leases} of finance leases")
+    })?;
+    let gross = scalar(html, "amt:LongTermDebtAndLeaseObligationGross", as_of)?
+        .context("missing gross debt and lease principal")?;
+    ensure!(
+        leases >= 0 && gross.checked_sub(leases) == Some(i64::try_from(debt.total_debt_principal)?),
+        "maturities do not reconcile to gross borrowing principal excluding finance leases"
+    );
+    Ok(debt)
 }

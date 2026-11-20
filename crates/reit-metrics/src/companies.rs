@@ -34,6 +34,7 @@ pub struct Company {
     pub affo_support: crate::AffoSupport,
     pub affo_comparatives: bool,
     pub(crate) ownership: Option<crate::ownership::Rules>,
+    pub(crate) debt_exhibit: Option<fn(&scraper::Html) -> Result<crate::debt::Debt>>,
     pub(crate) debt: Option<fn(&scraper::Html, chrono::NaiveDate) -> Result<crate::debt::Debt>>,
     pub(crate) tables: fn(&str) -> Vec<crate::table::Table>,
     pub(crate) sections: Vec<fn(&[crate::table::Table], &str) -> Result<Vec<Observation>>>,
@@ -272,6 +273,7 @@ pub(crate) fn build((symbol, cik, hosts, patterns, continuation): Definition) ->
         pdf: None,
         pdf_observations: None,
         ownership: None,
+        debt_exhibit: None,
         debt: None,
         rules: patterns
             .into_iter()

@@ -43,23 +43,25 @@ impl Rule {
 
 pub async fn fetch(symbol: &str, sources: &Sources) -> Result<Debt> {
     let company = company(symbol)?;
-    let mut filings = sources
-        .sec
-        .earnings_filings(
-            company.cik,
-            chrono::Utc::now().date_naive() - chrono::Days::new(730),
-        )
-        .await?;
-    filings.retain(|filing| matches!(filing.form.as_str(), "10-K" | "10-K/A" | "10-Q" | "10-Q/A"));
+    let since = chrono::Utc::now().date_naive() - chrono::Days::new(730);
+    let mut filings = if company.debt_exhibit.is_some() {
+        sources.additional_filings(&company, since).await?
+    } else {
+        let mut filings = sources.sec.earnings_filings(company.cik, since).await?;
+        filings.retain(|filing| matches!(filing.form.as_str(), "10-K" | "10-K/A" | "10-Q" | "10-Q/A"));
+        filings
+    };
     filings.sort_by_key(|filing| std::cmp::Reverse((filing.filed_on, filing.accession.clone())));
     let mut last_error = None;
     let mut amended: Option<Debt> = None;
     for filing in filings {
         let mut snapshots = Vec::new();
-        for url in sources
-            .filing_urls(&company, &filing.accession, &filing.form)
-            .await?
-        {
+        let urls = if filing.form.starts_with("6-K") {
+            sources.document_urls(&company, &filing.accession, "EX-99").await?
+        } else {
+            sources.filing_urls(&company, &filing.accession, &filing.form).await?
+        };
+        for url in urls {
             if !url.to_ascii_lowercase().ends_with(".pdf") {
                 match extract(symbol, &sources.get(&company, &url).await?) {
                     Ok(debt) => {
@@ -102,6 +104,10 @@ pub async fn fetch(symbol: &str, sources: &Sources) -> Result<Debt> {
 
 pub fn extract(symbol: &str, document: &str) -> Result<Debt> {
     let html = Html::parse_document(document);
+    let company = company(symbol)?;
+    if let Some(parse) = company.debt_exhibit {
+        return parse(&html);
+    }
     let named = Selector::parse("[name]").unwrap();
     let period = html
         .select(&named)
@@ -132,7 +138,7 @@ pub fn extract(symbol: &str, document: &str) -> Result<Debt> {
                 )),
         "debt extraction requires an annual or quarterly filing"
     );
-    company(symbol)?
+    company
         .debt
         .context("missing company debt parser")?(&html, as_of)
 }

@@ -262,7 +262,7 @@ impl Sources {
             .with_context(|| format!("{}: {}", company.symbol, filing.accession))
     }
 
-    async fn document_urls(
+    pub(crate) async fn document_urls(
         &self,
         company: &Company,
         accession: &str,

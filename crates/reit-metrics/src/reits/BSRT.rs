@@ -32,7 +32,7 @@ pub fn company() -> Result<Company> {
     company.filings = &["6-K", "6-K/A"];
     company.supplements = Some(|sources, company, since, _| Box::pin(supplements(sources, company, since)));
     company.supplement_period_required = true;
-    company.debt = Some(debt);
+    company.debt_exhibit = Some(debt_statement);
     Ok(company)
 }
 
@@ -193,6 +193,30 @@ fn tables(html: &str) -> Vec<crate::table::Table> {
     tables
 }
 
-fn debt(_html: &scraper::Html, _as_of: chrono::NaiveDate) -> anyhow::Result<crate::debt::Debt> {
-    anyhow::bail!("debt extraction requires issuer financial reports outside SEC quarterly filings")
+fn debt_statement(html: &scraper::Html) -> Result<crate::debt::Debt> {
+    let text = crate::table::normalize(&html.root_element().text().collect::<Vec<_>>().join(" "));
+    let period = regex::Regex::new(r"(?i)BSR REAL ESTATE INVESTMENT TRUST Condensed consolidated interim financial statements \(In U\.S\. dollars\) For the (?:three|six|nine)(?: and (?:six|nine))? months ended ([A-Za-z]+ [0-9]{1,2}, [0-9]{4})")?;
+    let period = period.captures(&text).context("missing BSR interim financial statement period")?;
+    ensure!(text.contains("In thousands of U.S. dollars"), "missing BSR statement units");
+    let debt = crate::debt::tables(
+        html,
+        NaiveDate::parse_from_str(&period[1], "%B %d, %Y")?,
+        &[crate::debt::Rule {
+            anchor: "",
+            heading: "Principal Balloon payment",
+            intro: "Contractual interest for variable rate loans and borrowings",
+            sum_columns: 2,
+            ..crate::debt::Rule::new(0, 1000)
+        }],
+        None,
+    )?;
+    let balances = regex::Regex::new(r"Fixed or economically hedged to fixed rate mortgage notes payable\s*\*?\s*\$ ([\d,]+) [^.]{0,500}?Credit Facility (?:\$ )?([\d,]+) (?:\$ )?[\d,]+ Total loans and borrowings")?
+        .captures(&text)
+        .context("missing BSR mortgage and facility balances")?;
+    let principal = |value: &str| crate::debt::amount(value, 1000).context("invalid BSR principal");
+    ensure!(
+        principal(&balances[1])?.checked_add(principal(&balances[2])?) == Some(debt.total_debt_principal),
+        "BSR schedule does not reconcile to mortgage and facility principal"
+    );
+    Ok(debt)
 }
