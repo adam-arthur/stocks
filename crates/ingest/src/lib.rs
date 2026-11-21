@@ -4,6 +4,7 @@ pub mod debt;
 pub mod financials;
 mod management;
 pub mod models;
+pub mod payout;
 pub mod preferred;
 mod prices;
 mod progress;

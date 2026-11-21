@@ -120,6 +120,12 @@ pub struct FilingDocuments {
     pub unavailable: Vec<String>,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CompanyFactsFingerprint {
+    pub crc32: u32,
+    pub uncompressed_size: u64,
+}
+
 pub struct CompanyFactsArchive {
     archive: ZipArchive<BufReader<File>>,
     _file: NamedTempFile,
@@ -493,6 +499,17 @@ impl CompanyFactsArchive {
                 .context("invalid SEC Company Facts archive")?,
             _file: file,
         })
+    }
+
+    pub fn fingerprint(&mut self, cik: u64) -> Result<Option<CompanyFactsFingerprint>> {
+        let Some(index) = self.archive.index_for_name(&format!("CIK{cik:010}.json")) else {
+            return Ok(None);
+        };
+        let entry = self.archive.by_index_raw(index)?;
+        Ok(Some(CompanyFactsFingerprint {
+            crc32: entry.crc32(),
+            uncompressed_size: entry.size(),
+        }))
     }
 
     pub fn company_facts(&mut self, cik: u64) -> Result<Option<Value>> {

@@ -1,4 +1,5 @@
 mod debt;
+mod dividend_stats;
 mod financials;
 mod market;
 mod output;
@@ -6,6 +7,8 @@ mod preferred_spread;
 mod quarters;
 mod reit;
 mod valuation;
+mod yield_stats;
+pub use yield_stats::refresh as refresh_yield_stats;
 
 use std::{collections::BTreeMap, fs, io::Write, path::Path};
 
@@ -14,13 +17,7 @@ use chrono::{NaiveDate, Utc};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 
-pub fn run(input: &Path, output: &Path) -> Result<usize> {
-    ensure!(input.is_dir(), "input directory does not exist");
-    fs::create_dir_all(output)?;
-    ensure!(
-        fs::canonicalize(input)? != fs::canonicalize(output)?,
-        "output must differ from ingest directory"
-    );
+fn lock_output(output: &Path) -> Result<fs::File> {
     let lock = fs::File::options()
         .create(true)
         .truncate(false)
@@ -28,6 +25,17 @@ pub fn run(input: &Path, output: &Path) -> Result<usize> {
         .open(output.join(".lock"))?;
     lock.try_lock()
         .context("another derive process is using this output directory")?;
+    Ok(lock)
+}
+
+pub fn run(input: &Path, output: &Path) -> Result<usize> {
+    ensure!(input.is_dir(), "input directory does not exist");
+    fs::create_dir_all(output)?;
+    ensure!(
+        fs::canonicalize(input)? != fs::canonicalize(output)?,
+        "output must differ from ingest directory"
+    );
+    let _lock = lock_output(output)?;
     let input_lock = fs::File::options().read(true).open(input.join(".lock"))?;
     input_lock
         .try_lock_shared()
@@ -335,6 +343,8 @@ fn security(
     {
         preferred.insert("dividend_terms".into(), terms);
     }
+    dividend_stats::update(&mut result, &market.prices, &market.dividends, as_of);
+    yield_stats::update(&mut result, &market.prices, treasury, as_of);
     if let Some(affo_support) = affo_support {
         result["affo_support"] = json!(affo_support);
     }

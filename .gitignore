@@ -1,5 +1,6 @@
 /target/
 /data/
+/reports/
 .env
 .env.*
 !.env.example

@@ -53,6 +53,7 @@ pub(crate) async fn save_category(
         } else {
             None
         },
+        payout_policy: None,
         updated_at: Utc::now(),
     })?;
     log::debug!("{}: {category:?}", asset.symbol);

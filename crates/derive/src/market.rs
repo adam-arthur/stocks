@@ -7,7 +7,7 @@ use serde_json::Value;
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Dividend {
-    #[serde(skip_serializing)]
+    #[serde(default, skip_serializing)]
     pub id: String,
     pub ex_date: NaiveDate,
     pub payable_date: Option<NaiveDate>,
@@ -15,7 +15,7 @@ pub struct Dividend {
     pub special: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Price {
     pub close: f64,
     pub dividend_yield_ttm: Option<f64>,
@@ -36,27 +36,29 @@ pub fn factor(splits: &[(NaiveDate, f64)], date: NaiveDate, through: NaiveDate) 
         .product()
 }
 
+pub(crate) const CADENCES: [(std::ops::RangeInclusive<i64>, i64); 5] = [
+    (5..=9, 52),
+    (24..=38, 12),
+    (75..=110, 4),
+    (150..=215, 2),
+    (330..=400, 1),
+];
+
 fn indicated_rate(history: &[Dividend]) -> Option<(NaiveDate, i64, f64)> {
     let mut regular = history.iter().rev().filter(|dividend| !dividend.special);
     let (latest, second, first) = (regular.next()?, regular.next()?, regular.next()?);
     let older_gap = (second.ex_date - first.ex_date).num_days();
     let newer_gap = (latest.ex_date - second.ex_date).num_days();
-    [
-        (5..=9, 52),
-        (24..=38, 12),
-        (75..=110, 4),
-        (150..=215, 2),
-        (330..=400, 1),
-    ]
-    .into_iter()
-    .find(|(days, _)| days.contains(&older_gap) && days.contains(&newer_gap))
-    .map(|(days, frequency)| {
-        (
-            latest.ex_date,
-            *days.end(),
-            latest.amount * frequency as f64,
-        )
-    })
+    CADENCES
+        .into_iter()
+        .find(|(days, _)| days.contains(&older_gap) && days.contains(&newer_gap))
+        .map(|(days, frequency)| {
+            (
+                latest.ex_date,
+                *days.end(),
+                latest.amount * frequency as f64,
+            )
+        })
 }
 
 pub fn derive(

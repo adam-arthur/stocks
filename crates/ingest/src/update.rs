@@ -272,6 +272,12 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
         corporate_actions::update(&client, store, &assets, progress_bar).await?;
     failed += price_failures + action_failures;
     failed += crate::preferred::update(store, &assets, progress_bar).await?;
+    crate::payout::update(
+        store,
+        assets.iter().map(|a| a.symbol.as_str()),
+        progress_bar,
+    )
+    .await?;
     financials::update(store, &assets, progress_bar).await?;
     crate::reit::update(store, &assets, progress_bar).await?;
     let debt_failures = crate::debt::update(store, &assets, progress_bar).await?;
@@ -286,7 +292,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
     Ok(())
 }
 
-fn required_env(name: &str) -> Result<String> {
+pub(crate) fn required_env(name: &str) -> Result<String> {
     let value =
         env::var(name).with_context(|| format!("{name} must be set in .env or the environment"))?;
     ensure!(!value.trim().is_empty(), "{name} must not be empty");

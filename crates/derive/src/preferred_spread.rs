@@ -12,6 +12,16 @@ pub struct Treasury {
     pub thirty_year: BTreeMap<NaiveDate, f64>,
 }
 
+pub fn annual_income(preferred: &Value, terms: &Value, note: &Value) -> Option<f64> {
+    Some(if note.is_object() {
+        note["principal_per_note"].as_f64()? * note["fixed_annual_coupon"].as_f64()?
+    } else if preferred["perpetual"] == true && terms["rate_type"] == "fixed" {
+        preferred["liquidation_preference"].as_f64()? * terms["fixed_annual_coupon"].as_f64()?
+    } else {
+        return None;
+    })
+}
+
 pub fn derive(
     preferred: &Value,
     note: &Value,
@@ -22,13 +32,7 @@ pub fn derive(
     if !market.splits.is_empty() {
         return None;
     }
-    let annual_income = if note.is_object() {
-        note["principal_per_note"].as_f64()? * note["fixed_annual_coupon"].as_f64()?
-    } else if preferred["perpetual"] == true && terms["rate_type"] == "fixed" {
-        preferred["liquidation_preference"].as_f64()? * terms["fixed_annual_coupon"].as_f64()?
-    } else {
-        return None;
-    };
+    let annual_income = annual_income(preferred, terms, note)?;
     let mut history = BTreeMap::new();
     let mut latest = None;
     for (date, price) in &market.prices {

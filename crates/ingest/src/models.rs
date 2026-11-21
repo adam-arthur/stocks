@@ -53,6 +53,15 @@ impl PerpetualNote {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PayoutPolicy {
+    FixedCoupon,
+    DeclaredRate,
+    Variable,
+    Unknown,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Metadata {
     pub symbol: String,
@@ -64,6 +73,8 @@ pub struct Metadata {
     pub perpetual_note: Option<PerpetualNote>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub management: Option<Management>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payout_policy: Option<PayoutPolicy>,
     pub updated_at: DateTime<Utc>,
 }
 
@@ -79,6 +90,8 @@ pub struct FinancialsSync {
     pub updated_on: NaiveDate,
     pub companies: BTreeSet<u64>,
     pub unavailable: BTreeSet<u64>,
+    #[serde(default)]
+    pub fingerprints: BTreeMap<u64, sec_client::CompanyFactsFingerprint>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

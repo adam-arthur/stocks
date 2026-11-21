@@ -4,7 +4,7 @@ use std::{
 };
 
 use alpaca_client::Asset;
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use chrono::{NaiveDate, Utc};
 use indicatif::ProgressBar;
 use sec_client::{SecClient, retain_periods_since};
@@ -12,6 +12,12 @@ use sec_client::{SecClient, retain_periods_since};
 use crate::{Category, Store, models::FinancialsSync, progress::Progress};
 
 pub async fn update(store: &Store, assets: &[Asset], bar: &ProgressBar) -> Result<()> {
+    let lock = std::fs::File::options()
+        .create(true)
+        .append(true)
+        .open(store.sec_directory()?.join("sync.lock"))?;
+    lock.try_lock()
+        .context("acquiring financials refresh lock")?;
     let mut symbols = BTreeMap::new();
     for asset in assets {
         if let Some(meta) = store.metadata(&asset.symbol)?.filter(|meta| {
@@ -33,19 +39,22 @@ pub async fn update(store: &Store, assets: &[Asset], bar: &ProgressBar) -> Resul
     }
     let companies: BTreeSet<_> = symbols.values().flatten().copied().collect();
     let today = Utc::now().date_naive();
-    if store.financials_sync()?.is_some_and(|sync| {
+    let previous = store.financials_sync()?;
+    if previous.as_ref().is_some_and(|sync| {
         sync.updated_on == today
             && sync.companies == companies
-            && companies
-                .iter()
-                .all(|cik| sync.unavailable.contains(cik) || store.has_company_facts(*cik))
+            && companies.iter().all(|cik| {
+                sync.unavailable.contains(cik)
+                    || (sync.fingerprints.contains_key(cik) && store.has_company_facts(*cik))
+            })
     }) {
         log::info!("Financials · already refreshed today");
         return Ok(());
     }
     let mut sync = FinancialsSync {
         updated_on: today,
-        companies: companies.clone(),
+        companies: BTreeSet::new(),
+        fingerprints: BTreeMap::new(),
         unavailable: Default::default(),
     };
     let unmapped = symbols.values().filter(|cik| cik.is_none()).count();
@@ -74,22 +83,42 @@ pub async fn update(store: &Store, assets: &[Asset], bar: &ProgressBar) -> Resul
             }
         })
         .await?;
+    store.save_financials_sync(&sync)?;
+    sync.companies = companies.clone();
     let mut progress = Progress::new(bar, "Financials", symbols.len(), "");
     progress.advance(unmapped, &format!("{unmapped} unmapped"));
     let mut saved = 0;
+    let mut unchanged = 0;
     let mut failed = 0;
     for cik in companies {
-        let result: Result<bool> = (|| {
-            let Some(mut facts) = archive.company_facts(cik)? else {
-                return Ok(false);
+        let result: Result<_> = (|| {
+            let Some(fingerprint) = archive.fingerprint(cik)? else {
+                return Ok(None);
             };
-            retain_periods_since(&mut facts, NaiveDate::from_ymd_opt(2016, 1, 1).unwrap())?;
-            store.save_company_facts(cik, &facts)?;
-            Ok(true)
+            let cached = previous
+                .as_ref()
+                .and_then(|sync| sync.fingerprints.get(&cik))
+                == Some(&fingerprint)
+                && store.has_company_facts(cik);
+            if !cached {
+                let mut facts = archive
+                    .company_facts(cik)?
+                    .context("missing SEC archive entry")?;
+                retain_periods_since(&mut facts, NaiveDate::from_ymd_opt(2016, 1, 1).unwrap())?;
+                store.save_company_facts(cik, &facts)?;
+            }
+            Ok(Some((fingerprint, cached)))
         })();
         match result {
-            Ok(true) => saved += 1,
-            Ok(false) => {
+            Ok(Some((fingerprint, cached))) => {
+                sync.fingerprints.insert(cik, fingerprint);
+                if cached {
+                    unchanged += 1;
+                } else {
+                    saved += 1;
+                }
+            }
+            Ok(None) => {
                 sync.unavailable.insert(cik);
                 log::debug!("CIK{cik:010}: absent from SEC Company Facts archive");
             }
@@ -104,16 +133,16 @@ pub async fn update(store: &Store, assets: &[Asset], bar: &ProgressBar) -> Resul
                 .filter(|value| **value == Some(cik))
                 .count(),
             &format!(
-                "{saved} companies saved · {} unavailable · {failed} failed",
+                "{saved} companies saved · {unchanged} unchanged · {} unavailable · {failed} failed",
                 sync.unavailable.len()
             ),
         );
     }
     progress.finish();
+    store.save_financials_sync(&sync)?;
     ensure!(
         failed == 0,
         "financials: {failed} companies failed; daily refresh not marked complete"
     );
-    store.save_financials_sync(&sync)?;
     Ok(())
 }
