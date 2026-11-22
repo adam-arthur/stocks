@@ -1,4 +1,10 @@
-use std::{path::Path, process::Stdio, time::Duration};
+use std::{
+    collections::HashMap,
+    path::Path,
+    process::Stdio,
+    sync::{Arc, LazyLock},
+    time::{Duration, Instant},
+};
 
 use anyhow::{Context, Result, ensure};
 use serde::de::DeserializeOwned;
@@ -6,8 +12,29 @@ use serde_json::Value;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
     process::Command,
+    sync::Mutex,
     time::timeout,
 };
+
+#[derive(Debug)]
+struct RetryableUsageError(String);
+
+impl std::fmt::Display for RetryableUsageError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl std::error::Error for RetryableUsageError {}
+
+struct UsageReading {
+    completed: Instant,
+    remaining: Result<f64, String>,
+}
+
+type UsageSlot = Arc<Mutex<Option<UsageReading>>>;
+static USAGE_CHECKS: LazyLock<Mutex<HashMap<String, UsageSlot>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 #[derive(Clone)]
 pub struct CodexClient {
@@ -36,6 +63,99 @@ impl CodexClient {
             (0.0..=100.0).contains(&minimum),
             "usage threshold must be between 0 and 100"
         );
+        let requested = Instant::now();
+        let slot = USAGE_CHECKS
+            .lock()
+            .await
+            .entry(self.executable.clone())
+            .or_default()
+            .clone();
+        let mut reading = slot.lock().await;
+        if !reading.as_ref().is_some_and(|r| {
+            r.completed >= requested
+                || (r.remaining.is_ok() && r.completed.elapsed() < Duration::from_secs(1))
+        }) {
+            let remaining = self
+                .read_remaining_usage()
+                .await
+                .map_err(|error| format!("{error:#}"));
+            *reading = Some(UsageReading {
+                completed: Instant::now(),
+                remaining,
+            });
+        }
+        let remaining = reading
+            .as_ref()
+            .unwrap()
+            .remaining
+            .as_ref()
+            .map_err(|error| anyhow::anyhow!("{error}"))?;
+        ensure!(
+            *remaining >= minimum,
+            "Codex remaining usage {remaining:.1}% is below {minimum:.1}% threshold"
+        );
+        Ok(())
+    }
+
+    async fn read_remaining_usage(&self) -> Result<f64> {
+        let mut attempt = 0;
+        let result = loop {
+            let error = match self.request_usage().await {
+                Ok(result) => break result,
+                Err(error) => error,
+            };
+            if attempt == 2
+                || !error.is::<RetryableUsageError>()
+                    && !error.is::<tokio::time::error::Elapsed>()
+                    && !error.downcast_ref::<std::io::Error>().is_some_and(|e| {
+                        matches!(
+                            e.kind(),
+                            std::io::ErrorKind::BrokenPipe
+                                | std::io::ErrorKind::UnexpectedEof
+                                | std::io::ErrorKind::ConnectionReset
+                        )
+                    })
+            {
+                return Err(error);
+            }
+            log::warn!("Codex usage check failed, retrying: {error:#}");
+            tokio::time::sleep(Duration::from_secs(1 << attempt)).await;
+            attempt += 1;
+        };
+        ensure!(
+            result["ordinaryUsageAllowed"] != false,
+            "Codex included usage is unavailable"
+        );
+        let mut remaining: Option<f64> = None;
+        for bucket in std::iter::once(&result["rateLimits"]).chain(
+            result["rateLimitsByLimitId"]
+                .as_object()
+                .into_iter()
+                .flat_map(|buckets| buckets.values()),
+        ) {
+            ensure!(
+                bucket["spendControlReached"] != true,
+                "Codex spending limit reached"
+            );
+            for window in ["primary", "secondary"] {
+                if bucket[window].is_null() {
+                    continue;
+                }
+                let used = bucket[window]["usedPercent"]
+                    .as_f64()
+                    .context("Codex usage percentage unavailable")?;
+                ensure!(
+                    (0.0..=100.0).contains(&used),
+                    "invalid Codex usage percentage"
+                );
+                remaining =
+                    Some(remaining.map_or(100.0 - used, |previous| previous.min(100.0 - used)));
+            }
+        }
+        remaining.context("Codex remaining usage unavailable")
+    }
+
+    async fn request_usage(&self) -> Result<Value> {
         let mut child = Command::new(&self.executable)
             .args(["--no-daemon", "app-server", "--stdio"])
             .stdin(Stdio::piped())
@@ -47,47 +167,40 @@ impl CodexClient {
             .kill_on_drop(true)
             .spawn()
             .context("could not start Codex usage check")?;
+        let mut phase = "initialization";
         let result = timeout(Duration::from_secs(30), async {
             let mut stdin = child.stdin.take().context("usage check stdin unavailable")?;
             let mut lines = BufReader::new(child.stdout.take().context("usage check stdout unavailable")?).lines();
             stdin.write_all(b"{\"id\":1,\"method\":\"initialize\",\"params\":{\"clientInfo\":{\"name\":\"stock_pipeline\",\"version\":\"0.1\"},\"capabilities\":null}}\n").await?;
             while let Some(line) = lines.next_line().await? {
                 let message: Value = serde_json::from_str(&line)?;
+                if let Some(error) = message.get("error").filter(|e| !e.is_null())
+                    && (message["id"] == 1 || message["id"] == 2)
+                {
+                    let code = error["code"].as_i64();
+                    let detail = format!("Codex {phase} failed ({}): {}", error["code"], error["message"].as_str().unwrap_or("unknown error"));
+                    if matches!(code, Some(-32603 | -32099..=-32000 | 429 | 500..=599)) {
+                        return Err(RetryableUsageError(detail).into());
+                    }
+                    anyhow::bail!(detail);
+                }
                 if message["id"] == 1 {
-                    ensure!(message.get("error").is_none(), "Codex usage initialization failed");
+                    phase = "account/rateLimits/read";
                     stdin.write_all(b"{\"method\":\"initialized\"}\n{\"id\":2,\"method\":\"account/rateLimits/read\"}\n").await?;
                 } else if message["id"] == 2 {
-                    ensure!(message.get("error").is_none(), "Codex usage request failed");
-                    let result = &message["result"];
-                    ensure!(result["ordinaryUsageAllowed"] != false, "Codex included usage is unavailable");
-                    let mut remaining: Option<f64> = None;
-                    for bucket in std::iter::once(&result["rateLimits"]).chain(
-                        result["rateLimitsByLimitId"].as_object().into_iter().flat_map(|buckets| buckets.values())
-                    ) {
-                        ensure!(bucket["spendControlReached"] != true, "Codex spending limit reached");
-                        for window in ["primary", "secondary"] {
-                            if bucket[window].is_null() {
-                                continue;
-                            }
-                            let used = bucket[window]["usedPercent"].as_f64().context("Codex usage percentage unavailable")?;
-                            ensure!((0.0..=100.0).contains(&used), "invalid Codex usage percentage");
-                            remaining = Some(remaining.map_or(100.0 - used, |previous| previous.min(100.0 - used)));
-                        }
-                    }
-                    let remaining = remaining.context("Codex remaining usage unavailable")?;
-                    ensure!(remaining >= minimum, "Codex remaining usage {remaining:.1}% is below {minimum:.1}% threshold");
-                    return Ok(());
+                    return message.get("result").cloned().context("Codex usage response missing result");
                 }
             }
-            anyhow::bail!("Codex usage check ended without a response")
-        }).await.context("Codex usage check timed out");
+            Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, format!("Codex usage check ended during {phase}")).into())
+        }).await.with_context(|| format!("Codex usage check timed out during {phase}"));
         child.kill().await.ok();
         child.wait().await.ok();
         result?
     }
 
     pub async fn execute<T: DeserializeOwned>(&self, prompt: &str, schema: &Value) -> Result<T> {
-        self.execute_with_directory(prompt, schema, None).await
+        self.execute_with_directory(prompt, schema, None, true)
+            .await
     }
 
     pub async fn execute_in_directory<T: DeserializeOwned>(
@@ -96,7 +209,19 @@ impl CodexClient {
         schema: &Value,
         directory: &Path,
     ) -> Result<T> {
-        self.execute_with_directory(prompt, schema, Some(directory))
+        self.execute_with_directory(prompt, schema, Some(directory), false)
+            .await
+    }
+
+    pub async fn execute_with_document<T: DeserializeOwned>(
+        &self,
+        prompt: &str,
+        schema: &Value,
+        document: &str,
+    ) -> Result<T> {
+        let directory = tempfile::tempdir()?;
+        std::fs::write(directory.path().join("prospectus.txt"), document)?;
+        self.execute_with_directory(prompt, schema, Some(directory.path()), true)
             .await
     }
 
@@ -105,6 +230,7 @@ impl CodexClient {
         prompt: &str,
         schema: &Value,
         working_directory: Option<&Path>,
+        read_only: bool,
     ) -> Result<T> {
         self.validate()?;
         let directory = tempfile::tempdir()?;
@@ -123,10 +249,10 @@ impl CodexClient {
                 "--config",
                 "project_doc_max_bytes=0",
                 "--sandbox",
-                if working_directory.is_some() {
-                    "danger-full-access"
-                } else {
+                if read_only {
                     "read-only"
+                } else {
+                    "danger-full-access"
                 },
                 "--skip-git-repo-check",
                 "--ephemeral",

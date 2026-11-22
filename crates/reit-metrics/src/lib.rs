@@ -4,6 +4,7 @@ mod derive;
 mod models;
 pub mod ownership;
 mod pdf;
+pub use pdf::text as pdf_text;
 mod presentation;
 pub mod publication;
 mod reits;

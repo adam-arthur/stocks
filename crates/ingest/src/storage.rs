@@ -142,6 +142,32 @@ impl Store {
         write_atomic(&self.symbol_path(symbol)?.join("prices.json"), prices)
     }
 
+    pub fn prune_market_history(&self, symbol: &str) -> Result<Option<NaiveDate>> {
+        let mut prices = self.prices(symbol)?;
+        let start = alpaca_client::price_history_start(prices.keys().copied());
+        let mut actions = self.corporate_actions(symbol)?;
+        let count = actions.len();
+        actions.retain(|action| start.is_some_and(|date| action.effective_date() >= date));
+        if count != actions.len() {
+            self.save_corporate_actions(symbol, &actions)?;
+        }
+        if !actions.iter().any(CorporateAction::regular_dividend)
+            && let Some(mut meta) = self.metadata(symbol)?
+            && !matches!(meta.category, crate::Category::Preferred)
+            && meta.payout_policy.take().is_some()
+        {
+            self.save_metadata(&meta)?;
+        }
+        if let Some(start) = start
+            && prices
+                .first_key_value()
+                .is_some_and(|(date, _)| *date < start)
+        {
+            self.save_prices(symbol, &prices.split_off(&start))?;
+        }
+        Ok(start)
+    }
+
     pub fn corporate_actions(&self, symbol: &str) -> Result<Vec<CorporateAction>> {
         Ok(
             read_optional(&self.symbol_path(symbol)?.join("corporate_actions.json"))?

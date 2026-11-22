@@ -338,10 +338,11 @@ fn security(
         result["preferred_spread"] = history;
         result["summary"]["preferred_spread"] = snapshot;
     }
-    if let Some(preferred) = result["preferred"].as_object_mut()
-        && let Some(terms) = preferred.remove("structured_dividend_terms")
-    {
-        preferred.insert("dividend_terms".into(), terms);
+    if let Some(preferred) = result["preferred"].as_object_mut() {
+        preferred.remove("sec");
+        if let Some(terms) = preferred.remove("structured_dividend_terms") {
+            preferred.insert("dividend_terms".into(), terms);
+        }
     }
     dividend_stats::update(&mut result, &market.prices, &market.dividends, as_of);
     yield_stats::update(&mut result, &market.prices, treasury, as_of);

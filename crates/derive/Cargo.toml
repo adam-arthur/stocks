@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+alpaca-client = { path = "../alpaca-client" }
 reit-metrics = { path = "../reit-metrics" }
 financials = { path = "../financials" }
 anyhow.workspace = true

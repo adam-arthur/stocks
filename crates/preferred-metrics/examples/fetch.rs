@@ -5,9 +5,9 @@ async fn main() -> Result<()> {
     let mut arguments = std::env::args().skip(1);
     let symbol = arguments
         .next()
-        .context("usage: fetch SYMBOL [HTML_FILE]")?;
+        .context("usage: fetch SYMBOL [JSON_FILE]")?;
     let preferred = if let Some(path) = arguments.next() {
-        preferred_metrics::parse(&symbol, &String::from_utf8_lossy(&std::fs::read(path)?))?
+        preferred_metrics::parse(&symbol, &std::fs::read_to_string(path)?)?
     } else {
         preferred_metrics::PreferredClient::new()?
             .fetch(&symbol)

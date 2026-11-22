@@ -13,6 +13,18 @@ use reqwest::{
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use thiserror::Error;
 
+pub fn price_history_start(dates: impl DoubleEndedIterator<Item = NaiveDate>) -> Option<NaiveDate> {
+    let mut dates = dates.rev();
+    let mut start = dates.next()?;
+    for date in dates {
+        if (start - date).num_days() > 180 {
+            break;
+        }
+        start = date;
+    }
+    Some(start)
+}
+
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("missing or invalid environment variable: {0}")]

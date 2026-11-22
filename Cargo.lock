@@ -281,6 +281,7 @@ dependencies = [
 name = "derive"
 version = "0.1.0"
 dependencies = [
+ "alpaca-client",
  "anyhow",
  "chrono",
  "financials",
@@ -1202,7 +1203,6 @@ dependencies = [
  "anyhow",
  "chrono",
  "reqwest",
- "scraper",
  "serde",
  "serde_json",
  "tokio",

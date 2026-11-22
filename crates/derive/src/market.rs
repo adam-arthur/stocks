@@ -22,6 +22,7 @@ pub struct Price {
     pub dividend_yield_fwd: Option<f64>,
 }
 
+#[derive(Default)]
 pub struct Market {
     pub prices: BTreeMap<NaiveDate, Price>,
     pub dividends: Vec<Dividend>,
@@ -67,6 +68,11 @@ pub fn derive(
     synced: Option<NaiveDate>,
     as_of: NaiveDate,
 ) -> Result<Market> {
+    let Some(start) =
+        alpaca_client::price_history_start(prices.range(..=as_of).map(|(date, _)| *date))
+    else {
+        return Ok(Market::default());
+    };
     let mut splits = Vec::new();
     for action in actions.iter().filter(|a| {
         matches!(
@@ -76,7 +82,7 @@ pub fn derive(
     }) {
         let date = serde_json::from_value::<NaiveDate>(action["ex_date"].clone())
             .context("split missing ex_date")?;
-        if date > as_of {
+        if date < start || date > as_of {
             continue;
         }
         let ratio = action["new_rate"]
@@ -93,7 +99,7 @@ pub fn derive(
     for action in actions.iter().filter(|a| a["type"] == "cash_dividends") {
         let ex_date = serde_json::from_value::<NaiveDate>(action["ex_date"].clone())
             .context("dividend missing ex_date")?;
-        if ex_date > as_of {
+        if ex_date < start || ex_date > as_of {
             continue;
         }
         let amount = action["rate"].as_f64().context("dividend missing rate")?
@@ -116,7 +122,10 @@ pub fn derive(
     let mut result = BTreeMap::new();
     let (mut first, mut last, mut regular) = (0, 0, 0.0);
     let mut indicated = None;
-    for (date, raw) in prices.into_iter().filter(|(date, _)| *date <= as_of) {
+    for (date, raw) in prices
+        .into_iter()
+        .filter(|(date, _)| *date >= start && *date <= as_of)
+    {
         let close = raw / factor(&splits, date, as_of);
         ensure!(close.is_finite() && close > 0.0, "invalid close on {date}");
         while last < dividends.len() && dividends[last].ex_date <= date {

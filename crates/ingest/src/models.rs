@@ -104,6 +104,21 @@ pub struct CorporateAction {
     pub fields: BTreeMap<String, serde_json::Value>,
 }
 
+impl CorporateAction {
+    pub fn regular_dividend(&self) -> bool {
+        self.kind == "cash_dividends"
+            && self.fields.get("special").and_then(|v| v.as_bool()) == Some(false)
+    }
+
+    pub(crate) fn effective_date(&self) -> NaiveDate {
+        self.fields
+            .get("ex_date")
+            .and_then(|v| v.as_str())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(self.process_date)
+    }
+}
+
 fn serialize_action_fields<S: serde::Serializer>(
     fields: &BTreeMap<String, serde_json::Value>,
     serializer: S,

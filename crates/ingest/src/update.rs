@@ -276,6 +276,7 @@ pub async fn update(store: &Store, progress_bar: &indicatif::ProgressBar) -> Res
         store,
         assets.iter().map(|a| a.symbol.as_str()),
         progress_bar,
+        false,
     )
     .await?;
     financials::update(store, &assets, progress_bar).await?;

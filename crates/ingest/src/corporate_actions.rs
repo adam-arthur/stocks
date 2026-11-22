@@ -18,6 +18,7 @@ pub async fn update(
     let origin = NaiveDate::from_ymd_opt(2016, 1, 1).unwrap();
     let end = Utc::now().date_naive();
     let mut synced = store.corporate_actions_sync()?;
+    let mut history_starts = BTreeMap::new();
     let mut groups = BTreeMap::<NaiveDate, Vec<String>>::new();
     for asset in assets {
         if asset.exchange.eq_ignore_ascii_case("OTC")
@@ -27,11 +28,16 @@ pub async fn update(
         {
             continue;
         }
+        let Some(start) = store.prune_market_history(&asset.symbol)? else {
+            continue;
+        };
+        history_starts.insert(asset.symbol.clone(), start);
         groups
             .entry(
                 synced
                     .get(&asset.symbol)
-                    .map_or(origin, |date| (*date - Duration::days(90)).max(origin)),
+                    .map_or(origin, |date| *date - Duration::days(90))
+                    .max(start),
             )
             .or_default()
             .push(asset.symbol.clone());
@@ -72,6 +78,9 @@ pub async fn update(
                         .map(|action| (action.id.clone(), action))
                         .collect::<BTreeMap<_, _>>();
                     for action in history.remove(symbol).unwrap_or_default() {
+                        if action.effective_date() < history_starts[symbol] {
+                            continue;
+                        }
                         events += 1;
                         actions.insert(action.id.clone(), action);
                     }

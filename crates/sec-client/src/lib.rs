@@ -28,7 +28,60 @@ pub struct CompanyTicker {
     pub title: String,
 }
 
+pub fn preferred_symbol_key(symbol: &str) -> String {
+    let symbol = symbol.trim();
+    if let Some((issuer, suffix)) = symbol.rsplit_once('-')
+        && let Some(series) = suffix.to_ascii_uppercase().strip_prefix("PR")
+        && !issuer.is_empty()
+        && !series.is_empty()
+        && series.bytes().all(|b| b.is_ascii_alphanumeric())
+    {
+        return format!("{}-P{series}", issuer.to_ascii_uppercase());
+    }
+    if let Some((issuer, series)) = symbol.split_once('p')
+        && !issuer.is_empty()
+        && issuer.bytes().all(|b| b.is_ascii_uppercase())
+        && !series.is_empty()
+        && series.bytes().all(|b| b.is_ascii_uppercase())
+    {
+        return format!("{issuer}-P{series}");
+    }
+    symbol
+        .replace("Pr", "-P")
+        .to_ascii_uppercase()
+        .replace(" PR", "-P")
+        .replace(".PR", "-P")
+        .replace("/PR", "-P")
+        .replace("/P", "-P")
+        .replace('^', "-P")
+        .replace(char::is_whitespace, "")
+        .replace(".-P", "-P")
+}
+
+fn registered_titles_from_cover(body: &str) -> BTreeMap<String, String> {
+    let document = scraper::Html::parse_document(body);
+    let mut titles = BTreeMap::new();
+    let mut symbols = BTreeMap::new();
+    let mut classes = BTreeMap::new();
+    for fact in document.select(&scraper::Selector::parse("[contextref][name]").unwrap()) {
+        let context = fact.value().attr("contextref").unwrap();
+        let target = match fact.value().attr("name") {
+            Some("dei:TradingSymbol") => &mut symbols,
+            Some("dei:Security12bTitle") => &mut classes,
+            _ => continue,
+        };
+        target.insert(context, fact.text().collect::<String>());
+    }
+    for (context, symbol) in symbols {
+        if let Some(title) = classes.get(context) {
+            titles.insert(preferred_symbol_key(&symbol), title.clone());
+        }
+    }
+    titles
+}
+
 pub fn cik_for_symbol(tickers: &[CompanyTicker], symbol: &str) -> Option<u64> {
+    let normalized = preferred_symbol_key(symbol).replace('.', "-");
     let candidates: BTreeSet<_> = tickers
         .iter()
         .filter(|company| company.ticker == symbol)
@@ -37,7 +90,7 @@ pub fn cik_for_symbol(tickers: &[CompanyTicker], symbol: &str) -> Option<u64> {
     let candidates = if candidates.is_empty() {
         tickers
             .iter()
-            .filter(|company| company.ticker.replace('.', "-") == symbol.replace('.', "-"))
+            .filter(|company| preferred_symbol_key(&company.ticker).replace('.', "-") == normalized)
             .map(|company| company.cik_str)
             .collect()
     } else {
@@ -131,6 +184,33 @@ pub struct CompanyFactsArchive {
     _file: NamedTempFile,
 }
 
+pub async fn linked_pdf(page: &str, pdf: &str) -> Result<NamedTempFile> {
+    let http = Client::builder()
+        .https_only(true)
+        .timeout(Duration::from_secs(60))
+        .build()?;
+    let page = http.get(page).send().await?.error_for_status()?;
+    let base = page.url().clone();
+    let pdf = reqwest::Url::parse(pdf)?;
+    let html = page.text().await?;
+    let linked = scraper::Html::parse_document(&html)
+        .select(&scraper::Selector::parse("a[href]").unwrap())
+        .filter_map(|a| base.join(a.value().attr("href")?).ok())
+        .any(|href| href == pdf);
+    ensure!(linked, "official page {base} does not link {pdf}");
+    let bytes = http
+        .get(pdf)
+        .send()
+        .await?
+        .error_for_status()?
+        .bytes()
+        .await?;
+    ensure!(bytes.starts_with(b"%PDF-"), "linked document is not a PDF");
+    let mut file = NamedTempFile::new()?;
+    file.write_all(&bytes)?;
+    Ok(file)
+}
+
 impl SecClient {
     pub fn new(email: &str) -> Result<Self> {
         ensure!(
@@ -151,6 +231,24 @@ impl SecClient {
         Self::new(&env::var("SEC_CONTACT_EMAIL").context("SEC_CONTACT_EMAIL must be set")?)
     }
 
+    pub async fn prospectus_text(&self, url: &str) -> Result<String> {
+        ensure!(
+            url.starts_with("https://www.sec.gov/Archives/edgar/data/"),
+            "invalid SEC prospectus URL"
+        );
+        let bytes = self.get(url).await?.bytes().await?;
+        let text = if url
+            .rsplit_once('.')
+            .is_some_and(|(_, ext)| ext.eq_ignore_ascii_case("txt"))
+        {
+            String::from_utf8_lossy(&bytes).into_owned()
+        } else {
+            html2text::from_read(bytes.as_ref(), 240)?
+        };
+        ensure!(!text.trim().is_empty(), "empty SEC prospectus");
+        Ok(text)
+    }
+
     pub async fn company_tickers(&self) -> Result<Vec<CompanyTicker>> {
         let tickers = self
             .get("https://www.sec.gov/files/company_tickers.json")
@@ -165,6 +263,88 @@ impl SecClient {
             "SEC returned an invalid ticker mapping"
         );
         Ok(tickers.into_values().collect())
+    }
+
+    pub async fn exchange_tickers(&self) -> Result<Vec<CompanyTicker>> {
+        #[derive(Deserialize)]
+        struct Directory {
+            fields: Vec<String>,
+            data: Vec<(u64, String, String, Option<String>)>,
+        }
+        let directory: Directory = self
+            .get("https://www.sec.gov/files/company_tickers_exchange.json")
+            .await?
+            .json()
+            .await?;
+        ensure!(
+            directory.fields == ["cik", "name", "ticker", "exchange"] && !directory.data.is_empty(),
+            "unexpected SEC ticker directory"
+        );
+        Ok(directory
+            .data
+            .into_iter()
+            .map(|(cik_str, title, ticker, _)| CompanyTicker {
+                cik_str,
+                title,
+                ticker,
+            })
+            .collect())
+    }
+
+    pub async fn registered_titles(&self, cik: u64) -> Result<BTreeMap<String, String>> {
+        let submissions: Value = self
+            .get(&format!(
+                "https://data.sec.gov/submissions/CIK{cik:010}.json"
+            ))
+            .await?
+            .json()
+            .await?;
+        ensure!(
+            company_cik(&submissions) == Some(cik),
+            "SEC submissions CIK mismatch"
+        );
+        let recent = &submissions["filings"]["recent"];
+        let mut titles = BTreeMap::new();
+        for (i, form) in recent["form"]
+            .as_array()
+            .context("missing SEC filing history")?
+            .iter()
+            .enumerate()
+        {
+            if !matches!(
+                form.as_str(),
+                Some("8-K" | "10-K" | "10-Q" | "20-F" | "40-F")
+            ) {
+                continue;
+            }
+            let accession = recent["accessionNumber"][i]
+                .as_str()
+                .context("missing accession")?
+                .replace('-', "");
+            let file = recent["primaryDocument"][i]
+                .as_str()
+                .context("missing filing document")?;
+            ensure!(
+                accession.len() == 18
+                    && accession.bytes().all(|b| b.is_ascii_digit())
+                    && file
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b".-_".contains(&b)),
+                "invalid SEC filing path"
+            );
+            let body = self
+                .get(&format!(
+                    "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{file}"
+                ))
+                .await?
+                .text()
+                .await?;
+            titles = registered_titles_from_cover(&body);
+            if !titles.is_empty() {
+                break;
+            }
+        }
+        Ok(titles)
     }
 
     pub async fn earnings_filings(

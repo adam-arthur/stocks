@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
                         .is_some_and(|m| matches!(m.category, ingest::Category::Preferred))
                         && store
                             .preferred(&symbol)?
-                            .is_some_and(|p| p.structured_dividend_terms.is_none())
+                            .is_some_and(|p| !p.has_filing_terms())
                     {
                         symbols.push(symbol);
                     }

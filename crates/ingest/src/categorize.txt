@@ -1,4 +1,9 @@
-Choose the first applicable category:
+Apply these rules before the category list:
+Classify a foreign issuer’s domestic preferred equity class as STOCK, including a US-traded ADS or ADR representing that class. On the first pass, a listing such as “American Depositary Shares, each representing two Class A Preferred Shares” is sufficient. Examples include BAK, BBD, CIB and CIG.
+Choose PREFERRED when the listing identifies a distinct preferred issue with contractual dividend terms, such as “7.375% Fixed-Rate Non-Cumulative Preferred Stock, Series D.” This applies to foreign issuers as well as US issuers and includes depositary shares representing a fraction of that issue.
+Use the listing name on the first pass. If it gives only the issuer name and the security type is uncertain, return null for research. During research, identify the class represented by the exact ticker and apply the same rules. Issuer nationality, a share ratio, or a series letter alone is insufficient.
+
+Otherwise choose the first applicable category:
 PREFERRED: preferred stock or depositary shares representing preferred stock.
 BDC: common shares of a business development company.
 CEF: closed-end investment funds, excluding BDCs and ETFs.
@@ -7,5 +12,7 @@ EQUITY_REIT: common shares of a REIT primarily owning and operating real propert
 MORTGAGE_REIT: common shares of a REIT primarily investing in mortgages, mortgage-backed securities or mortgage lending.
 ASSET_MANAGER: common shares of a business principally managing investments for clients or funds, separately from the funds it manages.
 STOCK: other common stocks, including depositary receipts representing common stocks.
+
+Classify depositary shares by the underlying security. A common share class with enhanced dividend rights is still common stock.
 
 Dividend or distribution status does not affect classification. Return EXCLUDED if no category applies; return null if uncertain.

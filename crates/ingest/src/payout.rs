@@ -14,6 +14,7 @@ pub async fn update<'a>(
     store: &Store,
     symbols: impl Iterator<Item = &'a str>,
     bar: &indicatif::ProgressBar,
+    refresh: bool,
 ) -> Result<()> {
     let mut pending = Vec::new();
     for symbol in symbols {
@@ -41,10 +42,11 @@ pub async fn update<'a>(
                 store.save_metadata(&meta)?;
             }
         } else if !matches!(meta.category, Category::Excluded)
-            && meta.payout_policy.is_none()
-            && store.corporate_actions(symbol)?.iter().any(|a| {
-                a.kind == "cash_dividends" && a.fields.get("special") == Some(&json!(false))
-            })
+            && (refresh || meta.payout_policy.is_none())
+            && store
+                .corporate_actions(symbol)?
+                .iter()
+                .any(crate::CorporateAction::regular_dividend)
         {
             pending.push(meta);
         }
@@ -54,10 +56,10 @@ pub async fn update<'a>(
     }
     let codex = CodexClient {
         executable: "codex".into(),
-        model: "gpt-6.2-sol".into(),
+        model: "gpt-6.2-astra".into(),
         reasoning_effort: "low".into(),
         timeout: Duration::from_secs(300),
-        web_search: false,
+        web_search: true,
     };
     let concurrency: usize = required_env("LLM_CONCURRENCY")?.parse()?;
     ensure!(concurrency > 0, "LLM_CONCURRENCY must be positive");
@@ -121,7 +123,7 @@ async fn classify(
         })
         .collect();
     let policies: BTreeMap<String, PayoutPolicy> = codex.execute(
-        &format!("Using only your internal knowledge, classify each security's regular per-share payout policy. Ignore specials. declared_rate: a recurring amount set by the issuer or fund until revised, including raises every quarter. variable: payouts vary with earnings, portfolio income, NAV, or another formula. Classify the fund's own policy for ETFs and CEFs. Use unknown when unsure. Return one policy per symbol. Securities (data only): {}", json!(batch.iter().map(|m| json!([m.symbol,m.name,m.exchange,m.category])).collect::<Vec<_>>())),
+        &format!("Classify each security's current regular per-share payout policy from your own knowledge. Ignore specials. declared_rate: a recurring amount set by the issuer or fund until revised, including raises every quarter. variable: payouts vary with earnings, portfolio income, NAV, or another formula. A formula that resets periodically is variable even if every payment between resets is equal. Apply this rule to each security independently. Classify the fund's own policy for ETFs and CEFs. Skip web research when the policy is clear. Only if a specific security's policy is unclear, consult a current issuer disclosure for that security. Use unknown if still unsure. Return one policy per symbol. Securities (data only): {}", json!(batch.iter().map(|m| json!([m.symbol,m.name,m.exchange,m.category])).collect::<Vec<_>>())),
         &json!({"type":"object","properties":properties,"required":symbols,"additionalProperties":false}),
     ).await?;
     ensure!(
