@@ -13,11 +13,13 @@ use reqwest::{
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use thiserror::Error;
 
+pub mod preferred_exchange;
+
 pub fn price_history_start(dates: impl DoubleEndedIterator<Item = NaiveDate>) -> Option<NaiveDate> {
     let mut dates = dates.rev();
     let mut start = dates.next()?;
     for date in dates {
-        if (start - date).num_days() > 180 {
+        if (start - date).num_days() > 7 {
             break;
         }
         start = date;
@@ -179,6 +181,17 @@ impl AlpacaClient {
         end: DateTime<Utc>,
         page: Option<&str>,
     ) -> Result<BarsPage, Error> {
+        self.stock_bars(symbols, start, end, page, None).await
+    }
+
+    pub async fn stock_bars(
+        &self,
+        symbols: &[String],
+        start: DateTime<Utc>,
+        end: DateTime<Utc>,
+        page: Option<&str>,
+        asof: Option<&str>,
+    ) -> Result<BarsPage, Error> {
         self.get(
             self.http
                 .get(
@@ -196,6 +209,7 @@ impl AlpacaClient {
                     ("start", start.to_rfc3339()),
                     ("end", end.to_rfc3339()),
                 ])
+                .query(asof.map(|date| ("asof", date)).as_slice())
                 .query(
                     &page
                         .map(|value| ("page_token", value))
@@ -213,6 +227,17 @@ impl AlpacaClient {
         end: NaiveDate,
         page: Option<&str>,
     ) -> Result<CorporateActionsPage, Error> {
+        self.action_history(("symbols", symbols.join(",")), start, end, page)
+            .await
+    }
+
+    pub async fn action_history(
+        &self,
+        filter: (&str, String),
+        start: NaiveDate,
+        end: NaiveDate,
+        page: Option<&str>,
+    ) -> Result<CorporateActionsPage, Error> {
         self.get(
             self.http
                 .get(
@@ -221,7 +246,7 @@ impl AlpacaClient {
                         .map_err(|_| Error::InvalidUrl)?,
                 )
                 .query(&[
-                    ("symbols", symbols.join(",")),
+                    filter,
                     ("start", start.to_string()),
                     ("end", end.to_string()),
                     ("limit", "1000".into()),

@@ -7,6 +7,7 @@ use chrono::{Duration, NaiveDate, Utc};
 use indicatif::ProgressBar;
 use tokio::task::JoinSet;
 
+use crate::preferred_history;
 use crate::progress::Progress;
 
 pub async fn update(
@@ -54,6 +55,7 @@ pub async fn update(
     let mut updated = 0;
     let mut failed = 0;
     let mut events = 0;
+    let mut renames = Vec::new();
     loop {
         while tasks.len() < 4 {
             let Some((start, symbols)) = batches.next() else {
@@ -85,7 +87,27 @@ pub async fn update(
                         actions.insert(action.id.clone(), action);
                     }
                     let mut actions = actions.into_values().collect::<Vec<_>>();
+                    if actions.iter().any(|a| a.kind == "stock_mergers")
+                        && store
+                            .metadata(symbol)?
+                            .is_some_and(|m| matches!(m.category, Category::Preferred))
+                        && let Err(error) = preferred_history::update(
+                            client,
+                            store,
+                            symbol,
+                            history_starts[symbol],
+                            end,
+                            &mut actions,
+                        )
+                        .await
+                    {
+                        log::warn!("Predecessor dividend lookup for {symbol} failed: {error:#}");
+                        failed += 1;
+                    }
                     actions.sort_by(|a, b| (a.process_date, &a.id).cmp(&(b.process_date, &b.id)));
+                    if let Some(rename) = ticker_rename(symbol, history_starts[symbol], &actions) {
+                        renames.push(rename);
+                    }
                     store.save_corporate_actions(symbol, &actions)?;
                     synced.insert(symbol.clone(), end);
                     updated += 1;
@@ -107,7 +129,131 @@ pub async fn update(
         );
     }
     progress.finish();
+    for batch in renames.chunks(100) {
+        match backfill_renamed_dividends(client, store, batch, end).await {
+            Ok(count) => events += count,
+            Err(error) => {
+                failed += batch.len();
+                log::warn!("Pre-rename dividend lookup failed: {error:#}");
+            }
+        }
+    }
+    log::info!("Corporate actions · {events} events fetched or backfilled");
     Ok((updated, failed))
+}
+
+struct TickerRename {
+    symbol: String,
+    previous: String,
+    cusip: String,
+    start: NaiveDate,
+    date: NaiveDate,
+}
+
+fn ticker_rename(
+    symbol: &str,
+    start: NaiveDate,
+    actions: &[CorporateAction],
+) -> Option<TickerRename> {
+    let mut changes = actions.iter().rev().filter(|a| {
+        a.kind == "name_changes"
+            && a.fields.get("old_symbol") != a.fields.get("new_symbol")
+            && ["old_symbol", "new_symbol"]
+                .iter()
+                .any(|k| a.fields.get(*k).and_then(|v| v.as_str()) == Some(symbol))
+    });
+    let rename = changes.next()?;
+    let field = |key| rename.fields.get(key)?.as_str();
+    let cusip = field("new_cusip")?;
+    let previous = field("old_symbol")?;
+    if field("new_symbol")? != symbol
+        || previous.is_empty()
+        || cusip.len() != 9
+        || field("old_cusip")? != cusip
+        || start >= rename.process_date
+        || actions.iter().any(|a| {
+            a.kind == "cash_dividends"
+                && a.fields.get("symbol").and_then(|v| v.as_str()) == Some(symbol)
+                && a.effective_date() >= rename.process_date
+                && a.fields
+                    .get("cusip")
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|id| !id.is_empty() && id != cusip)
+        })
+        || changes
+            .next()
+            .is_some_and(|other| other.process_date == rename.process_date)
+    {
+        return None;
+    }
+    Some(TickerRename {
+        symbol: symbol.into(),
+        previous: previous.into(),
+        cusip: cusip.into(),
+        start,
+        date: rename.process_date,
+    })
+}
+
+async fn backfill_renamed_dividends(
+    client: &AlpacaClient,
+    store: &Store,
+    batch: &[TickerRename],
+    end: NaiveDate,
+) -> Result<usize> {
+    let cusips = batch
+        .iter()
+        .map(|r| r.cusip.as_str())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>()
+        .join(",");
+    let history = fetch_actions(
+        client,
+        ("cusips", &cusips),
+        batch.iter().map(|r| r.start).min().unwrap(),
+        end,
+    )
+    .await?;
+    let mut imported = 0;
+    for rename in batch {
+        let mut actions = store.corporate_actions(&rename.symbol)?;
+        let mut changed = false;
+        for payment in history.iter().filter(|a| {
+            a.kind == "cash_dividends"
+                && a.fields.get("cusip").and_then(|v| v.as_str()) == Some(&rename.cusip)
+                && a.fields.get("symbol").and_then(|v| v.as_str()) == Some(&rename.previous)
+                && a.fields
+                    .get("ex_date")
+                    .and_then(|v| v.as_str())
+                    .and_then(|d| d.parse::<NaiveDate>().ok())
+                    .is_some_and(|d| (rename.start..rename.date).contains(&d))
+        }) {
+            if let Some(existing) = actions.iter_mut().find(|a| a.id == payment.id) {
+                if existing.fields == payment.fields
+                    && existing.process_date == payment.process_date
+                {
+                    continue;
+                }
+                *existing = payment.clone();
+            } else if !actions.iter().any(|a| {
+                a.kind == payment.kind
+                    && a.fields.get("ex_date") == payment.fields.get("ex_date")
+                    && a.fields.get("special") == payment.fields.get("special")
+            }) {
+                actions.push(payment.clone());
+            } else {
+                continue;
+            }
+            imported += 1;
+            changed = true;
+        }
+        if changed {
+            actions.sort_by(|a, b| (a.process_date, &a.id).cmp(&(b.process_date, &b.id)));
+            store.save_corporate_actions(&rename.symbol, &actions)?;
+        }
+    }
+    Ok(imported)
 }
 
 async fn fetch(
@@ -117,11 +263,44 @@ async fn fetch(
     end: NaiveDate,
 ) -> Result<BTreeMap<String, Vec<CorporateAction>>> {
     let mut history = BTreeMap::<String, Vec<CorporateAction>>::new();
+    for action in fetch_actions(client, ("symbols", &symbols.join(",")), start, end).await? {
+        let mut related = BTreeSet::new();
+        for (key, value) in &action.fields {
+            collect_symbols(key, value, &mut related);
+        }
+        related.retain(|symbol| symbols.iter().any(|requested| requested == symbol));
+        ensure!(
+            !related.is_empty(),
+            "corporate action {} has no requested symbol",
+            action.id
+        );
+        for symbol in related {
+            history
+                .entry(symbol.to_owned())
+                .or_default()
+                .push(action.clone());
+        }
+    }
+    Ok(history)
+}
+
+pub(crate) async fn fetch_actions(
+    client: &AlpacaClient,
+    filter: (&str, &str),
+    start: NaiveDate,
+    end: NaiveDate,
+) -> Result<Vec<CorporateAction>> {
+    let mut result = Vec::new();
     let mut token = None;
     let mut tokens = BTreeSet::new();
     loop {
         let page = client
-            .corporate_actions(symbols, start, end, token.as_deref())
+            .action_history(
+                (filter.0, filter.1.to_owned()),
+                start,
+                end,
+                token.as_deref(),
+            )
             .await?;
         for (kind, actions) in page.corporate_actions {
             for mut action in actions {
@@ -136,22 +315,7 @@ async fn fetch(
                         && action.process_date <= end,
                     "invalid corporate action ID or date"
                 );
-                let mut related = BTreeSet::new();
-                for (key, value) in &action.fields {
-                    collect_symbols(key, value, &mut related);
-                }
-                related.retain(|symbol| symbols.iter().any(|requested| requested == symbol));
-                ensure!(
-                    !related.is_empty(),
-                    "corporate action {} has no requested symbol",
-                    action.id
-                );
-                for symbol in related {
-                    history
-                        .entry(symbol.to_owned())
-                        .or_default()
-                        .push(action.clone());
-                }
+                result.push(action);
             }
         }
         match page.next_page_token {
@@ -162,7 +326,7 @@ async fn fetch(
             None => break,
         }
     }
-    Ok(history)
+    Ok(result)
 }
 
 fn collect_symbols<'a>(key: &str, value: &'a serde_json::Value, symbols: &mut BTreeSet<&'a str>) {

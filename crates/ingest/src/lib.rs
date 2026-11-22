@@ -6,6 +6,7 @@ mod management;
 pub mod models;
 pub mod payout;
 pub mod preferred;
+mod preferred_history;
 mod prices;
 mod progress;
 pub mod reit;

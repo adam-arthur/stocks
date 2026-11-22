@@ -75,7 +75,7 @@ pub async fn update(
             };
             let client = client.clone();
             tasks.spawn(async move {
-                let result = fetch(&client, &symbols, start, end).await;
+                let result = fetch(&client, &symbols, start, end, None).await;
                 (symbols, result)
             });
         }
@@ -116,17 +116,19 @@ pub async fn update(
     Ok((updated, failed))
 }
 
-async fn fetch(
+pub(crate) async fn fetch(
     client: &AlpacaClient,
     symbols: &[String],
     start: DateTime<Utc>,
     end: DateTime<Utc>,
+    asof: Option<&str>,
 ) -> Result<BTreeMap<String, BTreeMap<NaiveDate, f64>>> {
     let mut history = BTreeMap::<String, BTreeMap<NaiveDate, f64>>::new();
     let mut token = None;
+    let mut tokens = std::collections::BTreeSet::new();
     loop {
         let page = client
-            .daily_bars(symbols, start, end, token.as_deref())
+            .stock_bars(symbols, start, end, token.as_deref(), asof)
             .await?;
         for (symbol, bars) in page.bars {
             ensure!(symbols.contains(&symbol), "unexpected symbol {symbol}");
@@ -143,7 +145,7 @@ async fn fetch(
         }
         match page.next_page_token {
             Some(next) => {
-                ensure!(token.as_ref() != Some(&next), "repeated pagination token");
+                ensure!(tokens.insert(next.clone()), "repeated pagination token");
                 token = Some(next);
             }
             None => break,

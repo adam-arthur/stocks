@@ -144,6 +144,7 @@ fn security(
     treasury: &preferred_spread::Treasury,
 ) -> Result<Value> {
     let symbol = meta["symbol"].as_str().unwrap();
+    let is_preferred = meta["category"] == "PREFERRED";
     let mut market = market::derive(
         read(&input.join("stocks").join(symbol).join("prices.json"))?.unwrap_or_default(),
         &read::<Vec<Value>>(
@@ -153,10 +154,10 @@ fn security(
                 .join("corporate_actions.json"),
         )?
         .unwrap_or_default(),
+        is_preferred.then_some(symbol),
         synced,
         as_of,
     )?;
-    let is_preferred = meta["category"] == "PREFERRED";
     if is_preferred {
         for price in market.prices.values_mut() {
             for value in [&mut price.dividend_yield_ttm, &mut price.dividend_yield_fwd] {

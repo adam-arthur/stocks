@@ -37,13 +37,7 @@ pub fn factor(splits: &[(NaiveDate, f64)], date: NaiveDate, through: NaiveDate) 
         .product()
 }
 
-pub(crate) const CADENCES: [(std::ops::RangeInclusive<i64>, i64); 5] = [
-    (5..=9, 52),
-    (24..=38, 12),
-    (75..=110, 4),
-    (150..=215, 2),
-    (330..=400, 1),
-];
+pub(crate) use alpaca_client::preferred_exchange::CADENCES;
 
 fn indicated_rate(history: &[Dividend]) -> Option<(NaiveDate, i64, f64)> {
     let mut regular = history.iter().rev().filter(|dividend| !dividend.special);
@@ -65,6 +59,7 @@ fn indicated_rate(history: &[Dividend]) -> Option<(NaiveDate, i64, f64)> {
 pub fn derive(
     prices: BTreeMap<NaiveDate, f64>,
     actions: &[Value],
+    preferred_symbol: Option<&str>,
     synced: Option<NaiveDate>,
     as_of: NaiveDate,
 ) -> Result<Market> {
@@ -96,7 +91,33 @@ pub fn derive(
     }
     splits.sort_by_key(|(date, _)| *date);
     let mut dividends = Vec::new();
-    for action in actions.iter().filter(|a| a["type"] == "cash_dividends") {
+    let exchanges: Vec<_> = preferred_symbol
+        .into_iter()
+        .flat_map(|symbol| {
+            alpaca_client::preferred_exchange::exchanges(actions, symbol, start, as_of)
+        })
+        .collect();
+    let verified = match exchanges.as_slice() {
+        [(action, _)] => action["predecessor_dividends"]
+            .as_array()
+            .filter(|rows| !rows.is_empty()),
+        _ => None,
+    };
+    let coverage_start = if verified.is_some() {
+        Some(start)
+    } else {
+        exchanges.iter().map(|(_, date)| *date).max()
+    };
+    for action in actions
+        .iter()
+        .filter(|a| a["type"] == "cash_dividends")
+        .chain(
+            verified
+                .into_iter()
+                .flatten()
+                .filter(|old| !actions.iter().any(|a| a["id"] == old["id"])),
+        )
+    {
         let ex_date = serde_json::from_value::<NaiveDate>(action["ex_date"].clone())
             .context("dividend missing ex_date")?;
         if ex_date < start || ex_date > as_of {
@@ -149,7 +170,9 @@ pub fn derive(
             date,
             Price {
                 close,
-                dividend_yield_ttm: covered.then_some(regular.max(0.0) / close),
+                dividend_yield_ttm: (covered
+                    && coverage_start.is_none_or(|from| date - Months::new(12) >= from))
+                .then_some(regular.max(0.0) / close),
                 dividend_yield_fwd: indicated
                     .filter(|(ex_date, max_gap, _)| {
                         covered && (date - *ex_date).num_days() <= *max_gap
